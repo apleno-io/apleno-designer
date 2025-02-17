@@ -1,0 +1,34 @@
+html, body {
+	height: 100%;
+}
+
+#ppro-editor {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h2 {
+  margin: 15px 0 8px 0;
+  font-size: 26px;
+  color: var(--vscode-settings-headerForeground);
+}
+
+.ppro-setting {
+  padding: 12px 0 18px;
+}
+
+label {
+  display: block;
+  color: var(--vscode-settings-headerForeground);
+  font-weight: 600;
+  line-height: 1.4em;
+  margin-bottom: 8px;
+}
+
+.ppro-setting-help {
+  margin: 8px 0;
+}
+
+#drop-zone {
+  background-color: #600; width: 400px; height: 400px;
+}
