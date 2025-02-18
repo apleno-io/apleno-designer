@@ -364,7 +364,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 					</div>
 
 					<div class="ppro-setting">
-						<label for="project-seq">Starting Sequence</label>
+						<label for="project-sequence">Starting Sequence</label>
 						<div class="row">
 								<div class="col-10"><input type="text" id="project-seq" value="" /></div>
 								<div class="col-2 col-padding-left"><button class="success fullwidth btn-form" id="project-btn-sequence">Browse</button></div>

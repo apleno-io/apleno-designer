@@ -1,61 +1,13 @@
 //////////////////////
-function debugObj(e){
-	const seen = new WeakSet();
-  const parseObj = (obj) => {
-    const newObj = {};
-
-    for (const key in obj) {
-      if (typeof obj[key] === 'function') {
-        continue;
-      }
-      if (obj[key] === null) {
-        newObj[key] = null;
-        continue;
-      }
-      if (typeof obj[key] === 'object') {
-        if (seen.has(obj[key])) {
-          continue;
-        }
-
-        seen.add(obj[key])
-        newObj[key] = parseObj(obj[key]);
-      } else {
-        newObj[key] = obj[key];
-      }
-    }
-
-    return newObj;
-  };
-	console.log(parseObj(e));
-}
 function dropHandler(ev) {
-	console.log("File(s) dropped");
-	console.log(debugObj(ev));
-	// Prevent default behavior (Prevent file from being opened)
+	const allDropVariations = JSON.stringify({
+    'dataTransfer.types': Array.from(ev.dataTransfer.types),
+    'dataTransfer.getData(text/uri-list)': ev.dataTransfer.getData('text/uri-list'),
+    'dataTransfer.getData(text/plain)': ev.dataTransfer.getData('text/plain'),
+    'dataTransfer.files.0.name': ev.dataTransfer.files.item(0)?.name,
+  }, null, 2);
+
 	ev.preventDefault();
-
-	for (let i = 0; i < ev.dataTransfer.files.length; ++i) {
-		console.log('p');
-		console.log(debugObj(ev.dataTransfer.files[i]));
-		console.log(i, ev.dataTransfer.files[i]);
-	}
-
-	if (ev.dataTransfer.items) {
-		// Use DataTransferItemList interface to access the file(s)
-		[...ev.dataTransfer.items].forEach((item, i) => {
-			console.log(debugObj(item));
-			// If dropped items aren't files, reject them
-			if (item.kind === "file") {
-				const file = item.getAsFile();
-				console.log('… file[', i, '].name = ', file.name);
-			}
-		});
-	} else {
-		// Use DataTransfer interface to access the file(s)
-		[...ev.dataTransfer.files].forEach((file, i) => {
-			console.log('… file[', i, '].name = ', file.name);
-		});
-	}
 }
 
 function dragOverHandler(ev) {
@@ -66,6 +18,52 @@ function dragOverHandler(ev) {
 }
 //////////////////////
 
+function setFormValue(selector, value){
+	const el = document.querySelector(selector);
+	if(el){
+		el.value = value;
+	}
+}
+
+class CustomFilesEditor {
+	constructor(parent, files) {
+		this.parent = parent;
+		this.parent.innerHTML = `
+			<button data-role="add-file">Add File</button>
+		`;
+		this.onClick = this.onClick.bind(this);
+		this.parent.addEventListener('click', this.onClick);
+		setTimeout(() => this.setState(files), 0);
+	}
+
+	setState(state) {
+		this.files = state;
+	}
+
+	getState() {
+		return this.files;
+	}
+
+	onClick(e) {
+		const button = e.target.closest('button');
+		if(button){
+			const role = button.dataset.role;
+			if(role === 'add-file'){
+				this.addFile();
+				return;
+			}
+
+			const fileId = e.target.closest('[data-file]');
+			if(fileId === null){
+				return;
+			}
+			if(role === ''){
+
+			}
+		}
+	}
+}
+
 class PProEditor {
 	constructor(parent) {
 		document.getElementById('drop-zone').addEventListener('drop', dropHandler);
@@ -73,7 +71,18 @@ class PProEditor {
 	}
 
 	setState(state) {
-
+		setFormValue('#project-name', state.name);
+		setFormValue('#project-author', state.company);
+		setFormValue('#project-description', state.description);
+		setFormValue('#project-sequence', state.sequenceStart);
+		setFormValue('#project-wd', state.defaultWorkingDirectory);
+		setFormValue('#project-outputfolder', state.outputFolderName);
+		// TODO: Custom files
+		setFormValue('#project-console', state.consoleAccess);
+		setFormValue('#project-logo', state.sidebarLogo);
+		setFormValue('#project-steps', state.stepListType);
+		// TODO: Changelog
+		// TODO: CSS
 	}
 
 	getState() {
