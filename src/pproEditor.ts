@@ -446,7 +446,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 	private onMessage(document: PGMProDocument, message: any) {
 		switch (message.type) {
 			case 'edit':
-				document.makeEdit(message as PGMProDocumentEdit);
+				document.makeEdit(message.state as PGMProDocumentEdit);
 				return;
 
 			case 'response':

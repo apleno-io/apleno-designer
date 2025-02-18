@@ -44,10 +44,10 @@ code {
 	font-family: var(--vscode-editor-font-family);
 }
 
+/* BUTTONS */
 button {
 	border: none;
-	padding: var(--input-padding-vertical) var(--input-padding-horizontal);
-	width: 100%;
+	padding: var(--input-padding-vertical) 8px;
 	text-align: center;
 	outline: 1px solid transparent;
 	outline-offset: 2px !important;
@@ -75,6 +75,29 @@ button.secondary:hover {
 	background: var(--vscode-button-secondaryHoverBackground);
 }
 
+.btn-large {
+	width: 100%;
+}
+
+.btn-transparent {
+  background: transparent;
+  border: none;
+  height: 31px;
+  line-height: 31px;
+	color: var(--vscode-foreground);
+}
+
+.btn-transparent:disabled {
+	opacity: 0;
+}
+
+.btn-transparent:not(:disabled):hover {
+	background-color: transparent;
+	color: var(--vscode-settings-headerForeground);
+	background-color: var(--vscode-input-background);
+}
+
+/* INPUTS */
 input:not([type='checkbox']), textarea, select {
 	display: block;
   width: 100%;

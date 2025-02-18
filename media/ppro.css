@@ -1,5 +1,6 @@
-html, body {
-	height: 100%;
+html,
+body {
+  height: 100%;
 }
 
 .flex-horizontal {
@@ -21,8 +22,8 @@ html, body {
   flex: 0;
 }
 
-.button-list {
-
+.flex-margin-left {
+  margin-left: var(--input-padding-vertical);
 }
 
 #ppro-editor {
@@ -54,4 +55,12 @@ label {
 
 .ppro-setting-help {
   margin: 8px 0;
+}
+
+.customfiles-list {
+  padding-bottom: 8px;
+}
+
+.customfiles-entry {
+  padding-bottom: 4px;
 }

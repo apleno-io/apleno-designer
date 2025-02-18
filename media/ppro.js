@@ -28,7 +28,7 @@ function setFormValue(selector, value) {
 	}
 }
 
-class CustomFilesEditor {
+class CustomFilesEditor extends EventTarget {
 	constructor(parent, files) {
 		this.parent = parent;
 		this.parent.innerHTML = `
@@ -36,6 +36,7 @@ class CustomFilesEditor {
 			<button data-role="add-file">Add File</button>
 		`;
 		this.onClick = this.onClick.bind(this);
+		this.onChange = this.onChange.bind(this);
 		this.parent.addEventListener('click', this.onClick);
 		setTimeout(() => {
 			this.setState(files);
@@ -51,36 +52,56 @@ class CustomFilesEditor {
 		return this.files;
 	}
 
+	readFromInputs() {
+		this.files = Array.from(this.parent.querySelectorAll('input')).map(input => input.value);
+	}
+
 	render() {
+		this.parent.querySelectorAll('input').forEach(el => el.removeEventListener('change', this.onChange));
 		this.parent.querySelector('.customfiles-list').innerHTML = `
 			${this.files.map((file, i) => `
-				<div class="flex-horizontal" data-file="${i}">
+				<div class="customfiles-entry flex-horizontal" data-file="${i}">
 					<input class="flex-child-grow" type="text" value="${file}">
-					<button class="flex-child-shrink" data-role="up"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.2652 7 12.5196 7.10536 12.7071 7.29289L19.7071 14.2929C20.0976 14.6834 20.0976 15.3166 19.7071 15.7071C19.3166 16.0976 18.6834 16.0976 18.2929 15.7071L12 9.41421L5.70711 15.7071C5.31658 16.0976 4.68342 16.0976 4.29289 15.7071C3.90237 15.3166 3.90237 14.6834 4.29289 14.2929L11.2929 7.29289C11.4804 7.10536 11.7348 7 12 7Z" fill="#000000"></path> </g></svg></button>
-					<button class="flex-child-shrink" data-role="down"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M7 10L12 15L17 10" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg></button>
-					<button class="flex-child-shrink" data-role="remove"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg></button>
+					<button class="flex-child-shrink flex-margin-left btn-transparent" data-role="up">
+						<svg width="20" height="20" stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M7 15L12 9L17 15" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
+					</button>
+					<button class="flex-child-shrink flex-margin-left btn-transparent" data-role="down">
+						<svg width="20" height="20" stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M7 9L12 15L17 9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
+					</button>
+					<button class="flex-child-shrink flex-margin-left btn-transparent" data-role="remove">
+						<svg width="20" height="20" stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
+					</button>
 				</div>
+				
 			`).join('')}`;
+		setTimeout(() => {
+			this.parent.querySelectorAll('input').forEach(el => el.addEventListener('change', this.onChange));
+		}, 0);
 	}
 
 	addFile() {
 		this.files.push('');
+		this.dispatchEvent(new CustomEvent('change'));
 		this.render();
 	}
 
 	removeFile(fileId) {
 		this.files.splice(fileId, 1);
+		this.dispatchEvent(new CustomEvent('change'));
 		this.render();
 	}
 
 	moveFile(fileId, direction) {
+		console.log(fileId, direction);
 		const newIndex = fileId + direction;
+		console.log('newIndex', newIndex);
 		if (newIndex < 0 || newIndex >= this.files.length) {
 			return;
 		}
 		const temp = this.files[fileId];
 		this.files[fileId] = this.files[newIndex];
 		this.files[newIndex] = temp;
+		this.dispatchEvent(new CustomEvent('change'));
 		this.render();
 	}
 
@@ -94,26 +115,32 @@ class CustomFilesEditor {
 			}
 
 			const fileId = e.target.closest('[data-file]');
-			console.log(fileId);
 			if (fileId === null) {
 				return;
 			}
 			if (role === 'up') {
-				this.moveFile(fileId, -1);
+				this.moveFile(parseInt(fileId.dataset.file), -1);
 			}
 			else if (role === 'down') {
-				this.moveFile(fileId, 1);
+				this.moveFile(parseInt(fileId.dataset.file), 1);
 			}
 			else if (role === 'remove') {
-				this.removeFile(fileId);
+				this.removeFile(parseInt(fileId.dataset.file));
 			}
 		}
 	}
+
+	onChange(){
+		this.readFromInputs();
+	}
 }
 
-class PProEditor {
+class PProEditor extends EventTarget {
 	constructor() {
+		this.onChange = this.onChange.bind(this);
 		this.customFilesEditor = new CustomFilesEditor(document.body.querySelector('#project-customFiles'), []);
+		this.customFilesEditor.addEventListener('change', this.onChange);
+		document.body.querySelectorAll('input, select').forEach(el => el.addEventListener('change', this.onChange));
 	}
 
 	setState(state) {
@@ -134,12 +161,19 @@ class PProEditor {
 	getState() {
 		return {};
 	}
+
+	onChange(){
+		this.dispatchEvent(new CustomEvent('change'));
+	}
 }
 
 (function () {
 	// @ts-ignore
 	const vscode = acquireVsCodeApi();
 	const editor = new PProEditor();
+	editor.addEventListener('change', () => {
+		
+	});
 
 	window.addEventListener('message', async e => {
 		const { type, body, requestId } = e.data;
