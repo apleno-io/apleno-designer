@@ -21,15 +21,9 @@ function dragOverHandler(ev) {
 */
 //////////////////////
 
-function setFormValue(selector, value) {
-	const el = document.querySelector(selector);
-	if (el) {
-		el.value = value;
-	}
-}
-
 class CustomFilesEditor extends EventTarget {
 	constructor(parent, files) {
+		super();
 		this.parent = parent;
 		this.parent.innerHTML = `
 			<div class="customfiles-list"></div>
@@ -92,9 +86,7 @@ class CustomFilesEditor extends EventTarget {
 	}
 
 	moveFile(fileId, direction) {
-		console.log(fileId, direction);
 		const newIndex = fileId + direction;
-		console.log('newIndex', newIndex);
 		if (newIndex < 0 || newIndex >= this.files.length) {
 			return;
 		}
@@ -137,6 +129,7 @@ class CustomFilesEditor extends EventTarget {
 
 class PProEditor extends EventTarget {
 	constructor() {
+		super();
 		this.onChange = this.onChange.bind(this);
 		this.customFilesEditor = new CustomFilesEditor(document.body.querySelector('#project-customFiles'), []);
 		this.customFilesEditor.addEventListener('change', this.onChange);
@@ -144,22 +137,55 @@ class PProEditor extends EventTarget {
 	}
 
 	setState(state) {
-		setFormValue('#project-name', state.name);
-		setFormValue('#project-author', state.company);
-		setFormValue('#project-description', state.description);
-		setFormValue('#project-sequence', state.sequenceStart);
-		setFormValue('#project-wd', state.defaultWorkingDirectory);
-		setFormValue('#project-outputfolder', state.outputFolderName);
+		this.setFormValue('#project-name', state.name);
+		this.setFormValue('#project-author', state.company);
+		this.setFormValue('#project-description', state.description);
+		this.setFormValue('#project-sequence', state.sequenceStart);
+		this.setFormValue('#project-wd', state.defaultWorkingDirectory);
+		this.setFormValue('#project-outputfolder', state.outputFolderName);
 		this.customFilesEditor.setState(state.customFiles);
-		setFormValue('#project-console', state.consoleAccess);
-		setFormValue('#project-logo', state.sidebarLogo);
-		setFormValue('#project-steps', state.stepListType);
+		this.setFormValue('#project-console', state.consoleAccess);
+		this.setFormValue('#project-logo', state.sidebarLogo);
+		this.setFormValue('#project-steps', state.stepListType);
 		// TODO: Changelog
 		// TODO: CSS
 	}
 
 	getState() {
-		return {};
+		return {
+			name: this.getFormValue('#project-name'),
+			company: this.getFormValue('#project-author'),
+			description: this.getFormValue('#project-description'),
+			changelog: [],//this.getFormValue('#project-author'),
+			icon: '',
+			sequenceStart: this.getFormValue('#project-sequence'),
+			defaultWorkingDirectory: this.getFormValue('#project-wd'),
+			outputFolderName: this.getFormValue('#project-outputfolder'),
+			sidebarLogo: this.getFormValue('#project-sidebarLogo'),
+			customCSSLightCode: '', //this.getFormValue('#project-css'),
+			customCSSDarkCode: '', //this.getFormValue('#project-css'),
+			customCSSLightFile: '', //this.getFormValue('#project-css'),
+			customCSSDarkFile: '', //this.getFormValue('#project-css'),
+			customFiles: this.customFilesEditor.getState(),
+			stepListType: this.getFormValue('#project-stepListType'),
+			consoleAccess: this.getFormValue('#project-console'),
+			dateCreated: null
+		};
+	}
+
+	getFormValue(selector) {
+		const el = document.querySelector(selector);
+		if (el) {
+			return el.value;
+		}
+		return null;
+	}
+
+	setFormValue(selector, value) {
+		const el = document.querySelector(selector);
+		if (el) {
+			el.value = value;
+		}
 	}
 
 	onChange(){
@@ -172,7 +198,7 @@ class PProEditor extends EventTarget {
 	const vscode = acquireVsCodeApi();
 	const editor = new PProEditor();
 	editor.addEventListener('change', () => {
-		
+		vscode.postMessage({ type: 'edit', edit: {state: editor.getState() }});
 	});
 
 	window.addEventListener('message', async e => {
@@ -181,7 +207,10 @@ class PProEditor extends EventTarget {
 			editor.setState(body.untitled ? {} : body.value);
 		}
 		else if (type === 'update') {
-			editor.setState(body.content);
+			console.log(body);
+			if(body.edits.length > 0){
+				editor.setState(body.edits[body.edits.length-1].state);
+			}
 			return;
 		}
 		else if (type === 'getFileData') {
