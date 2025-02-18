@@ -53,6 +53,8 @@ button {
 	outline-offset: 2px !important;
 	color: var(--vscode-button-foreground);
 	background: var(--vscode-button-background);
+	border: 1px solid var(--vscode-button-border, transparent);
+	border-radius: 2px;
 }
 
 button:hover {
@@ -77,12 +79,12 @@ input:not([type='checkbox']), textarea, select {
 	display: block;
   width: 100%;
 	max-width: 300px;
-	border: none;
 	font-family: var(--vscode-font-family);
 	padding: var(--input-padding-vertical) var(--input-padding-horizontal);
 	color: var(--vscode-input-foreground);
-	outline-color: var(--vscode-input-border);
+	border: 1px solid var(--vscode-input-border);
 	background-color: var(--vscode-input-background);
+	border-radius: 2px;
 }
 
 input::placeholder, textarea::placeholder {

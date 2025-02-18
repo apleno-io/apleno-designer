@@ -2,6 +2,29 @@ html, body {
 	height: 100%;
 }
 
+.flex-horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-vertical {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-child-grow {
+  flex: 1;
+}
+
+.flex-child-shrink {
+  flex: 0;
+}
+
+.button-list {
+
+}
+
 #ppro-editor {
   max-width: 900px;
   margin: 0 auto;
@@ -14,7 +37,11 @@ h2 {
 }
 
 .ppro-setting {
-  padding: 12px 0 18px;
+  padding: 12px 12px 18px;
+}
+
+.ppro-setting:hover {
+  background-color: var(--vscode-settings-rowHoverBackground);
 }
 
 label {
@@ -27,8 +54,4 @@ label {
 
 .ppro-setting-help {
   margin: 8px 0;
-}
-
-#drop-zone {
-  background-color: #600; width: 400px; height: 400px;
 }

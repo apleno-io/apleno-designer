@@ -315,14 +315,11 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 	 * Get the static HTML used for in our editor's webviews.
 	 */
 	private getHtmlForWebview(webview: vscode.Webview): string {
-		// Local path to script and css for the webview
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'ppro.js'));
 		const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'reset.css'));
 		const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'vscode.css'));
 		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'ppro.css'));
-
-		// Use a nonce to whitelist which scripts can be run
-		const nonce = getNonce();
+		const nonce = getNonce(); // Use a nonce to whitelist scripts
 
 		return `
 			<!DOCTYPE html>
@@ -346,28 +343,32 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 			</head>
 			<body>
 				<div id="ppro-editor">
-					<h2>Main Settings</h2>
+					<h2 class="ppro-setting">Main Settings</h2>
 
 					<div class="ppro-setting">
 						<label for="project-name">App Name</label>
+						<div class="ppro-setting-help">The app name that will be displayed in RPGM Client and Server.</div>
 						<input type="text" id="project-name" value="" />
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-author">Company Name or Author</label>
+						<div class="ppro-setting-help">The author or the company name.</div>
 						<input type="text" id="project-author" value="" />
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-description">App Description</label>
+						<div class="ppro-setting-help">A small description of the app purpose. Will be displayed in RPGM Client and Server.</div>
 						<input type="text" id="project-description" />
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-sequence">Starting Sequence</label>
-						<div class="row">
-								<div class="col-10"><input type="text" id="project-seq" value="" /></div>
-								<div class="col-2 col-padding-left"><button class="success fullwidth btn-form" id="project-btn-sequence">Browse</button></div>
+						<div class="ppro-setting-help">The starting sequence of your app.</div>
+						<div class="flex-horizontal">
+								<div class="flex-grow"><input type="text" id="project-seq" value="" /></div>
+								<div class="flex-shrink"><button data-role="select-sequence">Browse</button></div>
 						</div>
 					</div>
 
@@ -382,37 +383,40 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 
 					<div class="ppro-setting">
 						<label for="project-outputfolder">Output Folder Name</label>
-						<div class="ppro-setting-help">Name of the sub-directory for generated files during execution. If empty, a random string will be used.</div>
-						<div class="ppro-setting-help">Special values can be used: {{name}} for the name of the program, {{datetime}} for the current date and time.</div>
+						<div class="ppro-setting-help">Name of the sub-directory for generated files during execution. If empty, a random string will be used. Special values can be used: {{name}} for the name of the program, {{datetime}} for the current date and time.</div>
 						<input type="text" id="project-outputfolder" value="" />
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-customFiles">Custom JS/CSS Files</label>
 						<div class="ppro-setting-help">One file per line, with its relative path to the root folder of the project. The JS and CSS files will be loaded and executed with the app.</div>
-						<textarea id="project-customFiles"></textarea>
+						<!--<textarea id="project-customFiles"></textarea>-->
+						<div id="project-customFiles"></div>
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-console">Allow user to access languages consoles</label>
+						<div class="ppro-setting-help">Determine if the end-user can access and enter commands in the R or Python console.</div>
 						<select id="project-console">
 								<option value="enabled">Allow</option>
 								<option value="disabled">Disallow</option>
 						</select>
 					</div>
 
-					<h2>Design</h2>
+					<h2 class="ppro-setting">Design Settings</h2>
 
 					<div class="ppro-setting">
 						<label for="project-logo">Top menu logo</label>
-						<div class="row">
-								<div class="col-10"><input type="text" id="project-logo" value="" /></div>
-								<div class="col-2 col-padding-left"><button class="success fullwidth btn-form" id="project-btn-logo">Browser</button></div>
+						<div class="ppro-setting-help">The image shown on top of the steps list.</div>
+						<div class="flex-horizontal">
+								<div class="flex-grow"><input type="text" id="project-logo" value="" /></div>
+								<div class="flex-shrink"><button data-role="select-logo">Browse</button></div>
 						</div>
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-steps">Show steps list</label>
+						<div class="ppro-setting-help">Determine if the steps list on the right will be visible or hidden.</div>
 						<select id="project-steps">
 								<option value="sidebar">Show</option>
 								<option value="hide">Hide</option>
@@ -420,55 +424,10 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 					</div>
 				</div>
 
-				<div id="drop-zone">
-					<p>Drag one or more files to this <i>drop zone</i>.</p>
-				</div>
-				
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
 	}
-
-	/*async provideDocumentDropEdits(_document: vscode.TextDocument, _position: vscode.Position, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<vscode.DocumentDropEdit | undefined> {
-		console.log('YO')
-		// Check the data transfer to see if we have dropped a list of uris
-		const dataTransferItem = dataTransfer.get('text/uri-list');
-		if (!dataTransferItem) {
-			return undefined;
-		}
-
-		// 'text/uri-list' contains a list of uris separated by new lines.
-		// Parse this to an array of uris.
-		const urlList = await dataTransferItem.asString();
-		if (token.isCancellationRequested) {
-			return undefined;
-		}
-
-		const uris: vscode.Uri[] = [];
-		for (const resource of urlList.split('\n')) {
-			try {
-				uris.push(vscode.Uri.parse(resource));
-			} catch {
-				// noop
-			}
-		}
-
-		if (!uris.length) {
-			return undefined;
-		}
-
-		const snippet = new vscode.SnippetString();
-		uris.forEach((uri, index) => {
-			snippet.appendText(`${index + 1}. ${uri.path}`);
-			snippet.appendTabstop();
-
-			if (index <= uris.length - 1 && uris.length > 1) {
-				snippet.appendText('\n');
-			}
-		});
-
-		return new vscode.DocumentDropEdit(snippet);
-	}*/
 
 	private _requestId = 1;
 	private readonly _callbacks = new Map<number, (response: any) => void>();
