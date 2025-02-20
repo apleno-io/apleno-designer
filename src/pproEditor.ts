@@ -31,9 +31,13 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 		}
 		const readData: Uint8Array = await vscode.workspace.fs.readFile(uri);
 		try {
-			return ProjectFileUtils.sanitize(JSON.parse(Buffer.from(readData).toString('utf8')));
+			const content = Buffer.from(readData).toString('utf8');
+			if(content.trim().length === 0) {
+				return ProjectFileUtils.sanitize({});
+			}
+			return ProjectFileUtils.sanitize(JSON.parse(content));
 		} catch (e) {
-			console.error(e);
+			vscode.window.showErrorMessage('Could not load the project file. It is not a valid JSON file.');
 			return ProjectFileUtils.sanitize({});
 		}
 	}
@@ -460,6 +464,12 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 							<option value="hidden">Hide</option>
 							<option value="shown">Show</option>
 						</select>
+					</div>
+
+					<div class="ppro-setting">
+						<label for="project-css">Custom CSS</label>
+						<div class="ppro-setting-help">Custom CSS. <span class="warning">This is deprecated, please put your CSS code in a .css file and import it with a custom file entry above.</span></div>
+						<textarea id="project-css" row="15"></textarea>
 					</div>
 				</div>
 

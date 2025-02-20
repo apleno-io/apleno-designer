@@ -28,7 +28,7 @@ body {
 
 #ppro-editor {
   max-width: 900px;
-  margin: 0 auto;
+  margin: 0 auto 50px;
 }
 
 h2 {
@@ -63,4 +63,15 @@ label {
 
 .customfiles-entry {
   padding-bottom: 4px;
+}
+
+.warning {
+  color: var(--vscode-editorWarning-foreground);
+}
+
+#project-css {
+  width: 100%;
+  max-width: none;
+  height: 300px;
+  font-family: var(--vscode-editor-font-family);
 }

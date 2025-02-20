@@ -150,8 +150,8 @@ class PProEditor extends EventTarget {
 		this.setFormValue('#project-icon', state.icon);
 		this.setFormValue('#project-logo', state.sidebarLogo);
 		this.setFormValue('#project-steps', state.stepListType);
+		this.setFormValue('#project-css', state.customCSSLightCode);
 		// TODO: Changelog
-		// TODO: CSS
 	}
 
 	getState() {
@@ -165,10 +165,10 @@ class PProEditor extends EventTarget {
 			defaultWorkingDirectory: this.getFormValue('#project-wd'),
 			outputFolderName: this.getFormValue('#project-outputfolder'),
 			sidebarLogo: this.getFormValue('#project-logo'),
-			customCSSLightCode: '', //this.getFormValue('#project-css'),
-			customCSSDarkCode: '', //this.getFormValue('#project-css'),
-			customCSSLightFile: '', //this.getFormValue('#project-css'),
-			customCSSDarkFile: '', //this.getFormValue('#project-css'),
+			customCSSLightCode: this.getFormValue('#project-css'),
+			customCSSDarkCode: this.getFormValue('#project-css'),
+			customCSSLightFile: this.getFormValue('#project-css'),
+			customCSSDarkFile: this.getFormValue('#project-css'),
 			customFiles: this.customFilesEditor.getState(),
 			stepListType: this.getFormValue('#project-steps'),
 			consoleAccess: this.getFormValue('#project-console'),
