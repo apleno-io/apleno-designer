@@ -28,6 +28,16 @@
         "command": "pgm.ppro.new",
         "title": "Create new PGM Project file"
       }
+    ],
+    "languages": [
+      {
+        "id": "ppro",
+        "extensions": [".ppro"],
+        "icon": {
+          "light": "./icons/ppro.svg",
+          "dark": "./icons/ppro.svg"
+        }
+      }
     ]
   },
   "scripts": {

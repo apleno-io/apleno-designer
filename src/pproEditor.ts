@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from './dispose';
 import { getNonce } from './util';
-import { normalizeProject, ProjectFile } from './normalizers/normalizeProject';
+import { ProjectFile, ProjectFileUtils } from './normalizers/normalizeProject';
 
 /**
  * Define the type of edits used in ppro files.
@@ -27,14 +27,14 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 
 	private static async readFile(uri: vscode.Uri): Promise<ProjectFile> {
 		if (uri.scheme === 'untitled') {
-			return normalizeProject({});
+			return ProjectFileUtils.sanitize({});
 		}
 		const readData: Uint8Array = await vscode.workspace.fs.readFile(uri);
 		try {
-			return normalizeProject(JSON.parse(Buffer.from(readData).toString('utf8')));
+			return ProjectFileUtils.sanitize(JSON.parse(Buffer.from(readData).toString('utf8')));
 		} catch (e) {
 			console.error(e);
-			return normalizeProject({});
+			return ProjectFileUtils.sanitize({});
 		}
 	}
 
@@ -272,7 +272,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 		webviewPanel.webview.onDidReceiveMessage(e => this.onMessage(document, e));
 
 		// Wait for the webview to be properly ready before we init
-		webviewPanel.webview.onDidReceiveMessage(e => {
+		webviewPanel.webview.onDidReceiveMessage(async e => {
 			if (e.type === 'ready') {
 				if (document.uri.scheme === 'untitled') {
 					this.postMessage(webviewPanel, 'init', {
@@ -285,6 +285,37 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						value: document.documentData,
 						editable
 					});
+				}
+			}
+			else if(e.type === 'select-sequence') {
+				const res = await vscode.window.showOpenDialog({
+					canSelectFiles: true,
+					canSelectFolders: false,
+					canSelectMany: false,
+					title: 'Select the starting sequence file',
+					openLabel: 'Select',
+					filters: {
+						'PGM Sequence files': ['pseq']
+					}
+				});
+				if(Array.isArray(res) && res.length > 0){
+					console.log(res[0]);
+					this.postMessage(webviewPanel, 'select-sequence', vscode.workspace.asRelativePath(res[0].path));
+				}
+			}
+			else if(e.type === 'select-logo' || e.type === 'select-icon') {
+				const res = await vscode.window.showOpenDialog({
+					canSelectFiles: true,
+					canSelectFolders: false,
+					canSelectMany: false,
+					title: 'Select the app  file',
+					openLabel: 'Select',
+					filters: {
+						'Images': ['jpg', 'png', 'gif', 'jpeg']
+					}
+				});
+				if(Array.isArray(res) && res.length > 0){
+					this.postMessage(webviewPanel, e.type, vscode.workspace.asRelativePath(res[0].path));
 				}
 			}
 		});
@@ -367,8 +398,8 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						<label for="project-sequence">Starting Sequence</label>
 						<div class="ppro-setting-help">The starting sequence of your app.</div>
 						<div class="flex-horizontal">
-								<div class="flex-grow"><input type="text" id="project-seq" value="" /></div>
-								<div class="flex-shrink"><button data-role="select-sequence">Browse</button></div>
+							<div class="flex-grow"><input type="text" id="project-sequence" value="" /></div>
+							<div class="flex-shrink flex-margin-left"><button data-role="select-sequence">Browse...</button></div>
 						</div>
 					</div>
 
@@ -376,7 +407,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						<label for="project-wd">Languages Default Working Directory</label>
 						<div class="ppro-setting-help">This option is for the compatibility of RPGM 1 and 2 programs as the working directory was by default in the output folder.</div>
 						<select id="project-wd">
-							<option value="program">App folder</option>
+							<option value="app">App folder</option>
 							<option value="output">Output folder (RPGM 2 default)</option>
 						</select>
 					</div>
@@ -390,7 +421,6 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 					<div class="ppro-setting">
 						<label for="project-customFiles">Custom JS/CSS Files</label>
 						<div class="ppro-setting-help">One file per line, with its relative path to the root folder of the project. The JS and CSS files will be loaded and executed with the app.</div>
-						<!--<textarea id="project-customFiles"></textarea>-->
 						<div id="project-customFiles"></div>
 					</div>
 
@@ -398,19 +428,28 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						<label for="project-console">Allow user to access languages consoles</label>
 						<div class="ppro-setting-help">Determine if the end-user can access and enter commands in the R or Python console.</div>
 						<select id="project-console">
-								<option value="enabled">Allow</option>
-								<option value="disabled">Disallow</option>
+							<option value="enabled">Allow</option>
+							<option value="disabled">Disallow</option>
 						</select>
 					</div>
 
 					<h2 class="ppro-setting">Design Settings</h2>
 
 					<div class="ppro-setting">
+						<label for="project-icon">App Icon</label>
+						<div class="ppro-setting-help">Icon shown in RPGM Client and Server in the app listing.</div>
+						<div class="flex-horizontal">
+							<div class="flex-grow"><input type="text" id="project-icon" value="" /></div>
+							<div class="flex-shrink flex-margin-left"><button data-role="select-icon">Browse...</button></div>
+						</div>
+					</div>
+
+					<div class="ppro-setting">
 						<label for="project-logo">Top menu logo</label>
 						<div class="ppro-setting-help">The image shown on top of the steps list.</div>
 						<div class="flex-horizontal">
-								<div class="flex-grow"><input type="text" id="project-logo" value="" /></div>
-								<div class="flex-shrink"><button data-role="select-logo">Browse</button></div>
+							<div class="flex-grow"><input type="text" id="project-logo" value="" /></div>
+							<div class="flex-shrink flex-margin-left"><button data-role="select-logo">Browse...</button></div>
 						</div>
 					</div>
 
@@ -418,8 +457,8 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						<label for="project-steps">Show steps list</label>
 						<div class="ppro-setting-help">Determine if the steps list on the right will be visible or hidden.</div>
 						<select id="project-steps">
-								<option value="sidebar">Show</option>
-								<option value="hide">Hide</option>
+							<option value="hidden">Hide</option>
+							<option value="shown">Show</option>
 						</select>
 					</div>
 				</div>
@@ -443,18 +482,15 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 		panel.webview.postMessage({ type, body });
 	}
 
-	private onMessage(document: PGMProDocument, message: any) {
-		switch (message.type) {
-			case 'edit':
+	private async onMessage(document: PGMProDocument, message: any) {
+		if(message.type === 'edit') {
 				document.makeEdit(message.edit as PGMProDocumentEdit);
 				return;
-
-			case 'response':
-				{
-					const callback = this._callbacks.get(message.requestId);
-					callback?.(message.body);
-					return;
-				}
+		}
+		else if(message.type === 'response') {
+			const callback = this._callbacks.get(message.requestId);
+			callback?.(message.body);
+			return;
 		}
 	}
 }

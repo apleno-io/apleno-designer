@@ -34,12 +34,12 @@ class CustomFilesEditor extends EventTarget {
 		this.parent.addEventListener('click', this.onClick);
 		setTimeout(() => {
 			this.setState(files);
-			this.render();
 		}, 0);
 	}
 
 	setState(state) {
 		this.files = state;
+		this.render();
 	}
 
 	getState() {
@@ -122,7 +122,7 @@ class CustomFilesEditor extends EventTarget {
 		}
 	}
 
-	onChange(){
+	onChange() {
 		this.readFromInputs();
 	}
 }
@@ -130,9 +130,11 @@ class CustomFilesEditor extends EventTarget {
 class PProEditor extends EventTarget {
 	constructor() {
 		super();
+		this.onClick = this.onClick.bind(this);
 		this.onChange = this.onChange.bind(this);
 		this.customFilesEditor = new CustomFilesEditor(document.body.querySelector('#project-customFiles'), []);
 		this.customFilesEditor.addEventListener('change', this.onChange);
+		document.body.querySelector('#ppro-editor').addEventListener('click', this.onClick);
 		document.body.querySelectorAll('input, select').forEach(el => el.addEventListener('change', this.onChange));
 	}
 
@@ -145,6 +147,7 @@ class PProEditor extends EventTarget {
 		this.setFormValue('#project-outputfolder', state.outputFolderName);
 		this.customFilesEditor.setState(state.customFiles);
 		this.setFormValue('#project-console', state.consoleAccess);
+		this.setFormValue('#project-icon', state.icon);
 		this.setFormValue('#project-logo', state.sidebarLogo);
 		this.setFormValue('#project-steps', state.stepListType);
 		// TODO: Changelog
@@ -157,17 +160,17 @@ class PProEditor extends EventTarget {
 			company: this.getFormValue('#project-author'),
 			description: this.getFormValue('#project-description'),
 			changelog: [],//this.getFormValue('#project-author'),
-			icon: '',
+			icon: this.getFormValue('#project-icon'),
 			sequenceStart: this.getFormValue('#project-sequence'),
 			defaultWorkingDirectory: this.getFormValue('#project-wd'),
 			outputFolderName: this.getFormValue('#project-outputfolder'),
-			sidebarLogo: this.getFormValue('#project-sidebarLogo'),
+			sidebarLogo: this.getFormValue('#project-logo'),
 			customCSSLightCode: '', //this.getFormValue('#project-css'),
 			customCSSDarkCode: '', //this.getFormValue('#project-css'),
 			customCSSLightFile: '', //this.getFormValue('#project-css'),
 			customCSSDarkFile: '', //this.getFormValue('#project-css'),
 			customFiles: this.customFilesEditor.getState(),
-			stepListType: this.getFormValue('#project-stepListType'),
+			stepListType: this.getFormValue('#project-steps'),
 			consoleAccess: this.getFormValue('#project-console'),
 			dateCreated: null
 		};
@@ -188,8 +191,39 @@ class PProEditor extends EventTarget {
 		}
 	}
 
-	onChange(){
+	selectSequenceCallback(url){
+		document.querySelector('#project-sequence').value = url;
+	}
+
+	selectIconCallback(url){
+		document.querySelector('#project-icon').value = url;
+	}
+
+	selectLogoCallback(url){
+		document.querySelector('#project-logo').value = url;
+	}
+
+	onChange() {
 		this.dispatchEvent(new CustomEvent('change'));
+	}
+
+	onClick(e) {
+		const button = e.target.closest('button');
+		if (button) {
+			const role = button.dataset.role;
+			if (role === 'select-icon') {
+				this.dispatchEvent(new CustomEvent('select-icon'));
+				return;
+			}
+			else if (role === 'select-logo') {
+				this.dispatchEvent(new CustomEvent('select-logo'));
+				return;
+			}
+			else if (role === 'select-sequence') {
+				this.dispatchEvent(new CustomEvent('select-sequence'));
+				return;
+			}
+		}
 	}
 }
 
@@ -198,7 +232,16 @@ class PProEditor extends EventTarget {
 	const vscode = acquireVsCodeApi();
 	const editor = new PProEditor();
 	editor.addEventListener('change', () => {
-		vscode.postMessage({ type: 'edit', edit: {state: editor.getState() }});
+		vscode.postMessage({ type: 'edit', edit: { state: editor.getState() } });
+	});
+	editor.addEventListener('select-icon', () => {
+		vscode.postMessage({ type: 'select-icon' });
+	});
+	editor.addEventListener('select-logo', () => {
+		vscode.postMessage({ type: 'select-logo' });
+	});
+	editor.addEventListener('select-sequence', () => {
+		vscode.postMessage({ type: 'select-sequence' });
 	});
 
 	window.addEventListener('message', async e => {
@@ -207,14 +250,25 @@ class PProEditor extends EventTarget {
 			editor.setState(body.untitled ? {} : body.value);
 		}
 		else if (type === 'update') {
-			console.log(body);
-			if(body.edits.length > 0){
-				editor.setState(body.edits[body.edits.length-1].state);
+			if (body.edits.length > 0) {
+				editor.setState(body.edits[body.edits.length - 1].state);
 			}
 			return;
 		}
 		else if (type === 'getFileData') {
 			vscode.postMessage({ type: 'response', requestId, body: editor.getState() });
+			return;
+		}
+		else if (type === 'select-sequence') {
+			editor.selectSequenceCallback(body);
+			return;
+		}
+		else if (type === 'select-logo') {
+			editor.selectLogoCallback(body);
+			return;
+		}
+		else if (type === 'select-icon') {
+			editor.selectIconCallback(body);
 			return;
 		}
 	});
