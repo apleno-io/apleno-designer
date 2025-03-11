@@ -113,3 +113,8 @@ input:not([type='checkbox']), textarea, select {
 input::placeholder, textarea::placeholder {
 	color: var(--vscode-input-placeholderForeground);
 }
+
+.input-large {
+	max-width: none !important;
+	width: 100%;
+}

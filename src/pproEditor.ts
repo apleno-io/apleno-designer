@@ -471,6 +471,14 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						<div class="ppro-setting-help">Custom CSS. <span class="warning">This is deprecated, please put your CSS code in a .css file and import it with a custom file entry above.</span></div>
 						<textarea id="project-css" row="15"></textarea>
 					</div>
+
+					<h2 class="ppro-setting">Changelog</h2>
+
+					<div class="ppro-setting">
+						<label for="project-changelog">Changelog</label>
+						<div class="ppro-setting-help">List of changes made to the project.</div>
+						<div id="project-changelog"></div>
+					</div>
 				</div>
 
 				<script nonce="${nonce}" src="${scriptUri}"></script>
