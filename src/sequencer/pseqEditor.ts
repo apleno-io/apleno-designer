@@ -1,56 +1,85 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { ProjectFile, ProjectFileUtils } from './normalizers/normalizeProject';
+import { SequenceFile, SequenceFileUtils } from '../normalizers/normalizeSequence';
 
 /**
- * Define the type of edits used in ppro files.
+ * Define the type of edits used in pseq files.
  */
-interface PGMProDocumentEdit {
-  readonly state: ProjectFile;
+interface PGMSequenceDocumentEdit {
+  readonly state: SequenceFile;
 }
 
-interface PGMProDocumentDelegate {
+interface PGMSequenceDocumentDelegate {
   getFileData(): Promise<Uint8Array>;
 }
 
 /**
- * Define the document (the data model) used in ppro files.
+ * Define the document (the data model) used in pseq files.
  */
-class PGMProDocument extends Disposable implements vscode.CustomDocument {
-  static async create(uri: vscode.Uri, backupId: string | undefined, delegate: PGMProDocumentDelegate): Promise<PGMProDocument | PromiseLike<PGMProDocument>> {
+class PGMSequenceDocument extends Disposable implements vscode.CustomDocument {
+  static async create(uri: vscode.Uri, backupId: string | undefined, delegate: PGMSequenceDocumentDelegate): Promise<PGMSequenceDocument | PromiseLike<PGMSequenceDocument>> {
     // If we have a backup, read that. Otherwise read the resource from the workspace
     const dataFile = typeof backupId === 'string' ? vscode.Uri.parse(backupId) : uri;
-    const fileData = await PGMProDocument.readFile(dataFile);
-    return new PGMProDocument(uri, fileData, delegate);
+    const fileData = await PGMSequenceDocument.readFile(dataFile);
+    return new PGMSequenceDocument(uri, fileData, delegate);
   }
 
-  private static async readFile(uri: vscode.Uri): Promise<ProjectFile> {
+  private static async readFile(uri: vscode.Uri): Promise<SequenceFile> {
+    const defaultFile = {
+      _version: 4,
+      cameraX: 0,
+      cameraY: 0,
+      cameraZoom: 1,
+      steps: []
+    };
+
     if (uri.scheme === 'untitled') {
-      return ProjectFileUtils.sanitize({});
+      return defaultFile;
     }
-    const readData: Uint8Array = await vscode.workspace.fs.readFile(uri);
+
+    let content = null;
     try {
-      const content = Buffer.from(readData).toString('utf8');
-      if(content.trim().length === 0) {
-        return ProjectFileUtils.sanitize({});
-      }
-      return ProjectFileUtils.sanitize(JSON.parse(content));
+      const readData: Uint8Array = await vscode.workspace.fs.readFile(uri);
+      content = Buffer.from(readData).toString('utf8');
     } catch (e) {
-      vscode.window.showErrorMessage('Could not load the project file. It is not a valid JSON file.');
-      return ProjectFileUtils.sanitize({});
+      vscode.window.showErrorMessage('Could not load the sequence file.');
+      return defaultFile;
+    }
+
+    if (content.trim().length === 0) {
+      return defaultFile;
+    }
+
+    let JSONContent = null;
+    try {
+      JSONContent = JSON.parse(content);
+    } catch (e) {
+      vscode.window.showErrorMessage('Could not load the sequence file. It is not a valid JSON file.');
+      return defaultFile;
+    }
+
+    try {
+      const sanitized: SequenceFile | null = SequenceFileUtils.sanitize(JSONContent);
+      if (sanitized === null) {
+        return defaultFile;
+      }
+      return sanitized;
+    } catch (e: any) {
+      vscode.window.showErrorMessage(`Could not load the sequence file: ${e.message}`);
+      return defaultFile;
     }
   }
 
   private readonly _uri: vscode.Uri;
 
-  private _documentData: ProjectFile;
-  private _edits: PGMProDocumentEdit[] = [];
-  private _savedEdits: PGMProDocumentEdit[] = [];
+  private _documentData: SequenceFile;
+  private _edits: PGMSequenceDocumentEdit[] = [];
+  private _savedEdits: PGMSequenceDocumentEdit[] = [];
 
-  private readonly _delegate: PGMProDocumentDelegate;
+  private readonly _delegate: PGMSequenceDocumentDelegate;
 
-  private constructor(uri: vscode.Uri, initialContent: ProjectFile, delegate: PGMProDocumentDelegate) {
+  private constructor(uri: vscode.Uri, initialContent: SequenceFile, delegate: PGMSequenceDocumentDelegate) {
     super();
     this._uri = uri;
     this._documentData = initialContent;
@@ -61,7 +90,7 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
     return this._uri;
   }
 
-  public get documentData(): ProjectFile {
+  public get documentData(): SequenceFile {
     return this._documentData;
   }
 
@@ -73,8 +102,8 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
   public readonly onDidDispose = this._onDidDispose.event;
 
   private readonly _onDidChangeDocument = this._register(new vscode.EventEmitter<{
-    readonly content?: ProjectFile;
-    readonly edits: readonly PGMProDocumentEdit[];
+    readonly content?: SequenceFile;
+    readonly edits: readonly PGMSequenceDocumentEdit[];
   }>());
 
   /**
@@ -110,7 +139,7 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
    *
    * This fires an event to notify VS Code that the document has been edited.
    */
-  makeEdit(edit: PGMProDocumentEdit) {
+  makeEdit(edit: PGMSequenceDocumentEdit) {
     this._edits.push(edit);
 
     this._onDidChange.fire({
@@ -153,7 +182,7 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
    * Called by VS Code when the user calls `revert` on a document.
    */
   async revert(_cancellation: vscode.CancellationToken): Promise<void> {
-    const diskContent = await PGMProDocument.readFile(this.uri);
+    const diskContent = await PGMSequenceDocument.readFile(this.uri);
     this._documentData = diskContent;
     this._edits = this._savedEdits;
     this._onDidChangeDocument.fire({
@@ -185,27 +214,27 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 
 /**
  */
-export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider<PGMProDocument>/*, vscode.DocumentDropEditProvider*/ {
+export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvider<PGMSequenceDocument>/*, vscode.DocumentDropEditProvider*/ {
 
   private static newFileId = 1;
 
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
-    vscode.commands.registerCommand('pgm.ppro.new', () => {
+    vscode.commands.registerCommand('pgm.pseq.new', () => {
       const workspaceFolders = vscode.workspace.workspaceFolders;
       if (!workspaceFolders) {
-        vscode.window.showErrorMessage("Creating new PGM Project file currently requires opening a workspace");
+        vscode.window.showErrorMessage("Creating new PGM sequence file currently requires opening a workspace");
         return;
       }
 
-      const uri = vscode.Uri.joinPath(workspaceFolders[0].uri, `new-${PGMProjectFileEditorProvider.newFileId++}.ppro`)
+      const uri = vscode.Uri.joinPath(workspaceFolders[0].uri, `new-${PGMSequenceFileEditorProvider.newFileId++}.pseq`)
         .with({ scheme: 'untitled' });
 
-      vscode.commands.executeCommand('vscode.openWith', uri, PGMProjectFileEditorProvider.viewType);
+      vscode.commands.executeCommand('vscode.openWith', uri, PGMSequenceFileEditorProvider.viewType);
     });
 
     return vscode.window.registerCustomEditorProvider(
-      PGMProjectFileEditorProvider.viewType,
-      new PGMProjectFileEditorProvider(context),
+      PGMSequenceFileEditorProvider.viewType,
+      new PGMSequenceFileEditorProvider(context),
       {
         webviewOptions: {
           retainContextWhenHidden: true, // Keeps the webview alive when not visible, should be set to false
@@ -214,7 +243,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
       });
   }
 
-  private static readonly viewType = 'pgm.ppro';
+  private static readonly viewType = 'pgm.pseq';
 
   /**
    * Tracks all known webviews
@@ -227,15 +256,15 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 
   //#region CustomEditorProvider
 
-  async openCustomDocument(uri: vscode.Uri, openContext: { backupId?: string }, _token: vscode.CancellationToken): Promise<PGMProDocument> {
-    const document: PGMProDocument = await PGMProDocument.create(uri, openContext.backupId, {
+  async openCustomDocument(uri: vscode.Uri, openContext: { backupId?: string }, _token: vscode.CancellationToken): Promise<PGMSequenceDocument> {
+    const document: PGMSequenceDocument = await PGMSequenceDocument.create(uri, openContext.backupId, {
       getFileData: async () => {
         const webviewsForDocument = Array.from(this.webviews.get(document.uri));
         if (!webviewsForDocument.length) {
           throw new Error('Could not find webview to save for');
         }
         const panel = webviewsForDocument[0];
-        const response = await this.postMessageWithResponse<ProjectFile>(panel, 'getFileData', {});
+        const response = await this.postMessageWithResponse<SequenceFile>(panel, 'getFileData', {});
 
         return Buffer.from(JSON.stringify(response, null, '\t'), 'utf8');
       }
@@ -266,7 +295,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
     return document;
   }
 
-  async resolveCustomEditor(document: PGMProDocument, webviewPanel: vscode.WebviewPanel, _token: vscode.CancellationToken): Promise<void> {
+  async resolveCustomEditor(document: PGMSequenceDocument, webviewPanel: vscode.WebviewPanel, _token: vscode.CancellationToken): Promise<void> {
     // Add the webview to our internal set of active webviews
     this.webviews.add(document.uri, webviewPanel);
 
@@ -291,56 +320,41 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
           });
         }
       }
-      else if(e.type === 'select-sequence') {
+      else if (e.type === 'select-file') {
         const res = await vscode.window.showOpenDialog({
           canSelectFiles: true,
           canSelectFolders: false,
           canSelectMany: false,
-          title: 'Select the starting sequence file',
+          title: 'Select a file',
           openLabel: 'Select',
           filters: {
-            'PGM Sequence files': ['pseq']
+            'Any file': ['*']
           }
         });
-        if(Array.isArray(res) && res.length > 0){
+        if (Array.isArray(res) && res.length > 0) {
           console.log(res[0]);
-          this.postMessage(webviewPanel, 'select-sequence', vscode.workspace.asRelativePath(res[0].path));
-        }
-      }
-      else if(e.type === 'select-logo' || e.type === 'select-icon') {
-        const res = await vscode.window.showOpenDialog({
-          canSelectFiles: true,
-          canSelectFolders: false,
-          canSelectMany: false,
-          title: 'Select the app  file',
-          openLabel: 'Select',
-          filters: {
-            'Images': ['jpg', 'png', 'gif', 'jpeg']
-          }
-        });
-        if(Array.isArray(res) && res.length > 0){
-          this.postMessage(webviewPanel, e.type, vscode.workspace.asRelativePath(res[0].path));
+          this.postMessage(webviewPanel, 'select-file', vscode.workspace.asRelativePath(res[0].path));
         }
       }
     });
   }
 
-  private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<PGMProDocument>>();
+  private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<PGMSequenceDocument>>();
   public readonly onDidChangeCustomDocument = this._onDidChangeCustomDocument.event;
 
-  public saveCustomDocument(document: PGMProDocument, cancellation: vscode.CancellationToken): Thenable<void> {
+  public saveCustomDocument(document: PGMSequenceDocument, cancellation: vscode.CancellationToken): Thenable<void> {
     return document.save(cancellation);
   }
 
-  public saveCustomDocumentAs(document: PGMProDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Thenable<void> {
+  public saveCustomDocumentAs(document: PGMSequenceDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Thenable<void> {
     return document.saveAs(destination, cancellation);
   }
 
-  public revertCustomDocument(document: PGMProDocument, cancellation: vscode.CancellationToken): Thenable<void> {
+  public revertCustomDocument(document: PGMSequenceDocument, cancellation: vscode.CancellationToken): Thenable<void> {
     return document.revert(cancellation);
   }
 
-  public backupCustomDocument(document: PGMProDocument, context: vscode.CustomDocumentBackupContext, cancellation: vscode.CancellationToken): Thenable<vscode.CustomDocumentBackup> {
+  public backupCustomDocument(document: PGMSequenceDocument, context: vscode.CustomDocumentBackupContext, cancellation: vscode.CancellationToken): Thenable<vscode.CustomDocumentBackup> {
     return document.backup(context.destination, cancellation);
   }
 
@@ -350,10 +364,10 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
    * Get the static HTML used for in our editor's webviews.
    */
   private getHtmlForWebview(webview: vscode.Webview): string {
-    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'ppro.js'));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'pseq', 'pseq.js'));
     const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'reset.css'));
     const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'vscode.css'));
-    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'ppro.css'));
+    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'pseq', 'pseq.css'));
     const nonce = getNonce(); // Use a nonce to whitelist scripts
 
     return `
@@ -500,12 +514,12 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
     panel.webview.postMessage({ type, body });
   }
 
-  private async onMessage(document: PGMProDocument, message: any) {
-    if(message.type === 'edit') {
-        document.makeEdit(message.edit as PGMProDocumentEdit);
-        return;
+  private async onMessage(document: PGMSequenceDocument, message: any) {
+    if (message.type === 'edit') {
+      document.makeEdit(message.edit as PGMSequenceDocumentEdit);
+      return;
     }
-    else if(message.type === 'response') {
+    else if (message.type === 'response') {
       const callback = this._callbacks.get(message.requestId);
       callback?.(message.body);
       return;

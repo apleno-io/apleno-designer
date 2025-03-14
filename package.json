@@ -21,12 +21,25 @@
 						"filenamePattern": "*.ppro"
 					}
 				]
+			},
+      {
+				"viewType": "pgm.pseq",
+				"displayName": "PGM Sequence Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.pseq"
+					}
+				]
 			}
 		],
     "commands": [
       {
         "command": "pgm.ppro.new",
         "title": "Create new PGM Project file"
+      },
+      {
+        "command": "pgm.pseq.new",
+        "title": "Create new PGM Sequence file"
       }
     ],
     "languages": [
@@ -36,6 +49,14 @@
         "icon": {
           "light": "./icons/ppro.svg",
           "dark": "./icons/ppro.svg"
+        }
+      },
+      {
+        "id": "pseq",
+        "extensions": [".pseq"],
+        "icon": {
+          "light": "./icons/pseq.svg",
+          "dark": "./icons/pseq.svg"
         }
       }
     ]
