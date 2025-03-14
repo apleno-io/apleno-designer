@@ -392,7 +392,12 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
       </head>
       <body>
         <div id="pseq-editor">
-          hello
+          <canvas id="pseq-canvas"></canvas>
+        </div>
+        <div id="pseq-controls">
+          <div id="pseq-controls-checks">Checks</div>
+          <button data-role="center">Center</button>
+          <button data-role="help">Help</button>
         </div>
         <script nonce="${nonce}" src="${scriptUri}"></script>
       </body>

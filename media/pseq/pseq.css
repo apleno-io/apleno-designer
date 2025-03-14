@@ -1,0 +1,26 @@
+#pseq-editor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+  background-color: #3f0052;
+  padding: 0;
+  margin: 0;
+}
+
+#pseq-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #520012;
+}
+
+#pseq-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
