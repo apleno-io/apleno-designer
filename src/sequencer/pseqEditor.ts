@@ -398,6 +398,9 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
           <div id="pseq-controls-checks">Checks</div>
           <button data-role="center">Center</button>
           <button data-role="help">Help</button>
+          <div id="debug-1"></div>
+          <div id="debug-2"></div>
+          <div id="debug-3"></div>
         </div>
         <script nonce="${nonce}" src="${scriptUri}"></script>
       </body>
