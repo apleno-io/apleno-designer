@@ -1,10 +1,30 @@
 class SequenceEditor extends EventTarget {
   constructor() {
     super();
+    // Data
+    this.state = {
+      steps: [
+        {
+          id: 'test',
+          type: 'gui',
+          x: 0,
+          y: 0,
+          customId: 'superuid',
+          customName: 'My GUI',
+          parameters: {
+            file: 'first.pgui',
+            target: null
+          }
+        }
+      ]
+    };
+
+    // Pointers
     this.parent = document.getElementById("pseq-editor");
     this.canvas = document.getElementById("pseq-canvas");
     this.ctx = this.canvas.getContext("2d");
 
+    // Events
     document.getElementById('pseq-controls').addEventListener('click', this.onClickControls.bind(this));
     this.canvas.addEventListener('wheel', this.onMouseWheel.bind(this));
     this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
@@ -12,12 +32,31 @@ class SequenceEditor extends EventTarget {
     this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
     window.addEventListener('resize', this.resize.bind(this));
 
+    // Camera
     this.cameraZoom = 5;
     this.cameraZoomFactor = 1;
     this.cameraX = 0;
     this.cameraY = 0;
 
+    // Various editor state
     this.mouseState = 'idle'; // down, moveCamera
+    this.mouseStartX = 0;
+    this.mouseStartY = 0;
+    this.selectedStep = null;
+
+    // Get colors
+    this.colorGrid = window.getComputedStyle(document.body).getPropertyValue('--vscode-widget-border');
+    this.colorSteps = {
+      start: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
+      script: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-green'),
+      gui: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-blue'),
+      condition: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-yellow'),
+      sequence: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-orange'),
+      end: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red')
+    };
+    this.colorSelected = window.getComputedStyle(document.body).getPropertyValue('--vscode-foreground');
+
+    // Draw
     this.resize();
   }
 
@@ -63,8 +102,6 @@ class SequenceEditor extends EventTarget {
   }
 
   draw() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
     // Debug
     /*
     const center = this.screenToWorld(this.canvas.width * 0.5, this.canvas.height * 0.5);
@@ -75,56 +112,15 @@ class SequenceEditor extends EventTarget {
     document.getElementById('debug-4').innerText = `TOP L (world): ${Math.round(tl.x)}, ${Math.round(tl.y)}`;
     */
 
-    // Draw grid depending on zoom and camera position
-    /*const gridSpace = 50 * zoomFactor;
-    const verticalGrids = Math.ceil(this.canvas.width / gridSpace);
-    const horizontalGrids = Math.ceil(this.canvas.height / gridSpace);
-    this.ctx.strokeStyle = '#999';
-    this.ctx.lineWidth = 1;
-    this.ctx.beginPath();
-    for (let i = 0; i < verticalGrids; i++) {
-      this.ctx.moveTo(i * gridSpace + this.cameraX, 0 + this.cameraY);
-      this.ctx.lineTo(i * gridSpace + this.cameraX, this.canvas.height + this.cameraY);
-    }
-    for (let i = 0; i < horizontalGrids; i++) {
-      this.ctx.moveTo(0 + this.cameraX, i * gridSpace + this.cameraY);
-      this.ctx.lineTo(this.canvas.width + this.cameraX, i * gridSpace + this.cameraY);
-    }
-    this.ctx.stroke();*/
+    // Clear
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw major grid
-    this.drawGrid('#999', 1, 50);
-    this.drawGrid('#fff', 3, 250);
+    // Draw grids
+    this.drawGrid(this.colorGrid, 1, 50);
+    this.drawGrid(this.colorGrid, 3, 250);
 
-    // Draw blocks
-    const X = 0;
-    const Y = 0;
-    const WIDTH = 200;
-    const HEIGHT = 50;
-    this.ctx.fillStyle = "rgb(0 200 200)";
-    const coordStart = this.worldToScreen(X - Math.round(WIDTH * 0.5), Y - Math.round(HEIGHT * 0.5));
-    const coordEnd = this.worldToScreen(X + Math.round(WIDTH * 0.5), Y + Math.round(HEIGHT * 0.5));
-    this.ctx.fillRect(
-      coordStart.x,
-      coordStart.y,
-      coordEnd.x - coordStart.x,
-      coordEnd.y - coordStart.y
-    );
-
-    /*this.ctx.fillStyle = "rgb(200 0 200)";
-    this.ctx.fillRect(
-      (400 - Math.round(WIDTH * 0.5))*zoomFactor + (this.cameraX + this.canvas.width * 0.5),
-      (100 - Math.round(HEIGHT * 0.5))*zoomFactor + (this.cameraY + this.canvas.height * 0.5),
-      WIDTH*zoomFactor,
-      HEIGHT*zoomFactor
-    );
-
-    // Draw
-    this.ctx.fillStyle = "rgb(200 0 0)";
-    this.ctx.fillRect(this.canvas.width-100, this.canvas.height-100, 100, 100);
-
-    this.ctx.fillStyle = "rgb(0 0 200 / 50%)";
-    this.ctx.fillRect(0, 0, 100, 100);*/
+    // Steps
+    this.drawSteps();
   }
 
   drawGrid(color, width, spacing) {
@@ -151,30 +147,93 @@ class SequenceEditor extends EventTarget {
     this.ctx.stroke();
   }
 
+  drawSteps(){
+    this.state.steps.forEach(step => {
+      this.drawStep(step);
+    });
+  }
+
+  drawStep(step){
+    const coordStart = this.worldToScreen(step.x - 100, step.y - 25);
+    const coordEnd = this.worldToScreen(step.x + 100, step.y + 25);    
+    this.ctx.fillStyle = this.colorSteps[step.type];
+    this.ctx.fillRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
+
+    if(this.selectedStep === step.id){
+      this.ctx.strokeStyle = this.colorSelected;
+      this.ctx.lineWidth = 2;
+      this.ctx.strokeRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
+    }
+  }
+
+  /**
+   * Detect what is at world coordinate x/y. Can return {anchor: id} or {step: id}
+   */
+  detectElementOnPosition(x, y){
+    // 2: steps
+    for(let i = 0; i < this.state.steps.length; ++i){
+      const step = this.state.steps[i];
+      if(x >= step.x - 100 && x <= step.x + 100 && y >= step.y - 25 && y <= step.y + 25){
+        return {step: step.id};
+      }
+    }
+
+    // 3: nothing
+    return null;
+  }
+
+  /**
+   * Return the distance in pixels from the initial memorized click.
+   */
+  distanceFromInitialClick(x, y){
+    return Math.sqrt(Math.pow(this.mouseStartX-x, 2)+Math.pow(this.mouseStartY-y, 2));
+  }
+
   onMouseWheel(e) {
     this.setCameraZoom(this.cameraZoom + (e.deltaY * -0.01));
     this.draw();
   }
 
   onMouseDown(e) {
-    this.mouseState = 'down';
-  }
-
-  onMouseMove(e) {
-    if (this.mouseState === 'down') {
-      this.mouseState = 'moveCamera';
+    const worldClick = this.screenToWorld(e.offsetX, e.offsetY);
+    const element = this.detectElementOnPosition(worldClick.x, worldClick.y);
+    if(element !== null && 'step' in element){
+      this.selectedStep = element.step;
+      this.mouseState = 'step';
+      this.mouseStartX = e.offsetX;
+      this.mouseStartY = e.offsetY;
+      this.draw();
     }
-    if (this.mouseState === 'moveCamera') {
-      this.cameraX -= (e.movementX / this.cameraZoomFactor);
-      this.cameraY -= (e.movementY / this.cameraZoomFactor);
+    else if(element === null){
+      this.selectedStep = null;
+      this.mouseState = 'moveCamera';
       this.draw();
     }
   }
 
-  onMouseUp(e) {
-    if (this.mouseState === 'down' || this.mouseState === 'moveCamera') {
-      this.mouseState = 'idle';
+  onMouseMove(e) {
+    if (this.mouseState === 'step' && this.selectedStep !== null && this.distanceFromInitialClick(e.offsetX, e.offsetY) > 5) {
+      this.mouseState = 'moveStep';
     }
+    else if (this.mouseState === 'moveCamera') {
+      this.cameraX -= (e.movementX / this.cameraZoomFactor);
+      this.cameraY -= (e.movementY / this.cameraZoomFactor);
+      this.draw();
+    }
+    else if (this.selectedStep !== null && this.mouseState === 'moveStep') {
+      const step = this.state.steps.find(s => s.id === this.selectedStep);
+      if(!step){
+        return;
+      }
+      const newCoord = this.screenToWorld(e.offsetX, e.offsetY);
+      step.x = newCoord.x;
+      step.y = newCoord.y;
+      this.draw();
+    }
+  }
+
+  onMouseUp() {
+    this.mouseState = 'idle';
   }
 
   onClickControls(e) {
