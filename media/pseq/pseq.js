@@ -30,6 +30,7 @@ class SequenceEditor extends EventTarget {
     this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
     this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
     this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+    this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this));
     window.addEventListener('resize', this.resize.bind(this));
 
     // Camera
@@ -233,6 +234,10 @@ class SequenceEditor extends EventTarget {
   }
 
   onMouseUp() {
+    this.mouseState = 'idle';
+  }
+
+  onMouseLeave(){
     this.mouseState = 'idle';
   }
 
