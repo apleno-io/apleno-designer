@@ -1,9 +1,34 @@
+// emit
+// - didSelectStep
+// - wantMoveStep
+// - didMoveStep
+// - wantStartCreatingLink
+// - didCreatLink
+// - wantMoveLink
+// - didMoveLink
+// fc
+// - setState
+// - getState
+// - setSelectedStep
+// - setCameraZoom
+// - setCameraPosition
 class SequenceEditor extends EventTarget {
   constructor() {
     super();
     // Data
     this.state = {
       steps: [
+        {
+          id: 'start',
+          type: 'start',
+          x: -200,
+          y: -200,
+          customId: '',
+          customName: '',
+          parameters: {
+            target: 'test'
+          }
+        },
         {
           id: 'test',
           type: 'gui',
@@ -56,6 +81,8 @@ class SequenceEditor extends EventTarget {
       end: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red')
     };
     this.colorSelected = window.getComputedStyle(document.body).getPropertyValue('--vscode-foreground');
+    this.fontUI = window.getComputedStyle(document.body).getPropertyValue('--vscode-font-family');
+    this.fontColor = window.getComputedStyle(document.body).getPropertyValue('--vscode-foreground');
 
     // Draw
     this.resize();
@@ -122,6 +149,9 @@ class SequenceEditor extends EventTarget {
 
     // Steps
     this.drawSteps();
+
+    // Connections
+    this.drawConnections();
   }
 
   drawGrid(color, width, spacing) {
@@ -148,34 +178,98 @@ class SequenceEditor extends EventTarget {
     this.ctx.stroke();
   }
 
-  drawSteps(){
+  drawSteps() {
     this.state.steps.forEach(step => {
       this.drawStep(step);
     });
   }
 
-  drawStep(step){
+  drawStep(step) {
+    const coordCenter = this.worldToScreen(step.x, step.y);
     const coordStart = this.worldToScreen(step.x - 100, step.y - 25);
-    const coordEnd = this.worldToScreen(step.x + 100, step.y + 25);    
+    const coordEnd = this.worldToScreen(step.x + 100, step.y + 25);
     this.ctx.fillStyle = this.colorSteps[step.type];
     this.ctx.fillRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
 
-    if(this.selectedStep === step.id){
+    // Name
+    if (step.type === 'start') {
+      this.ctx.fillStyle = this.fontColor;
+      this.ctx.font = `${20 * this.cameraZoomFactor}px ${this.fontUI}`;
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      this.ctx.fillText('Start', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+    }
+    else if (step.type === 'gui') {
+      this.ctx.fillStyle = this.fontColor;
+      this.ctx.font = `${20 * this.cameraZoomFactor}px ${this.fontUI}`;
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+    }
+
+    // Points
+    if (step.type === 'start') {
+      this.drawHandle(coordCenter.x, coordEnd.y);
+    }
+    else if (step.type === 'gui') {
+      this.drawHandle(coordCenter.x, coordStart.y);
+      this.drawHandle(coordCenter.x, coordEnd.y);
+    }
+
+    // Extra labels (false/true)
+
+    if (this.selectedStep === step.id) {
       this.ctx.strokeStyle = this.colorSelected;
       this.ctx.lineWidth = 2;
       this.ctx.strokeRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
     }
   }
 
+  drawHandle(screenX, screenY) {
+    this.ctx.fillStyle = this.fontColor;
+    this.ctx.beginPath();
+    this.ctx.arc(screenX, screenY, 20 * this.cameraZoomFactor, 0, 2 * Math.PI);
+    this.ctx.fill();
+  }
+
+  drawConnection(coordStartScreen, coordEndScreen) {
+    this.ctx.fillStyle = this.fontColor;
+    this.ctx.beginPath();
+    this.ctx.moveTo(coordStartScreen.x, coordStartScreen.y);
+
+    const dx = coordEndScreen.x - coordStartScreen.x;
+    const dy = coordEndScreen.y - coordStartScreen.y;
+
+    let cx1, cy1, cx2, cy2;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      const offset = dx / 2;
+      cx1 = x1 + offset;
+      cy1 = y1;
+      cx2 = x2 - offset;
+      cy2 = y2;
+    } else {
+      const offset = dy / 2;
+      cx1 = x1;
+      cy1 = y1 + offset;
+      cx2 = x2;
+      cy2 = y2 - offset;
+    }
+
+    this.ctx.bezierCurveTo(
+      cx1, cy1, cx2, cy2,
+      coordEndScreen.x, coordEndScreen.y);
+    this.ctx.stroke();
+  }
+
   /**
    * Detect what is at world coordinate x/y. Can return {anchor: id} or {step: id}
    */
-  detectElementOnPosition(x, y){
+  detectElementOnPosition(x, y) {
     // 2: steps
-    for(let i = 0; i < this.state.steps.length; ++i){
+    for (let i = 0; i < this.state.steps.length; ++i) {
       const step = this.state.steps[i];
-      if(x >= step.x - 100 && x <= step.x + 100 && y >= step.y - 25 && y <= step.y + 25){
-        return {step: step.id};
+      if (x >= step.x - 100 && x <= step.x + 100 && y >= step.y - 25 && y <= step.y + 25) {
+        return { step: step.id };
       }
     }
 
@@ -186,8 +280,8 @@ class SequenceEditor extends EventTarget {
   /**
    * Return the distance in pixels from the initial memorized click.
    */
-  distanceFromInitialClick(x, y){
-    return Math.sqrt(Math.pow(this.mouseStartX-x, 2)+Math.pow(this.mouseStartY-y, 2));
+  distanceFromInitialClick(x, y) {
+    return Math.sqrt(Math.pow(this.mouseStartX - x, 2) + Math.pow(this.mouseStartY - y, 2));
   }
 
   onMouseWheel(e) {
@@ -198,14 +292,14 @@ class SequenceEditor extends EventTarget {
   onMouseDown(e) {
     const worldClick = this.screenToWorld(e.offsetX, e.offsetY);
     const element = this.detectElementOnPosition(worldClick.x, worldClick.y);
-    if(element !== null && 'step' in element){
+    if (element !== null && 'step' in element) {
       this.selectedStep = element.step;
       this.mouseState = 'step';
       this.mouseStartX = e.offsetX;
       this.mouseStartY = e.offsetY;
       this.draw();
     }
-    else if(element === null){
+    else if (element === null) {
       this.selectedStep = null;
       this.mouseState = 'moveCamera';
       this.draw();
@@ -223,7 +317,7 @@ class SequenceEditor extends EventTarget {
     }
     else if (this.selectedStep !== null && this.mouseState === 'moveStep') {
       const step = this.state.steps.find(s => s.id === this.selectedStep);
-      if(!step){
+      if (!step) {
         return;
       }
       const newCoord = this.screenToWorld(e.offsetX, e.offsetY);
@@ -237,7 +331,7 @@ class SequenceEditor extends EventTarget {
     this.mouseState = 'idle';
   }
 
-  onMouseLeave(){
+  onMouseLeave() {
     this.mouseState = 'idle';
   }
 
