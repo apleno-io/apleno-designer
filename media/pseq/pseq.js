@@ -232,6 +232,20 @@ class SequenceEditor extends EventTarget {
     this.ctx.fill();
   }
 
+  drawConnections() {
+    this.state.steps.forEach(step => {
+      const target = step.parameters.target;
+      if (typeof target !== 'string') {
+        return;
+      }
+      const targetStep = this.state.steps.find(s => s.id === target);
+      if (targetStep === undefined) {
+        return;
+      }
+      this.drawConnection(this.getStepHandleScreenCoord(step, 'target'), this.getStepHandleScreenCoord(targetStep, 'start'));
+    });
+  }
+
   drawConnection(coordStartScreen, coordEndScreen) {
     this.ctx.fillStyle = this.fontColor;
     this.ctx.beginPath();
@@ -241,24 +255,40 @@ class SequenceEditor extends EventTarget {
     const dy = coordEndScreen.y - coordStartScreen.y;
 
     let cx1, cy1, cx2, cy2;
-    if (Math.abs(dx) > Math.abs(dy)) {
+    /*if (Math.abs(dx) > Math.abs(dy)) {
       const offset = dx / 2;
-      cx1 = x1 + offset;
-      cy1 = y1;
-      cx2 = x2 - offset;
-      cy2 = y2;
-    } else {
+      cx1 = coordStartScreen.x + offset;
+      cy1 = coordStartScreen.y;
+      cx2 = coordEndScreen.x - offset;
+      cy2 = coordEndScreen.y;
+    } else*/ {
       const offset = dy / 2;
-      cx1 = x1;
-      cy1 = y1 + offset;
-      cx2 = x2;
-      cy2 = y2 - offset;
+      cx1 = coordStartScreen.x;
+      cy1 = coordStartScreen.y + offset;
+      cx2 = coordEndScreen.x;
+      cy2 = coordEndScreen.y - offset;
     }
 
     this.ctx.bezierCurveTo(
       cx1, cy1, cx2, cy2,
       coordEndScreen.x, coordEndScreen.y);
     this.ctx.stroke();
+  }
+
+  // utils
+  getStepHandleScreenCoord(step, handle = 'start') {
+    const coordCenter = this.worldToScreen(step.x, step.y);
+    const coordStart = this.worldToScreen(step.x - 100, step.y - 25);
+    const coordEnd = this.worldToScreen(step.x + 100, step.y + 25);
+    if (handle === 'start') {
+      return { x: coordCenter.x, y: coordStart.y };
+    }
+    else if (handle === 'target') {
+      return { x: coordCenter.x, y: coordEnd.y };
+    }
+    else if (handle === 'target2') {
+      return { x: coordEnd.x, y: coordEnd.x };
+    }
   }
 
   /**
