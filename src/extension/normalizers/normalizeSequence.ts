@@ -193,7 +193,7 @@ export class SequenceFileUtils {
       if (typeof step.id !== 'number' || step.id < 0) {
         return null;
       }
-      if (typeof step.type !== 'string' || !['start', 'gui', 'rscript', 'condition', 'sequence', 'end'].includes(step.type)) {
+      if (typeof step.type !== 'string' || !['start', 'gui', 'script', 'condition', 'sequence', 'end'].includes(step.type)) {
         return null;
       }
       if (typeof step.x !== 'number') {

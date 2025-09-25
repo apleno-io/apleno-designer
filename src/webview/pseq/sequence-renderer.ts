@@ -13,7 +13,7 @@
 // - setCameraZoom
 // - setCameraPosition
 
-type StepType = 'start' | 'gui';
+type StepType = 'start' | 'gui' | 'script' | 'condition' | 'sequence' | 'end';
 type StepHandle = 'top' | 'right' | 'bottom';
 
 interface Point {
@@ -92,10 +92,26 @@ class CanvasStep {
         return 'bottom';
       }
     }
-    else if (this.type === 'gui') {
+    else if (['gui', 'script', 'sequence'].includes(this.type)) {
       if (CanvasStep.isPointInCircle(point, this.getHandlePosition('top'), CanvasStep.HANDLE_RADIUS)) {
         return 'top';
       }
+      if (CanvasStep.isPointInCircle(point, this.getHandlePosition('bottom'), CanvasStep.HANDLE_RADIUS)) {
+        return 'bottom';
+      }
+    }
+    else if (this.type === 'condition') {
+      if (CanvasStep.isPointInCircle(point, this.getHandlePosition('top'), CanvasStep.HANDLE_RADIUS)) {
+        return 'top';
+      }
+      if (CanvasStep.isPointInCircle(point, this.getHandlePosition('right'), CanvasStep.HANDLE_RADIUS)) {
+        return 'bottom';
+      }
+      if (CanvasStep.isPointInCircle(point, this.getHandlePosition('bottom'), CanvasStep.HANDLE_RADIUS)) {
+        return 'bottom';
+      }
+    }
+    else if (this.type === 'end') {
       if (CanvasStep.isPointInCircle(point, this.getHandlePosition('bottom'), CanvasStep.HANDLE_RADIUS)) {
         return 'bottom';
       }
@@ -140,10 +156,12 @@ class SequenceEditor extends EventTarget {
   private cameraY: number = 0;
 
   // Various editor state
-  private mouseState: 'idle' | 'down' | 'moveCamera' | 'step' | 'moveStep' = 'idle'; // down, moveCamera
+  private mouseState: 'idle' | 'cameraMove' | 'stepClick' | 'stepMove' | 'handleClick' | 'handleMove' = 'idle'; // down, moveCamera
   private mouseStartX: number = 0;
   private mouseStartY: number = 0;
+  private mouseCurrentScreenPoint: Point | null = null;
   private selectedStep: CanvasStep | null = null;
+  private selectedHandle: CanvasElement | null = null;
 
   // Design
   private colorGrid = window.getComputedStyle(document.body).getPropertyValue('--vscode-widget-border');
@@ -304,6 +322,11 @@ class SequenceEditor extends EventTarget {
 
     // Connections
     this.drawConnections();
+
+    // Current connection moving
+    if (this.selectedHandle && this.mouseCurrentScreenPoint && this.mouseState === 'handleMove') {
+      this.drawConnection(this.worldToScreen(this.selectedHandle.step.getHandlePosition(this.selectedHandle.handle as StepHandle)), this.mouseCurrentScreenPoint);
+    }
   }
 
   /**
@@ -353,28 +376,52 @@ class SequenceEditor extends EventTarget {
     this.ctx.fillRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
 
     // Name
+    this.ctx.fillStyle = this.fontColor;
+    this.ctx.font = `${20 * this.cameraZoomFactor}px ${this.fontUI}`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
     if (step.type === 'start') {
-      this.ctx.fillStyle = this.fontColor;
-      this.ctx.font = `${20 * this.cameraZoomFactor}px ${this.fontUI}`;
-      this.ctx.textAlign = 'center';
-      this.ctx.textBaseline = 'middle';
       this.ctx.fillText('Start', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
     else if (step.type === 'gui') {
-      this.ctx.fillStyle = this.fontColor;
-      this.ctx.font = `${20 * this.cameraZoomFactor}px ${this.fontUI}`;
-      this.ctx.textAlign = 'center';
-      this.ctx.textBaseline = 'middle';
       this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+    }
+    else if (step.type === 'script') {
+      this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+    }
+    else if (step.type === 'condition') {
+      this.ctx.fillText('Condition', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+    }
+    else if (step.type === 'sequence') {
+      this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+    }
+    else if (step.type === 'end') {
+      this.ctx.fillText('End', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
 
     // Points
     if (step.type === 'start') {
-      this.drawHandle({ x: coordCenter.x, y: coordEnd.y });
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('bottom')));
     }
     else if (step.type === 'gui') {
-      this.drawHandle({ x: coordCenter.x, y: coordStart.y });
-      this.drawHandle({ x: coordCenter.x, y: coordEnd.y });
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('top')));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('bottom')));
+    }
+    else if (step.type === 'script') {
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('top')));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('bottom')));
+    }
+    else if (step.type === 'condition') {
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('top')));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('bottom')));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('right')));
+    }
+    else if (step.type === 'sequence') {
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('top')));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('bottom')));
+    }
+    else if (step.type === 'end') {
+      this.drawHandle(this.worldToScreen(step.getHandlePosition('top')));
     }
 
     // Extra labels (false/true)
@@ -496,35 +543,52 @@ class SequenceEditor extends EventTarget {
     const element = this.detectElementOnPosition({ x: worldClick.x, y: worldClick.y });
     if (element !== null && element.type === 'step') {
       this.selectedStep = element.step;
-      this.mouseState = 'step';
+      this.mouseState = 'stepClick';
       this.mouseStartX = e.offsetX;
       this.mouseStartY = e.offsetY;
       this.draw();
     }
+    else if (element && element.type === 'handle') {
+      this.selectedHandle = element;
+      this.mouseState = 'handleClick';
+      this.mouseStartX = e.offsetX;
+      this.mouseStartY = e.offsetY;
+    }
     else if (element === null) {
       this.selectedStep = null;
-      this.mouseState = 'moveCamera';
+      this.mouseState = 'cameraMove';
       this.draw();
     }
   }
 
   private onMouseMove(e: MouseEvent): void {
-    if (this.mouseState === 'step' && this.selectedStep !== null && this.distanceFromInitialClick({ x: e.offsetX, y: e.offsetY }) > 5) {
-      this.mouseState = 'moveStep';
+    if (this.mouseState === 'stepClick' && this.selectedStep !== null && this.distanceFromInitialClick({ x: e.offsetX, y: e.offsetY }) > 5) {
+      this.mouseState = 'stepMove';
     }
-    else if (this.mouseState === 'moveCamera') {
-      this.cameraX -= (e.movementX / this.cameraZoomFactor);
-      this.cameraY -= (e.movementY / this.cameraZoomFactor);
-      this.draw();
-    }
-    else if (this.selectedStep !== null && this.mouseState === 'moveStep') {
+    else if (this.selectedStep !== null && this.mouseState === 'stepMove') {
       const newCoord = this.screenToWorld({ x: e.offsetX, y: e.offsetY });
       this.selectedStep.setPosition(newCoord);
+      this.draw();
+    }
+    else if (this.mouseState === 'handleClick' && this.selectedHandle !== null && this.distanceFromInitialClick({ x: e.offsetX, y: e.offsetY }) > 5) {
+      this.mouseState = 'handleMove';
+    }
+    else if (this.selectedHandle !== null && this.mouseState === 'handleMove') {
+      this.mouseCurrentScreenPoint = { x: e.offsetX, y: e.offsetY };
+      this.draw();
+    }
+    else if (this.mouseState === 'cameraMove') {
+      this.cameraX -= (e.movementX / this.cameraZoomFactor);
+      this.cameraY -= (e.movementY / this.cameraZoomFactor);
       this.draw();
     }
   }
 
   private onMouseUp(): void {
+    if (this.selectedStep !== null && this.mouseState === 'handleMove') {
+      //TODO: detect if on another handle
+      this.draw();
+    }
     this.mouseState = 'idle';
   }
 
