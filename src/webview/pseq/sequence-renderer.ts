@@ -13,15 +13,122 @@
 // - setCameraZoom
 // - setCameraPosition
 
+type StepType = 'start' | 'gui';
+type StepHandle = 'top' | 'right' | 'bottom';
+
 interface Point {
   x: number;
   y: number;
 }
 
-class SequenceEditor extends EventTarget {
-  private state: any;
+/**
+ * ```
+ *  p1 --------------
+ *  |               |
+ *   ---------------p2
+ * ```
+ */
+class Rectangle {
+  private static DEFAULT_WIDTH: number = 200;
+  private static DEFAULT_HEIGHT: number = 50;
 
-  // Pointer
+  public p1: Point = { x: 0, y: 0 };
+  public p2: Point = { x: 0, y: 0 };
+
+  public center: Point;
+  public width: number;
+  public height: number;
+
+  public constructor(center: Point, width: number = Rectangle.DEFAULT_WIDTH, height: number = Rectangle.DEFAULT_HEIGHT) {
+    this.center = center;
+    this.width = width;
+    this.height = height;
+    this.recalculate();
+  }
+
+  public recalculate() {
+    this.p1 = { x: this.center.x - this.width * 0.5, y: this.center.y - this.height * 0.5 };
+    this.p2 = { x: this.center.x + this.width * 0.5, y: this.center.y + this.height * 0.5 };
+  }
+}
+
+class CanvasStep {
+  private static HANDLE_RADIUS: number = 20;
+
+  public id: string;
+  public rectangle: Rectangle;
+  public type: StepType;
+  public name: string;
+
+  public constructor(id: string, center: Point, type: StepType, name: string) {
+    this.id = id;
+    this.rectangle = new Rectangle(center);
+    this.type = type;
+    this.name = name;
+  }
+
+  public setPosition(point: Point): void {
+    this.rectangle.center = point;
+    this.rectangle.recalculate();
+  }
+
+  public getHandlePosition(handle: StepHandle): Point {
+    if (handle === 'top') {
+      return { x: this.rectangle.center.x, y: this.rectangle.p1.y };
+    }
+    else if (handle === 'bottom') {
+      return { x: this.rectangle.center.x, y: this.rectangle.p2.y };
+    }
+    else if (handle === 'right') {
+      return { x: this.rectangle.p2.x, y: this.rectangle.center.y };
+    }
+    return { x: 0, y: 0 };
+  }
+
+  public getElementOnPoint(point: Point): 'step' | StepHandle | null {
+    // Handles (first because they are over the step)
+    if (this.type === 'start') {
+      if (CanvasStep.isPointInCircle(point, this.getHandlePosition('bottom'), CanvasStep.HANDLE_RADIUS)) {
+        return 'bottom';
+      }
+    }
+    else if (this.type === 'gui') {
+      if (CanvasStep.isPointInCircle(point, this.getHandlePosition('top'), CanvasStep.HANDLE_RADIUS)) {
+        return 'top';
+      }
+      if (CanvasStep.isPointInCircle(point, this.getHandlePosition('bottom'), CanvasStep.HANDLE_RADIUS)) {
+        return 'bottom';
+      }
+    }
+
+    // Step
+    if (point.x >= this.rectangle.p1.x && point.x <= this.rectangle.p2.x && point.y >= this.rectangle.p1.y && point.y <= this.rectangle.p2.y) {
+      return 'step';
+    }
+
+    // Nothing
+    return null;
+  }
+
+  private static isPointInCircle(point: Point, circleCenter: Point, circleRadius: number): boolean {
+    const dx = point.x - circleCenter.x;
+    const dy = point.y - circleCenter.y;
+    const distanceSquared = dx * dx + dy * dy;
+    return distanceSquared <= circleRadius * circleRadius;
+  }
+}
+
+interface CanvasElement {
+  step: CanvasStep;
+  type: 'step' | 'handle';
+  handle: StepHandle | null;
+}
+
+class SequenceEditor extends EventTarget {
+  // State
+  private steps: CanvasStep[] = [];
+
+  // DOM pointers
   private parent: HTMLElement;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -36,7 +143,7 @@ class SequenceEditor extends EventTarget {
   private mouseState: 'idle' | 'down' | 'moveCamera' | 'step' | 'moveStep' = 'idle'; // down, moveCamera
   private mouseStartX: number = 0;
   private mouseStartY: number = 0;
-  private selectedStep: null = null;
+  private selectedStep: CanvasStep | null = null;
 
   // Design
   private colorGrid = window.getComputedStyle(document.body).getPropertyValue('--vscode-widget-border');
@@ -48,7 +155,7 @@ class SequenceEditor extends EventTarget {
   public constructor() {
     super();
     // Data
-    this.state = {
+    this.setState({
       steps: [
         {
           id: 'start',
@@ -74,7 +181,7 @@ class SequenceEditor extends EventTarget {
           }
         }
       ]
-    };
+    });
 
     // Pointers
     this.parent = document.getElementById("pseq-editor") as HTMLElement;
@@ -105,7 +212,11 @@ class SequenceEditor extends EventTarget {
   }
 
   public setState(state: any) {
-
+    this.steps = [];
+    for (let i: number = 0; i < state.steps.length; ++i) {
+      const step: any = state.steps[i];
+      this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customName));
+    }
   }
 
   public getState(): any {
@@ -226,7 +337,7 @@ class SequenceEditor extends EventTarget {
    * Draw steps.
    */
   private drawSteps(): void {
-    this.state.steps.forEach((step: any) => {
+    this.steps.forEach((step: CanvasStep) => {
       this.drawStep(step);
     });
   }
@@ -234,10 +345,10 @@ class SequenceEditor extends EventTarget {
   /**
    * Draw a single step.
    */
-  private drawStep(step: any): void {
-    const coordCenter = this.worldToScreen({ x: step.x, y: step.y });
-    const coordStart = this.worldToScreen({ x: step.x - 100, y: step.y - 25 });
-    const coordEnd = this.worldToScreen({ x: step.x + 100, y: step.y + 25 });
+  private drawStep(step: CanvasStep): void {
+    const coordCenter = this.worldToScreen(step.rectangle.center);
+    const coordStart = this.worldToScreen(step.rectangle.p1);
+    const coordEnd = this.worldToScreen(step.rectangle.p2);
     this.ctx.fillStyle = this.colorSteps[step.type];
     this.ctx.fillRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
 
@@ -254,7 +365,7 @@ class SequenceEditor extends EventTarget {
       this.ctx.font = `${20 * this.cameraZoomFactor}px ${this.fontUI}`;
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
-      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
 
     // Points
@@ -268,7 +379,7 @@ class SequenceEditor extends EventTarget {
 
     // Extra labels (false/true)
 
-    if (this.selectedStep === step.id) {
+    if (this.selectedStep?.id === step.id) {
       this.ctx.strokeStyle = this.colorSelected;
       this.ctx.lineWidth = 2;
       this.ctx.strokeRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
@@ -289,7 +400,7 @@ class SequenceEditor extends EventTarget {
    * Draw connections between handles.
    */
   private drawConnections(): void {
-    this.state.steps.forEach((step: any) => {
+    /*this.steps.forEach((step: CanvasStep) => {
       const target = step.parameters.target;
       if (typeof target !== 'string') {
         return;
@@ -299,7 +410,7 @@ class SequenceEditor extends EventTarget {
         return;
       }
       this.drawConnection(this.getStepHandleScreenCoord(step, 'target'), this.getStepHandleScreenCoord(targetStep, 'start'));
-    });
+    });*/
   }
 
   /**
@@ -354,16 +465,17 @@ class SequenceEditor extends EventTarget {
   /**
    * Detect what is at world coordinate x/y. Can return {anchor: id} or {step: id}
    */
-  private detectElementOnPosition(point: Point): any {
-    // 2: steps
-    for (let i = 0; i < this.state.steps.length; ++i) {
-      const step = this.state.steps[i];
-      if (point.x >= step.x - 100 && point.x <= step.x + 100 && point.y >= step.y - 25 && point.y <= step.y + 25) {
-        return { step: step.id };
+  private detectElementOnPosition(point: Point): CanvasElement | null {
+    for (let i = 0; i < this.steps.length; ++i) {
+      const step = this.steps[i];
+      const r = this.steps[i].getElementOnPoint(point);
+      if (r === 'step') {
+        return { type: 'step', step, handle: null };
+      }
+      else if (r !== null) {
+        return { type: 'handle', step, handle: r };
       }
     }
-
-    // 3: nothing
     return null;
   }
 
@@ -382,7 +494,7 @@ class SequenceEditor extends EventTarget {
   private onMouseDown(e: MouseEvent): void {
     const worldClick = this.screenToWorld({ x: e.offsetX, y: e.offsetY });
     const element = this.detectElementOnPosition({ x: worldClick.x, y: worldClick.y });
-    if (element !== null && 'step' in element) {
+    if (element !== null && element.type === 'step') {
       this.selectedStep = element.step;
       this.mouseState = 'step';
       this.mouseStartX = e.offsetX;
@@ -406,13 +518,8 @@ class SequenceEditor extends EventTarget {
       this.draw();
     }
     else if (this.selectedStep !== null && this.mouseState === 'moveStep') {
-      const step = this.state.steps.find((s: any) => s.id === this.selectedStep);
-      if (!step) {
-        return;
-      }
       const newCoord = this.screenToWorld({ x: e.offsetX, y: e.offsetY });
-      step.x = newCoord.x;
-      step.y = newCoord.y;
+      this.selectedStep.setPosition(newCoord);
       this.draw();
     }
   }
