@@ -13,25 +13,25 @@
   "main": "./dist/extension.js",
   "contributes": {
     "customEditors": [
-			{
-				"viewType": "pgm.ppro",
-				"displayName": "PGM Project Editor",
-				"selector": [
-					{
-						"filenamePattern": "*.ppro"
-					}
-				]
-			},
       {
-				"viewType": "pgm.pseq",
-				"displayName": "PGM Sequence Editor",
-				"selector": [
-					{
-						"filenamePattern": "*.pseq"
-					}
-				]
-			}
-		],
+        "viewType": "pgm.ppro",
+        "displayName": "PGM Project Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.ppro"
+          }
+        ]
+      },
+      {
+        "viewType": "pgm.pseq",
+        "displayName": "PGM Sequence Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.pseq"
+          }
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "pgm.ppro.new",
@@ -45,7 +45,9 @@
     "languages": [
       {
         "id": "ppro",
-        "extensions": [".ppro"],
+        "extensions": [
+          ".ppro"
+        ],
         "icon": {
           "light": "./icons/ppro.svg",
           "dark": "./icons/ppro.svg"
@@ -53,7 +55,9 @@
       },
       {
         "id": "pseq",
-        "extensions": [".pseq"],
+        "extensions": [
+          ".pseq"
+        ],
         "icon": {
           "light": "./icons/pseq.svg",
           "dark": "./icons/pseq.svg"
@@ -66,7 +70,7 @@
     "compile": "npm run check-types && npm run lint && node esbuild.js",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
-    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "watch:tsc": "tsc --noEmit --watch --project src/extension/tsconfig.json",
     "package": "npm run check-types && npm run lint && node esbuild.js --production",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",

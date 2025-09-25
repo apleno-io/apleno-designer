@@ -32,7 +32,7 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 		const readData: Uint8Array = await vscode.workspace.fs.readFile(uri);
 		try {
 			const content = Buffer.from(readData).toString('utf8');
-			if(content.trim().length === 0) {
+			if (content.trim().length === 0) {
 				return ProjectFileUtils.sanitize({});
 			}
 			return ProjectFileUtils.sanitize(JSON.parse(content));
@@ -291,7 +291,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 					});
 				}
 			}
-			else if(e.type === 'select-sequence') {
+			else if (e.type === 'select-sequence') {
 				const res = await vscode.window.showOpenDialog({
 					canSelectFiles: true,
 					canSelectFolders: false,
@@ -302,12 +302,12 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						'PGM Sequence files': ['pseq']
 					}
 				});
-				if(Array.isArray(res) && res.length > 0){
+				if (Array.isArray(res) && res.length > 0) {
 					console.log(res[0]);
 					this.postMessage(webviewPanel, 'select-sequence', vscode.workspace.asRelativePath(res[0].path));
 				}
 			}
-			else if(e.type === 'select-logo' || e.type === 'select-icon') {
+			else if (e.type === 'select-logo' || e.type === 'select-icon') {
 				const res = await vscode.window.showOpenDialog({
 					canSelectFiles: true,
 					canSelectFolders: false,
@@ -318,7 +318,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						'Images': ['jpg', 'png', 'gif', 'jpeg']
 					}
 				});
-				if(Array.isArray(res) && res.length > 0){
+				if (Array.isArray(res) && res.length > 0) {
 					this.postMessage(webviewPanel, e.type, vscode.workspace.asRelativePath(res[0].path));
 				}
 			}
@@ -501,11 +501,11 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 	}
 
 	private async onMessage(document: PGMProDocument, message: any) {
-		if(message.type === 'edit') {
-				document.makeEdit(message.edit as PGMProDocumentEdit);
-				return;
+		if (message.type === 'edit') {
+			document.makeEdit(message.edit as PGMProDocumentEdit);
+			return;
 		}
-		else if(message.type === 'response') {
+		else if (message.type === 'response') {
 			const callback = this._callbacks.get(message.requestId);
 			callback?.(message.body);
 			return;

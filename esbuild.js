@@ -26,7 +26,7 @@ const esbuildProblemMatcherPlugin = {
 async function main() {
 	const ctx = await esbuild.context({
 		entryPoints: [
-			'src/extension.ts'
+			'src/extension/extension.ts'
 		],
 		bundle: true,
 		format: 'cjs',
@@ -42,8 +42,29 @@ async function main() {
 			esbuildProblemMatcherPlugin,
 		],
 	});
+	const ctxMedia = await esbuild.context({
+		entryPoints: [
+			'src/webview/pseq/sequence-renderer.ts'
+		],
+		bundle: true,
+		format: 'cjs',
+		minify: production,
+		sourcemap: !production,
+		sourcesContent: false,
+		platform: 'browser',
+		outdir: 'media',
+		external: ['vscode'],
+		logLevel: 'silent',
+		plugins: [
+			/* add to the end of plugins array */
+			esbuildProblemMatcherPlugin,
+		],
+	});
 	if (watch) {
-		await ctx.watch();
+		await Promise.all([
+			ctx.watch(),
+			ctxMedia.watch()
+		]);
 	} else {
 		await ctx.rebuild();
 		await ctx.dispose();
