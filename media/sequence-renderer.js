@@ -25,17 +25,24 @@ var CanvasStep = class _CanvasStep {
   id;
   rectangle;
   type;
-  name;
-  constructor(id, center, type, name) {
+  customId;
+  customName;
+  parameters;
+  constructor(id, center, type, customId, customName, params) {
     this.id = id;
     this.rectangle = new Rectangle(center);
     this.type = type;
-    this.name = name;
+    this.customId = customId;
+    this.customName = customName;
+    this.parameters = params;
   }
   setPosition(point) {
     this.rectangle.center = point;
     this.rectangle.recalculate();
   }
+  /**
+   * Return world position of a step handle.
+   */
   getHandlePosition(handle) {
     if (handle === "top") {
       return { x: this.rectangle.center.x, y: this.rectangle.p1.y };
@@ -150,6 +157,8 @@ var SequenceEditor = class extends EventTarget {
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
     this.canvas.addEventListener("mouseleave", this.onMouseLeave.bind(this));
     window.addEventListener("resize", this.resize.bind(this));
+    this.canvas.addEventListener("drop", this.onDrop.bind(this));
+    this.canvas.addEventListener("dragover", this.onDragOver.bind(this));
     this.colorSteps = {
       start: window.getComputedStyle(document.body).getPropertyValue("--vscode-charts-red"),
       script: window.getComputedStyle(document.body).getPropertyValue("--vscode-charts-green"),
@@ -164,7 +173,7 @@ var SequenceEditor = class extends EventTarget {
     this.steps = [];
     for (let i = 0; i < state.steps.length; ++i) {
       const step = state.steps[i];
-      this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customName));
+      this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customId, step.customName, step.parameters));
     }
   }
   getState() {
@@ -279,13 +288,13 @@ var SequenceEditor = class extends EventTarget {
     if (step.type === "start") {
       this.ctx.fillText("Start", coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     } else if (step.type === "gui") {
-      this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     } else if (step.type === "script") {
-      this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     } else if (step.type === "condition") {
       this.ctx.fillText("Condition", coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     } else if (step.type === "sequence") {
-      this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     } else if (step.type === "end") {
       this.ctx.fillText("End", coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
@@ -326,6 +335,22 @@ var SequenceEditor = class extends EventTarget {
    * Draw connections between handles.
    */
   drawConnections() {
+    this.steps.forEach((step) => {
+      const target = step.parameters.target;
+      const targetOnFalse = step.parameters.targetOnFalse;
+      if (typeof target === "number") {
+        const targetStep = this.steps.find((s) => s.id === target);
+        if (targetStep) {
+          this.drawConnection(this.worldToScreen(step.getHandlePosition("bottom")), this.worldToScreen(targetStep.getHandlePosition("top")));
+        }
+      }
+      if (typeof targetOnFalse === "number") {
+        const targetStep = this.steps.find((s) => s.id === targetOnFalse);
+        if (targetStep) {
+          this.drawConnection(this.worldToScreen(step.getHandlePosition("right")), this.worldToScreen(targetStep.getHandlePosition("top")));
+        }
+      }
+    });
   }
   /**
    * Draw a single connection.
@@ -353,20 +378,6 @@ var SequenceEditor = class extends EventTarget {
       coordEndScreen.y
     );
     this.ctx.stroke();
-  }
-  // utils
-  getStepHandleScreenCoord(step, handle = "start") {
-    const coordCenter = this.worldToScreen({ x: step.x, y: step.y });
-    const coordStart = this.worldToScreen({ x: step.x - 100, y: step.y - 25 });
-    const coordEnd = this.worldToScreen({ x: step.x + 100, y: step.y + 25 });
-    if (handle === "start") {
-      return { x: coordCenter.x, y: coordStart.y };
-    } else if (handle === "target") {
-      return { x: coordCenter.x, y: coordEnd.y };
-    } else if (handle === "target2") {
-      return { x: coordEnd.x, y: coordEnd.x };
-    }
-    return { x: 0, y: 0 };
   }
   /**
    * Detect what is at world coordinate x/y. Can return {anchor: id} or {step: id}
@@ -432,9 +443,6 @@ var SequenceEditor = class extends EventTarget {
     }
   }
   onMouseUp() {
-    if (this.selectedStep !== null && this.mouseState === "handleMove") {
-      this.draw();
-    }
     this.mouseState = "idle";
   }
   onMouseLeave() {
@@ -455,6 +463,23 @@ var SequenceEditor = class extends EventTarget {
       this.setCameraPosition({ x: 100, y: 100 });
       this.draw();
     }
+  }
+  onDrop(ev) {
+    if (ev.dataTransfer === null) {
+      return;
+    }
+    const allDropVariations = JSON.stringify({
+      "dataTransfer.types": Array.from(ev.dataTransfer.types),
+      "dataTransfer.getData(text/uri-list)": ev.dataTransfer.getData("text/uri-list"),
+      "dataTransfer.getData(text/plain)": ev.dataTransfer.getData("text/plain"),
+      "dataTransfer.files.0.name": ev.dataTransfer.files.item(0)?.name
+    }, null, 2);
+    console.log(allDropVariations);
+    ev.preventDefault();
+  }
+  onDragOver(ev) {
+    console.log("File(s) over drop zone");
+    ev.preventDefault();
   }
 };
 (function() {

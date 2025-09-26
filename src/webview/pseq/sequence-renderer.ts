@@ -52,19 +52,31 @@ class Rectangle {
   }
 }
 
+interface CanvasStepParameters {
+  file?: string;
+  language?: 'r' | 'python';
+  code?: string;
+  target?: number;
+  targetOnFalse?: number;
+}
+
 class CanvasStep {
   private static HANDLE_RADIUS: number = 20;
 
-  public id: string;
+  public id: number;
   public rectangle: Rectangle;
   public type: StepType;
-  public name: string;
+  public customId: string;
+  public customName: string;
+  public parameters: CanvasStepParameters;
 
-  public constructor(id: string, center: Point, type: StepType, name: string) {
+  public constructor(id: number, center: Point, type: StepType, customId: string, customName: string, params: CanvasStepParameters) {
     this.id = id;
     this.rectangle = new Rectangle(center);
     this.type = type;
-    this.name = name;
+    this.customId = customId;
+    this.customName = customName;
+    this.parameters = params;
   }
 
   public setPosition(point: Point): void {
@@ -72,6 +84,9 @@ class CanvasStep {
     this.rectangle.recalculate();
   }
 
+  /**
+   * Return world position of a step handle.
+   */
   public getHandlePosition(handle: StepHandle): Point {
     if (handle === 'top') {
       return { x: this.rectangle.center.x, y: this.rectangle.p1.y };
@@ -214,6 +229,8 @@ class SequenceEditor extends EventTarget {
     this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
     this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this));
     window.addEventListener('resize', this.resize.bind(this));
+    this.canvas.addEventListener('drop', this.onDrop.bind(this));
+    this.canvas.addEventListener('dragover', this.onDragOver.bind(this));
 
     // Get colors
     this.colorSteps = {
@@ -233,7 +250,7 @@ class SequenceEditor extends EventTarget {
     this.steps = [];
     for (let i: number = 0; i < state.steps.length; ++i) {
       const step: any = state.steps[i];
-      this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customName));
+      this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customId, step.customName, step.parameters));
     }
   }
 
@@ -384,16 +401,16 @@ class SequenceEditor extends EventTarget {
       this.ctx.fillText('Start', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
     else if (step.type === 'gui') {
-      this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
     else if (step.type === 'script') {
-      this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
     else if (step.type === 'condition') {
       this.ctx.fillText('Condition', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
     else if (step.type === 'sequence') {
-      this.ctx.fillText(step.name, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
     else if (step.type === 'end') {
       this.ctx.fillText('End', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
@@ -447,17 +464,23 @@ class SequenceEditor extends EventTarget {
    * Draw connections between handles.
    */
   private drawConnections(): void {
-    /*this.steps.forEach((step: CanvasStep) => {
+    this.steps.forEach((step: CanvasStep) => {
+      // Target
       const target = step.parameters.target;
-      if (typeof target !== 'string') {
-        return;
+      const targetOnFalse = step.parameters.targetOnFalse;
+      if (typeof target === 'number') {
+        const targetStep = this.steps.find((s: any) => s.id === target);
+        if (targetStep) {
+          this.drawConnection(this.worldToScreen(step.getHandlePosition('bottom')), this.worldToScreen(targetStep.getHandlePosition('top')));
+        }
       }
-      const targetStep = this.state.steps.find((s: any) => s.id === target);
-      if (targetStep === undefined) {
-        return;
+      if (typeof targetOnFalse === 'number') {
+        const targetStep = this.steps.find((s: any) => s.id === targetOnFalse);
+        if (targetStep) {
+          this.drawConnection(this.worldToScreen(step.getHandlePosition('right')), this.worldToScreen(targetStep.getHandlePosition('top')));
+        }
       }
-      this.drawConnection(this.getStepHandleScreenCoord(step, 'target'), this.getStepHandleScreenCoord(targetStep, 'start'));
-    });*/
+    });
   }
 
   /**
@@ -490,23 +513,6 @@ class SequenceEditor extends EventTarget {
       cx1, cy1, cx2, cy2,
       coordEndScreen.x, coordEndScreen.y);
     this.ctx.stroke();
-  }
-
-  // utils
-  private getStepHandleScreenCoord(step: any, handle = 'start'): Point {
-    const coordCenter = this.worldToScreen({ x: step.x, y: step.y });
-    const coordStart = this.worldToScreen({ x: step.x - 100, y: step.y - 25 });
-    const coordEnd = this.worldToScreen({ x: step.x + 100, y: step.y + 25 });
-    if (handle === 'start') {
-      return { x: coordCenter.x, y: coordStart.y };
-    }
-    else if (handle === 'target') {
-      return { x: coordCenter.x, y: coordEnd.y };
-    }
-    else if (handle === 'target2') {
-      return { x: coordEnd.x, y: coordEnd.x };
-    }
-    return { x: 0, y: 0 };
   }
 
   /**
@@ -585,10 +591,10 @@ class SequenceEditor extends EventTarget {
   }
 
   private onMouseUp(): void {
-    if (this.selectedStep !== null && this.mouseState === 'handleMove') {
-      //TODO: detect if on another handle
-      this.draw();
-    }
+    //if (this.selectedStep !== null && this.mouseState === 'handleMove') {
+    //  //TODO: detect if on another handle
+    //  this.draw();
+    //}
     this.mouseState = 'idle';
   }
 
@@ -612,6 +618,25 @@ class SequenceEditor extends EventTarget {
       this.setCameraPosition({ x: 100, y: 100 });
       this.draw();
     }
+  }
+
+  private onDrop(ev: DragEvent) {
+    if (ev.dataTransfer === null) {
+      return;
+    }
+    const allDropVariations = JSON.stringify({
+      'dataTransfer.types': Array.from(ev.dataTransfer.types),
+      'dataTransfer.getData(text/uri-list)': ev.dataTransfer.getData('text/uri-list'),
+      'dataTransfer.getData(text/plain)': ev.dataTransfer.getData('text/plain'),
+      'dataTransfer.files.0.name': ev.dataTransfer.files.item(0)?.name,
+    }, null, 2);
+    console.log(allDropVariations);
+    ev.preventDefault();
+  }
+
+  private onDragOver(ev: DragEvent) {
+    console.log("File(s) over drop zone");
+    ev.preventDefault();
   }
 }
 
