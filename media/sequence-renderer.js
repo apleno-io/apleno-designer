@@ -21,7 +21,7 @@ var Rectangle = class _Rectangle {
   }
 };
 var CanvasStep = class _CanvasStep {
-  static HANDLE_RADIUS = 20;
+  static HANDLE_RADIUS = 10;
   id;
   rectangle;
   type;
@@ -160,12 +160,18 @@ var SequenceEditor = class extends EventTarget {
     this.canvas.addEventListener("drop", this.onDrop.bind(this));
     this.canvas.addEventListener("dragover", this.onDragOver.bind(this));
     this.colorSteps = {
-      start: window.getComputedStyle(document.body).getPropertyValue("--vscode-charts-red"),
-      script: window.getComputedStyle(document.body).getPropertyValue("--vscode-charts-green"),
-      gui: window.getComputedStyle(document.body).getPropertyValue("--vscode-charts-blue"),
-      condition: window.getComputedStyle(document.body).getPropertyValue("--vscode-charts-yellow"),
-      sequence: window.getComputedStyle(document.body).getPropertyValue("--vscode-charts-orange"),
-      end: window.getComputedStyle(document.body).getPropertyValue("--vscode-charts-red")
+      //start: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
+      //script: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-green'),
+      //gui: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-blue'),
+      //condition: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-yellow'),
+      //sequence: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-orange'),
+      //end: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
+      start: "#c0392b",
+      script: "#2ea043",
+      gui: "#2980b9",
+      condition: "#f39c12",
+      sequence: "#c0392b",
+      end: "#c0392b"
     };
     this.resize();
   }
@@ -282,7 +288,7 @@ var SequenceEditor = class extends EventTarget {
     this.ctx.fillStyle = this.colorSteps[step.type];
     this.ctx.fillRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
     this.ctx.fillStyle = this.fontColor;
-    this.ctx.font = `${20 * this.cameraZoomFactor}px ${this.fontUI}`;
+    this.ctx.font = `${15 * this.cameraZoomFactor}px ${this.fontUI}`;
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
     if (step.type === "start") {
@@ -328,7 +334,7 @@ var SequenceEditor = class extends EventTarget {
   drawHandle(screenPoint) {
     this.ctx.fillStyle = this.fontColor;
     this.ctx.beginPath();
-    this.ctx.arc(screenPoint.x, screenPoint.y, 20 * this.cameraZoomFactor, 0, 2 * Math.PI);
+    this.ctx.arc(screenPoint.x, screenPoint.y, 10 * this.cameraZoomFactor, 0, 2 * Math.PI);
     this.ctx.fill();
   }
   /**
@@ -355,8 +361,9 @@ var SequenceEditor = class extends EventTarget {
   /**
    * Draw a single connection.
    */
-  drawConnection(coordStartScreen, coordEndScreen) {
-    this.ctx.strokeStyle = this.fontColor;
+  drawConnection(coordStartScreen, coordEndScreen, mode = "state") {
+    this.ctx.strokeStyle = mode === "state" ? this.fontColor : "#1abc9c";
+    this.ctx.lineWidth = 2;
     this.ctx.beginPath();
     this.ctx.moveTo(coordStartScreen.x, coordStartScreen.y);
     const dx = coordEndScreen.x - coordStartScreen.x;
@@ -442,11 +449,19 @@ var SequenceEditor = class extends EventTarget {
       this.draw();
     }
   }
-  onMouseUp() {
+  onMouseUp(e) {
+    if (this.selectedHandle !== null && this.mouseState === "handleMove") {
+      const el = this.detectElementOnPosition(this.screenToWorld({ x: e.offsetX, y: e.offsetY }));
+      if (el && el.type === "handle" && this.selectedHandle.step.id !== el.step.id) {
+      } else {
+      }
+    }
     this.mouseState = "idle";
+    this.draw();
   }
   onMouseLeave() {
     this.mouseState = "idle";
+    this.draw();
   }
   onClickControls(e) {
     const button = e.target.closest("button[data-role]");

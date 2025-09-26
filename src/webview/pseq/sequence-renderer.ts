@@ -61,7 +61,7 @@ interface CanvasStepParameters {
 }
 
 class CanvasStep {
-  private static HANDLE_RADIUS: number = 20;
+  private static HANDLE_RADIUS: number = 10;
 
   public id: number;
   public rectangle: Rectangle;
@@ -234,12 +234,18 @@ class SequenceEditor extends EventTarget {
 
     // Get colors
     this.colorSteps = {
-      start: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
-      script: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-green'),
-      gui: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-blue'),
-      condition: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-yellow'),
-      sequence: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-orange'),
-      end: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red')
+      //start: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
+      //script: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-green'),
+      //gui: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-blue'),
+      //condition: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-yellow'),
+      //sequence: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-orange'),
+      //end: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
+      start: '#c0392b',
+      script: '#2ea043',
+      gui: '#2980b9',
+      condition: '#f39c12',
+      sequence: '#c0392b',
+      end: '#c0392b'
     };
 
     // Draw
@@ -394,7 +400,7 @@ class SequenceEditor extends EventTarget {
 
     // Name
     this.ctx.fillStyle = this.fontColor;
-    this.ctx.font = `${20 * this.cameraZoomFactor}px ${this.fontUI}`;
+    this.ctx.font = `${15 * this.cameraZoomFactor}px ${this.fontUI}`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     if (step.type === 'start') {
@@ -456,7 +462,7 @@ class SequenceEditor extends EventTarget {
   private drawHandle(screenPoint: Point): void {
     this.ctx.fillStyle = this.fontColor;
     this.ctx.beginPath();
-    this.ctx.arc(screenPoint.x, screenPoint.y, 20 * this.cameraZoomFactor, 0, 2 * Math.PI);
+    this.ctx.arc(screenPoint.x, screenPoint.y, 10 * this.cameraZoomFactor, 0, 2 * Math.PI); // 10 radius
     this.ctx.fill();
   }
 
@@ -486,8 +492,9 @@ class SequenceEditor extends EventTarget {
   /**
    * Draw a single connection.
    */
-  private drawConnection(coordStartScreen: Point, coordEndScreen: Point): void {
-    this.ctx.strokeStyle = this.fontColor;
+  private drawConnection(coordStartScreen: Point, coordEndScreen: Point, mode: 'selection' | 'state' = 'state'): void {
+    this.ctx.strokeStyle = mode === 'state' ? this.fontColor : '#1abc9c';
+    this.ctx.lineWidth = 2;
     this.ctx.beginPath();
     this.ctx.moveTo(coordStartScreen.x, coordStartScreen.y);
 
@@ -577,6 +584,7 @@ class SequenceEditor extends EventTarget {
       this.draw();
     }
     else if (this.mouseState === 'handleClick' && this.selectedHandle !== null && this.distanceFromInitialClick({ x: e.offsetX, y: e.offsetY }) > 5) {
+      // TODO: Remove the connection from the state
       this.mouseState = 'handleMove';
     }
     else if (this.selectedHandle !== null && this.mouseState === 'handleMove') {
@@ -590,16 +598,22 @@ class SequenceEditor extends EventTarget {
     }
   }
 
-  private onMouseUp(): void {
-    //if (this.selectedStep !== null && this.mouseState === 'handleMove') {
-    //  //TODO: detect if on another handle
-    //  this.draw();
-    //}
+  private onMouseUp(e: MouseEvent): void {
+    if (this.selectedHandle !== null && this.mouseState === 'handleMove') {
+      const el = this.detectElementOnPosition(this.screenToWorld({ x: e.offsetX, y: e.offsetY }));
+      if (el && el.type === 'handle' && this.selectedHandle.step.id !== el.step.id) {
+        // only valid handle connections are bottom-top and right-top
+      }
+      else {
+      }
+    }
     this.mouseState = 'idle';
+    this.draw();
   }
 
   private onMouseLeave(): void {
     this.mouseState = 'idle';
+    this.draw();
   }
 
   private onClickControls(e: MouseEvent): void {
