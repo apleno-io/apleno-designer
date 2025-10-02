@@ -234,7 +234,29 @@ class SequenceEditor extends EventTarget {
   }
 
   public getState(): any {
-
+    return {
+      _version: 251,
+      cameraX: this.cameraX,
+      cameraY: this.cameraY,
+      cameraZoom: this.cameraZoom,
+      steps: this.steps.map((step: CanvasStep) => {
+        return {
+          id: step.id,
+          type: step.type,
+          x: step.rectangle.center.x,
+          y: step.rectangle.center.y,
+          customId?: step.customId,
+          customName?: step.customName,
+          parameters: {
+            file?: string;
+            language?: 'r' | 'python';
+            code?: string;
+            target?: number;
+            targetOnFalse?: number;
+          };
+        };
+      })
+    };
   }
 
   /**
@@ -394,6 +416,13 @@ class SequenceEditor extends EventTarget {
     }
     else if (step.type === 'end') {
       this.ctx.fillText('End', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+    }
+
+    // Special: condition true/false
+    if (step.type === 'condition') {
+      this.ctx.textAlign = 'left';
+      this.ctx.fillText('True', coordCenter.x + 15, coordEnd.y + 15);
+      this.ctx.fillText('False', coordEnd.x + 10, coordStart.y + 5);
     }
 
     // Points

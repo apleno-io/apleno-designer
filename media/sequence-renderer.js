@@ -157,6 +157,15 @@ var SequenceEditor = class extends EventTarget {
     this.draw();
   }
   getState() {
+    return {
+      _version: 251,
+      cameraX: this.cameraX,
+      cameraY: this.cameraY,
+      cameraZoom: this.cameraZoom,
+      steps: this.steps.map((step) => {
+        return {};
+      })
+    };
   }
   /**
    * Redraw the canvas when view was resized.
@@ -278,6 +287,11 @@ var SequenceEditor = class extends EventTarget {
       this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     } else if (step.type === "end") {
       this.ctx.fillText("End", coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+    }
+    if (step.type === "condition") {
+      this.ctx.textAlign = "left";
+      this.ctx.fillText("True", coordCenter.x + 15, coordEnd.y + 15);
+      this.ctx.fillText("False", coordEnd.x + 10, coordStart.y + 5);
     }
     if (step.type === "start") {
       this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")), "start");
