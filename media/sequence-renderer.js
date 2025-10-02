@@ -70,14 +70,14 @@ var CanvasStep = class _CanvasStep {
         return "top";
       }
       if (_CanvasStep.isPointInCircle(point, this.getHandlePosition("right"), _CanvasStep.HANDLE_RADIUS)) {
-        return "bottom";
+        return "right";
       }
       if (_CanvasStep.isPointInCircle(point, this.getHandlePosition("bottom"), _CanvasStep.HANDLE_RADIUS)) {
         return "bottom";
       }
     } else if (this.type === "end") {
-      if (_CanvasStep.isPointInCircle(point, this.getHandlePosition("bottom"), _CanvasStep.HANDLE_RADIUS)) {
-        return "bottom";
+      if (_CanvasStep.isPointInCircle(point, this.getHandlePosition("top"), _CanvasStep.HANDLE_RADIUS)) {
+        return "top";
       }
     }
     if (point.x >= this.rectangle.p1.x && point.x <= this.rectangle.p2.x && point.y >= this.rectangle.p1.y && point.y <= this.rectangle.p2.y) {
@@ -120,33 +120,6 @@ var SequenceEditor = class extends EventTarget {
   colorSteps;
   constructor() {
     super();
-    this.setState({
-      steps: [
-        {
-          id: "start",
-          type: "start",
-          x: -200,
-          y: -200,
-          customId: "",
-          customName: "",
-          parameters: {
-            target: "test"
-          }
-        },
-        {
-          id: "test",
-          type: "gui",
-          x: 0,
-          y: 0,
-          customId: "superuid",
-          customName: "My GUI",
-          parameters: {
-            file: "first.pgui",
-            target: null
-          }
-        }
-      ]
-    });
     this.parent = document.getElementById("pseq-editor");
     this.canvas = document.getElementById("pseq-canvas");
     this.ctx = this.canvas.getContext("2d");
@@ -181,6 +154,7 @@ var SequenceEditor = class extends EventTarget {
       const step = state.steps[i];
       this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customId, step.customName, step.parameters));
     }
+    this.draw();
   }
   getState() {
   }
@@ -243,7 +217,8 @@ var SequenceEditor = class extends EventTarget {
     this.drawSteps();
     this.drawConnections();
     if (this.selectedHandle && this.mouseCurrentScreenPoint && this.mouseState === "handleMove") {
-      this.drawConnection(this.worldToScreen(this.selectedHandle.step.getHandlePosition(this.selectedHandle.handle)), this.mouseCurrentScreenPoint);
+      this.drawConnection(this.worldToScreen(this.selectedHandle.step.getHandlePosition(this.selectedHandle.handle)), this.mouseCurrentScreenPoint, "selection");
+      this.drawHandle(this.mouseCurrentScreenPoint, this.selectedHandle.handle === "top" ? "end" : "start");
     }
   }
   /**
@@ -305,22 +280,22 @@ var SequenceEditor = class extends EventTarget {
       this.ctx.fillText("End", coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
     }
     if (step.type === "start") {
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")), "start");
     } else if (step.type === "gui") {
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")));
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")), "end");
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")), "start");
     } else if (step.type === "script") {
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")));
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")), "end");
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")), "start");
     } else if (step.type === "condition") {
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")));
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")));
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("right")));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")), "end");
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")), "start");
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("right")), "start");
     } else if (step.type === "sequence") {
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")));
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")), "end");
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("bottom")), "start");
     } else if (step.type === "end") {
-      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")));
+      this.drawHandle(this.worldToScreen(step.getHandlePosition("top")), "end");
     }
     if (this.selectedStep?.id === step.id) {
       this.ctx.strokeStyle = this.colorSelected;
@@ -331,11 +306,14 @@ var SequenceEditor = class extends EventTarget {
   /**
    * Draw step handles for connections.
    */
-  drawHandle(screenPoint) {
-    this.ctx.fillStyle = this.fontColor;
+  drawHandle(screenPoint, type) {
+    this.ctx.strokeStyle = "#1abc9c";
+    this.ctx.lineWidth = 3;
+    this.ctx.fillStyle = type === "start" ? this.fontColor : "#1abc9c";
     this.ctx.beginPath();
     this.ctx.arc(screenPoint.x, screenPoint.y, 10 * this.cameraZoomFactor, 0, 2 * Math.PI);
     this.ctx.fill();
+    this.ctx.stroke();
   }
   /**
    * Draw connections between handles.
@@ -363,7 +341,7 @@ var SequenceEditor = class extends EventTarget {
    */
   drawConnection(coordStartScreen, coordEndScreen, mode = "state") {
     this.ctx.strokeStyle = mode === "state" ? this.fontColor : "#1abc9c";
-    this.ctx.lineWidth = 2;
+    this.ctx.lineWidth = mode === "state" ? 3 : 4;
     this.ctx.beginPath();
     this.ctx.moveTo(coordStartScreen.x, coordStartScreen.y);
     const dx = coordEndScreen.x - coordStartScreen.x;
@@ -420,11 +398,16 @@ var SequenceEditor = class extends EventTarget {
       this.mouseStartX = e.offsetX;
       this.mouseStartY = e.offsetY;
       this.draw();
-    } else if (element && element.type === "handle") {
+    } else if (element && element.type === "handle" && element.handle !== "top") {
       this.selectedHandle = element;
       this.mouseState = "handleClick";
       this.mouseStartX = e.offsetX;
       this.mouseStartY = e.offsetY;
+      if (element.handle === "bottom") {
+        element.step.parameters.target = void 0;
+      } else if (element.handle === "right") {
+        element.step.parameters.targetOnFalse = void 0;
+      }
     } else if (element === null) {
       this.selectedStep = null;
       this.mouseState = "cameraMove";
@@ -453,6 +436,15 @@ var SequenceEditor = class extends EventTarget {
     if (this.selectedHandle !== null && this.mouseState === "handleMove") {
       const el = this.detectElementOnPosition(this.screenToWorld({ x: e.offsetX, y: e.offsetY }));
       if (el && el.type === "handle" && this.selectedHandle.step.id !== el.step.id) {
+        if (el.handle === "top" && this.selectedHandle.handle === "bottom") {
+          this.selectedHandle.step.parameters.target = el.step.id;
+        } else if (el.handle === "bottom" && this.selectedHandle.handle === "top") {
+          el.step.parameters.target = this.selectedHandle.step.id;
+        } else if (el.handle === "top" && this.selectedHandle.handle === "right") {
+          this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
+        } else if (el.handle === "right" && this.selectedHandle.handle === "top") {
+          el.step.parameters.targetOnFalse = this.selectedHandle.step.id;
+        }
       } else {
       }
     }
