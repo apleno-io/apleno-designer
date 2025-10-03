@@ -212,12 +212,12 @@ class SequenceEditor extends EventTarget {
       //condition: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-yellow'),
       //sequence: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-orange'),
       //end: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
-      start: '#c0392b',
-      script: '#2ea043',
-      gui: '#2980b9',
-      condition: '#f39c12',
-      sequence: '#c0392b',
-      end: '#c0392b'
+      start: '#942d21ff',
+      script: '#1f6d2dff',
+      gui: '#20577cff',
+      condition: '#661c66ff',
+      sequence: '#9c3707ff',
+      end: '#942d21ff'
     };
 
     // Draw
@@ -235,7 +235,7 @@ class SequenceEditor extends EventTarget {
 
   public getState(): any {
     return {
-      _version: 251,
+      _version: 4,
       cameraX: this.cameraX,
       cameraY: this.cameraY,
       cameraZoom: this.cameraZoom,
@@ -245,15 +245,15 @@ class SequenceEditor extends EventTarget {
           type: step.type,
           x: step.rectangle.center.x,
           y: step.rectangle.center.y,
-          customId?: step.customId,
-          customName?: step.customName,
+          customId: step.customId,
+          customName: step.customName,
           parameters: {
-            file?: string;
-            language?: 'r' | 'python';
-            code?: string;
-            target?: number;
-            targetOnFalse?: number;
-          };
+            file: step.parameters.file,
+            language: step.parameters.language,
+            code: step.parameters.code,
+            target: step.parameters.target,
+            targetOnFalse: step.parameters.targetOnFalse
+          }
         };
       })
     };
@@ -391,6 +391,8 @@ class SequenceEditor extends EventTarget {
     const coordCenter = this.worldToScreen(step.rectangle.center);
     const coordStart = this.worldToScreen(step.rectangle.p1);
     const coordEnd = this.worldToScreen(step.rectangle.p2);
+    const maxWidth = coordEnd.x - (coordStart.x + 20);
+    const spacingHalf = 8 * this.cameraZoomFactor;
     this.ctx.fillStyle = this.colorSteps[step.type];
     this.ctx.fillRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
 
@@ -400,29 +402,33 @@ class SequenceEditor extends EventTarget {
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     if (step.type === 'start') {
-      this.ctx.fillText('Start', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText('Start', coordCenter.x, coordCenter.y, maxWidth);
     }
     else if (step.type === 'gui') {
-      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(`(UI) ${step.customName}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+      this.ctx.fillText(step.parameters.file || '', coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
     }
     else if (step.type === 'script') {
-      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(`(Script) ${step.customName}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+      this.ctx.fillText(step.parameters.file || '', coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
     }
     else if (step.type === 'condition') {
-      this.ctx.fillText('Condition', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(`${step.parameters.language === 'python' ? 'Python' : 'R'} condition`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+      this.ctx.fillText(step.parameters.code || '', coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
     }
     else if (step.type === 'sequence') {
-      this.ctx.fillText(step.customName, coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText(`(Sequence) ${step.customName}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+      this.ctx.fillText(step.parameters.file || '', coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
     }
     else if (step.type === 'end') {
-      this.ctx.fillText('End', coordCenter.x, coordCenter.y, coordEnd.x - (coordStart.x + 20));
+      this.ctx.fillText('End', coordCenter.x, coordCenter.y, maxWidth);
     }
 
     // Special: condition true/false
     if (step.type === 'condition') {
       this.ctx.textAlign = 'left';
       this.ctx.fillText('True', coordCenter.x + 15, coordEnd.y + 15);
-      this.ctx.fillText('False', coordEnd.x + 10, coordStart.y + 5);
+      this.ctx.fillText('False', coordEnd.x + 10, coordStart.y + 6);
     }
 
     // Points
