@@ -13,6 +13,8 @@
 // - setCameraZoom
 // - setCameraPosition
 
+import SequenceDetails from "./sequence-details";
+
 type StepType = 'start' | 'gui' | 'script' | 'condition' | 'sequence' | 'end';
 type StepHandle = 'top' | 'right' | 'bottom';
 
@@ -60,7 +62,7 @@ interface CanvasStepParameters {
   targetOnFalse?: number;
 }
 
-class CanvasStep {
+export class CanvasStep {
   private static HANDLE_RADIUS: number = 10;
 
   public id: number;
@@ -194,7 +196,7 @@ class SequenceEditor extends EventTarget {
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     // Events
-    (document.getElementById('pseq-controls') as HTMLElement).addEventListener('click', this.onClickControls.bind(this));
+    //(document.getElementById('pseq-controls') as HTMLElement).addEventListener('click', this.onClickControls.bind(this));
     this.canvas.addEventListener('wheel', this.onMouseWheel.bind(this));
     this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
     this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
@@ -573,6 +575,7 @@ class SequenceEditor extends EventTarget {
       this.mouseState = 'stepClick';
       this.mouseStartX = e.offsetX;
       this.mouseStartY = e.offsetY;
+      SequenceDetails.show(element.step);
       this.draw();
     }
     else if (element && element.type === 'handle' && element.handle !== 'top') {

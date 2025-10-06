@@ -1,3 +1,4 @@
+import { CanvasStep } from "./sequence-renderer";
 
 const SequenceDetails = new class extends EventTarget {
   private domContainer: HTMLElement = document.getElementById('step-editor') as HTMLElement;
@@ -7,14 +8,13 @@ const SequenceDetails = new class extends EventTarget {
   }
 
   public show(step: CanvasStep) {
-    // Fill form
-    (document.getElementById('step-customid') as HTMLInputElement).value = step.customId;
-    (document.getElementById('step-name') as HTMLInputElement).value = step.customName;
+    (document.getElementById('step-customid') as HTMLInputElement).value = step.customId || '';
+    (document.getElementById('step-name') as HTMLInputElement).value = step.customName || '';
     (document.getElementById('step-file') as HTMLInputElement).value = step.parameters.file || '';
     (document.getElementById('step-language') as HTMLInputElement).value = step.parameters.language || 'r';
     (document.getElementById('step-code') as HTMLInputElement).value = step.parameters.code || '';
-
-    // TODO: show form
+    (document.getElementById('step-editor-file') as HTMLElement).style.display = ['gui', 'script', 'sequence'].includes(step.type) ? 'block' : 'none';
+    (document.getElementById('step-editor-condition') as HTMLElement).style.display = step.type === 'condition' ? 'block' : 'none';
   }
 
   public clear() {

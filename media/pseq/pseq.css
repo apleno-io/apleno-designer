@@ -1,3 +1,22 @@
+#pseq-panelcontainer {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  bottom: 20px;
+  width: 300px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.pseq-panel {
+  background-color: rgba(0, 0, 0, 0.9);
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  pointer-events: all;
+  user-select: none;
+}
+
 #pseq-editor {
   position: absolute;
   top: 0;
@@ -10,17 +29,17 @@
   margin: 0;
 }
 
-#pseq-controls {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: #520012;
-}
-
 #pseq-canvas {
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
+}
+
+#pseq-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #520012;
 }

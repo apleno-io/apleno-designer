@@ -394,47 +394,54 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
         <div id="pseq-editor">
           <canvas id="pseq-canvas"></canvas>
         </div>
-        <div id="pseq-controls">
-          <div id="pseq-controls-checks">Checks</div>
-          <button data-role="center">Center</button>
-          <button data-role="dd">Help</button>
-          <div id="debug-1"></div>
-          <div id="debug-2"></div>
-          <div id="debug-3"></div>
-          <div id="debug-4"></div>
-          <div id="debug-5"></div>
-        </div>
-        <div id="errors" style="display: none"></div>
-        <div id="step-editor" style="display: none">
-					<h2>Main Settings</h2>
-					<div class="step-setting">
-						<label for="step-customid">Id</label>
-						<div class="step-setting-help">The custom id to use with rpgm functions during runtime.</div>
-						<input type="text" id="step-customid" value="" />
-					</div>
-					<div class="step-setting">
-						<label for="step-name">Name</label>
-						<div class="ppro-setting-help">Name of the step.</div>
-						<input type="text" id="step-name" value="" />
-					</div>
-          <div class="step-setting">
-						<label for="step-file">File</label>
-						<div class="ppro-setting-help">Filename of the step relative to the root folder.</div>
-						<input type="text" id="step-file" value="" />
-					</div>
-          <div class="step-setting">
-						<label for="step-language">Condition language</label>
-						<div class="step-setting-help">The language used for the condition.</div>
-						<select id="step-language">
-							<option value="r">R</option>
-							<option value="python">Python</option>
-						</select>
-					</div>
-          <div class="step-setting">
-						<label for="step-code">Condition code</label>
-						<div class="ppro-setting-help">Expression returning a true or false value.</div>
-						<input type="text" id="step-code" value="" />
-					</div>
+        <div id="pseq-panelcontainer">
+          <div class="pseq-panel">
+            <div id="pseq-controls-checks">Checks</div>
+            <button data-role="center">Center</button>
+            <button data-role="dd">Help</button>
+          </div>
+          <div class="pseq-panel">
+            <div id="debug-1"></div>
+            <div id="debug-2"></div>
+            <div id="debug-3"></div>
+            <div id="debug-4"></div>
+            <div id="debug-5"></div>
+          </div>
+          <div id="step-editor" class="pseq-panel">
+            <h2>Main Settings</h2>
+            <div id="step-editor-file">
+              <div class="step-setting">
+                <label for="step-customid">Id</label>
+                <div class="step-setting-help">The custom id to use with rpgm functions during runtime.</div>
+                <input type="text" id="step-customid" value="" />
+              </div>
+              <div class="step-setting">
+                <label for="step-name">Name</label>
+                <div class="ppro-setting-help">Name of the step.</div>
+                <input type="text" id="step-name" value="" />
+              </div>
+              <div class="step-setting">
+                <label for="step-file">File</label>
+                <div class="ppro-setting-help">Filename of the step relative to the root folder.</div>
+                <input type="text" id="step-file" value="" />
+              </div>
+            </div>
+            <div id="step-editor-condition">
+              <div class="step-setting">
+                <label for="step-language">Condition language</label>
+                <div class="step-setting-help">The language used for the condition.</div>
+                <select id="step-language">
+                  <option value="r">R</option>
+                  <option value="python">Python</option>
+                </select>
+              </div>
+              <div class="step-setting">
+                <label for="step-code">Condition code</label>
+                <div class="ppro-setting-help">Expression returning a true or false value.</div>
+                <input type="text" id="step-code" value="" />
+              </div>
+            </div>
+          </div>
 				</div>
         <script nonce="${nonce}" src="${scriptUri}"></script>
       </body>

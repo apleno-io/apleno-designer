@@ -47,7 +47,7 @@ async function main() {
 			'src/webview/pseq/sequence-renderer.ts'
 		],
 		bundle: true,
-		format: 'cjs',
+		format: 'iife',
 		minify: production,
 		sourcemap: !production,
 		sourcesContent: false,
