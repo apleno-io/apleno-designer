@@ -5,20 +5,28 @@ const SequenceDetails = new class extends EventTarget {
   constructor() {
     super();
     this.domContainer.addEventListener('click', this.onClick.bind(this));
+    this.showEmpty();
   }
 
-  public show(step: CanvasStep) {
+  public showStep(step: CanvasStep) {
     (document.getElementById('step-customid') as HTMLInputElement).value = step.customId || '';
     (document.getElementById('step-name') as HTMLInputElement).value = step.customName || '';
     (document.getElementById('step-file') as HTMLInputElement).value = step.parameters.file || '';
     (document.getElementById('step-language') as HTMLInputElement).value = step.parameters.language || 'r';
     (document.getElementById('step-code') as HTMLInputElement).value = step.parameters.code || '';
+    (document.getElementById('step-editor-id') as HTMLElement).style.display = ['start', 'end'].includes(step.type) ? 'none' : 'block';
     (document.getElementById('step-editor-file') as HTMLElement).style.display = ['gui', 'script', 'sequence'].includes(step.type) ? 'block' : 'none';
     (document.getElementById('step-editor-condition') as HTMLElement).style.display = step.type === 'condition' ? 'block' : 'none';
+    (document.getElementById('step-editor-empty') as HTMLElement).style.display = 'none';
+    (document.getElementById('step-editor-nosetting') as HTMLElement).style.display = ['start', 'end'].includes(step.type) ? 'block' : 'none';
   }
 
-  public clear() {
-    this.domContainer.innerHTML = '';
+  public showEmpty() {
+    (document.getElementById('step-editor-id') as HTMLElement).style.display = 'none';
+    (document.getElementById('step-editor-file') as HTMLElement).style.display = 'none';
+    (document.getElementById('step-editor-condition') as HTMLElement).style.display = 'none';
+    (document.getElementById('step-editor-nosetting') as HTMLElement).style.display = 'none';
+    (document.getElementById('step-editor-empty') as HTMLElement).style.display = 'block';
   }
 
   private onClick(e: MouseEvent) {

@@ -46,14 +46,6 @@ h2 {
   background-color: var(--vscode-settings-rowHoverBackground);
 }
 
-label {
-  display: block;
-  color: var(--vscode-settings-headerForeground);
-  font-weight: 600;
-  line-height: 1.4em;
-  margin-bottom: 8px;
-}
-
 .ppro-setting-help {
   margin: 8px 0;
 }

@@ -6,18 +6,26 @@
     constructor() {
       super();
       this.domContainer.addEventListener("click", this.onClick.bind(this));
+      this.showEmpty();
     }
-    show(step) {
+    showStep(step) {
       document.getElementById("step-customid").value = step.customId || "";
       document.getElementById("step-name").value = step.customName || "";
       document.getElementById("step-file").value = step.parameters.file || "";
       document.getElementById("step-language").value = step.parameters.language || "r";
       document.getElementById("step-code").value = step.parameters.code || "";
+      document.getElementById("step-editor-id").style.display = ["start", "end"].includes(step.type) ? "none" : "block";
       document.getElementById("step-editor-file").style.display = ["gui", "script", "sequence"].includes(step.type) ? "block" : "none";
       document.getElementById("step-editor-condition").style.display = step.type === "condition" ? "block" : "none";
+      document.getElementById("step-editor-empty").style.display = "none";
+      document.getElementById("step-editor-nosetting").style.display = ["start", "end"].includes(step.type) ? "block" : "none";
     }
-    clear() {
-      this.domContainer.innerHTML = "";
+    showEmpty() {
+      document.getElementById("step-editor-id").style.display = "none";
+      document.getElementById("step-editor-file").style.display = "none";
+      document.getElementById("step-editor-condition").style.display = "none";
+      document.getElementById("step-editor-nosetting").style.display = "none";
+      document.getElementById("step-editor-empty").style.display = "block";
     }
     onClick(e) {
       const button = e.target.closest("[data-role]");
@@ -152,6 +160,7 @@
     mouseCurrentScreenPoint = null;
     selectedStep = null;
     selectedHandle = null;
+    extraHighlightStep = null;
     // Design
     colorGrid = window.getComputedStyle(document.body).getPropertyValue("--vscode-widget-border");
     colorSelected = window.getComputedStyle(document.body).getPropertyValue("--vscode-foreground");
@@ -163,6 +172,7 @@
       this.parent = document.getElementById("pseq-editor");
       this.canvas = document.getElementById("pseq-canvas");
       this.ctx = this.canvas.getContext("2d");
+      document.getElementById("pseq-controls").addEventListener("click", this.onClickControls.bind(this));
       this.canvas.addEventListener("wheel", this.onMouseWheel.bind(this));
       this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
       this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
@@ -375,6 +385,11 @@
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
       }
+      if (this.extraHighlightStep?.id === step.id) {
+        this.ctx.strokeStyle = this.colorSelected;
+        this.ctx.lineWidth = 4;
+        this.ctx.strokeRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
+      }
     }
     /**
      * Draw step handles for connections.
@@ -470,7 +485,7 @@
         this.mouseState = "stepClick";
         this.mouseStartX = e.offsetX;
         this.mouseStartY = e.offsetY;
-        sequence_details_default.show(element.step);
+        sequence_details_default.showStep(element.step);
         this.draw();
       } else if (element && element.type === "handle" && element.handle !== "top") {
         this.selectedHandle = element;
@@ -483,7 +498,6 @@
           element.step.parameters.targetOnFalse = void 0;
         }
       } else if (element === null) {
-        this.selectedStep = null;
         this.mouseState = "cameraMove";
         this.draw();
       }
@@ -499,6 +513,9 @@
         this.mouseState = "handleMove";
       } else if (this.selectedHandle !== null && this.mouseState === "handleMove") {
         this.mouseCurrentScreenPoint = { x: e.offsetX, y: e.offsetY };
+        const worldClick = this.screenToWorld({ x: e.offsetX, y: e.offsetY });
+        const element = this.detectElementOnPosition({ x: worldClick.x, y: worldClick.y });
+        this.extraHighlightStep = element && element.type === "step" ? element.step : null;
         this.draw();
       } else if (this.mouseState === "cameraMove") {
         this.cameraX -= e.movementX / this.cameraZoomFactor;
@@ -519,14 +536,21 @@
           } else if (el.handle === "right" && this.selectedHandle.handle === "top") {
             el.step.parameters.targetOnFalse = this.selectedHandle.step.id;
           }
-        } else {
+        } else if (el && el.type === "step" && this.selectedHandle.step.id !== el.step.id && (this.selectedHandle.handle === "bottom" || this.selectedHandle.handle === "right") && el.step.type !== "start") {
+          if (this.selectedHandle.handle === "bottom") {
+            this.selectedHandle.step.parameters.target = el.step.id;
+          } else if (this.selectedHandle.handle === "right") {
+            this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
+          }
         }
       }
       this.mouseState = "idle";
+      this.extraHighlightStep = null;
       this.draw();
     }
     onMouseLeave() {
       this.mouseState = "idle";
+      this.extraHighlightStep = null;
       this.draw();
     }
     onClickControls(e) {
@@ -536,12 +560,22 @@
       }
       const role = button.getAttribute("data-role");
       if (role === "center") {
-        this.setCameraZoom(5);
-        this.setCameraPosition({ x: 0, y: 0 });
-        this.draw();
-      } else if (role === "dd") {
-        this.setCameraZoom(5);
-        this.setCameraPosition({ x: 100, y: 100 });
+        const startStep = this.steps.find((s) => s.type === "start");
+        if (startStep) {
+          this.setCameraZoom(5);
+          this.setCameraPosition(startStep.rectangle.center);
+          this.draw();
+        }
+      } else if (role === "help") {
+      } else if (role === "add") {
+        let highestId = 0;
+        for (let i = 0; i < this.steps.length; ++i) {
+          if (highestId < this.steps[i].id) {
+            highestId = this.steps[i].id;
+          }
+        }
+        const type = button.getAttribute("data-step");
+        this.steps.push(new CanvasStep(++highestId, { x: this.cameraX, y: this.cameraY }, type, "", "", {}));
         this.draw();
       }
     }

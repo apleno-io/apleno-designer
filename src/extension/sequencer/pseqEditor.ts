@@ -395,10 +395,20 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
           <canvas id="pseq-canvas"></canvas>
         </div>
         <div id="pseq-panelcontainer">
-          <div class="pseq-panel">
-            <div id="pseq-controls-checks">Checks</div>
-            <button data-role="center">Center</button>
-            <button data-role="dd">Help</button>
+          <div id="pseq-controls" class="pseq-panel">
+            <div class="pseq-header">Utils</div>
+            <div class="pseq-buttongroup pseq-bottomspace">
+              <button data-role="center">Center on start</button>
+              <button data-role="help">Help</button>
+            </div>
+            <div class="pseq-header">Add</div>
+            <div class="pseq-buttongroup">
+              <button data-role="add" data-step="script">Script</button>
+              <button data-role="add" data-step="gui">UI</button>
+              <button data-role="add" data-step="condition">Cond.</button>
+              <button data-role="add" data-step="sequence">Seq.</button>
+              <button data-role="add" data-step="end">End</button>
+            </div>
           </div>
           <div class="pseq-panel">
             <div id="debug-1"></div>
@@ -408,36 +418,39 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
             <div id="debug-5"></div>
           </div>
           <div id="step-editor" class="pseq-panel">
-            <h2>Main Settings</h2>
-            <div id="step-editor-file">
-              <div class="step-setting">
-                <label for="step-customid">Id</label>
-                <div class="step-setting-help">The custom id to use with rpgm functions during runtime.</div>
+            <div id="step-editor-empty">Select a step to edit.</div>
+            <div id="step-editor-nosetting">No setting for this step.</div>
+            <div id="step-editor-id" style="display: none">
+              <div class="pseq-step-setting">
+                <label class="pseq-header" for="step-customid">Id</label>
+                <div class="pseq-step-setting-help">Custom id to use during runtime.</div>
                 <input type="text" id="step-customid" value="" />
               </div>
-              <div class="step-setting">
-                <label for="step-name">Name</label>
-                <div class="ppro-setting-help">Name of the step.</div>
+              <div class="pseq-step-setting pseq-topspace">
+                <label class="pseq-header" for="step-name">Name</label>
+                <div class="pseq-step-setting-help">Name of the step to show in sidebar.</div>
                 <input type="text" id="step-name" value="" />
               </div>
-              <div class="step-setting">
-                <label for="step-file">File</label>
-                <div class="ppro-setting-help">Filename of the step relative to the root folder.</div>
+            </div>
+            <div id="step-editor-file" style="display: none">
+              <div class="pseq-step-setting pseq-topspace">
+                <label class="pseq-header" for="step-file">File</label>
+                <div class="pseq-step-setting-help">Filename of the step relative to the root folder.</div>
                 <input type="text" id="step-file" value="" />
               </div>
             </div>
-            <div id="step-editor-condition">
-              <div class="step-setting">
-                <label for="step-language">Condition language</label>
-                <div class="step-setting-help">The language used for the condition.</div>
+            <div id="step-editor-condition" style="display: none">
+              <div class="pseq-step-setting pseq-topspace">
+                <label class="pseq-header" for="step-language">Condition language</label>
+                <div class="pseq-step-setting-help">Language used for the condition.</div>
                 <select id="step-language">
                   <option value="r">R</option>
                   <option value="python">Python</option>
                 </select>
               </div>
-              <div class="step-setting">
-                <label for="step-code">Condition code</label>
-                <div class="ppro-setting-help">Expression returning a true or false value.</div>
+              <div class="pseq-step-setting pseq-topspace">
+                <label class="pseq-header" for="step-code">Condition code</label>
+                <div class="pseq-step-setting-help">Expression returning a true or false value.</div>
                 <input type="text" id="step-code" value="" />
               </div>
             </div>

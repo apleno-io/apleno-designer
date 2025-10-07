@@ -179,6 +179,7 @@ class SequenceEditor extends EventTarget {
   private mouseCurrentScreenPoint: Point | null = null;
   private selectedStep: CanvasStep | null = null;
   private selectedHandle: CanvasElement | null = null;
+  private extraHighlightStep: CanvasStep | null = null;
 
   // Design
   private colorGrid = window.getComputedStyle(document.body).getPropertyValue('--vscode-widget-border');
@@ -196,7 +197,7 @@ class SequenceEditor extends EventTarget {
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     // Events
-    //(document.getElementById('pseq-controls') as HTMLElement).addEventListener('click', this.onClickControls.bind(this));
+    (document.getElementById('pseq-controls') as HTMLElement).addEventListener('click', this.onClickControls.bind(this));
     this.canvas.addEventListener('wheel', this.onMouseWheel.bind(this));
     this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
     this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
@@ -458,11 +459,17 @@ class SequenceEditor extends EventTarget {
       this.drawHandle(this.worldToScreen(step.getHandlePosition('top')), 'end');
     }
 
-    // Extra labels (false/true)
-
+    // Current step
     if (this.selectedStep?.id === step.id) {
       this.ctx.strokeStyle = this.colorSelected;
       this.ctx.lineWidth = 2;
+      this.ctx.strokeRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
+    }
+
+    // Hightlighted step
+    if (this.extraHighlightStep?.id === step.id) {
+      this.ctx.strokeStyle = this.colorSelected;
+      this.ctx.lineWidth = 4;
       this.ctx.strokeRect(coordStart.x, coordStart.y, coordEnd.x - coordStart.x, coordEnd.y - coordStart.y);
     }
   }
@@ -575,7 +582,7 @@ class SequenceEditor extends EventTarget {
       this.mouseState = 'stepClick';
       this.mouseStartX = e.offsetX;
       this.mouseStartY = e.offsetY;
-      SequenceDetails.show(element.step);
+      SequenceDetails.showStep(element.step);
       this.draw();
     }
     else if (element && element.type === 'handle' && element.handle !== 'top') {
@@ -593,8 +600,9 @@ class SequenceEditor extends EventTarget {
       }
     }
     else if (element === null) {
-      this.selectedStep = null;
       this.mouseState = 'cameraMove';
+      //this.selectedStep = null;
+      //SequenceDetails.showEmpty();
       this.draw();
     }
   }
@@ -609,11 +617,13 @@ class SequenceEditor extends EventTarget {
       this.draw();
     }
     else if (this.mouseState === 'handleClick' && this.selectedHandle !== null && this.distanceFromInitialClick({ x: e.offsetX, y: e.offsetY }) > 5) {
-      // TODO: Remove the connection from the state
       this.mouseState = 'handleMove';
     }
     else if (this.selectedHandle !== null && this.mouseState === 'handleMove') {
       this.mouseCurrentScreenPoint = { x: e.offsetX, y: e.offsetY };
+      const worldClick = this.screenToWorld({ x: e.offsetX, y: e.offsetY });
+      const element = this.detectElementOnPosition({ x: worldClick.x, y: worldClick.y });
+      this.extraHighlightStep = element && element.type === 'step' ? element.step : null;
       this.draw();
     }
     else if (this.mouseState === 'cameraMove') {
@@ -641,15 +651,24 @@ class SequenceEditor extends EventTarget {
           el.step.parameters.targetOnFalse = this.selectedHandle.step.id;
         }
       }
-      else {
+      else if (el && el.type === 'step' && this.selectedHandle.step.id !== el.step.id && (this.selectedHandle.handle === 'bottom' || this.selectedHandle.handle === 'right') && el.step.type !== 'start') {
+        // Here user directly targeted a step
+        if (this.selectedHandle.handle === 'bottom') {
+          this.selectedHandle.step.parameters.target = el.step.id;
+        }
+        else if (this.selectedHandle.handle === 'right') {
+          this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
+        }
       }
     }
     this.mouseState = 'idle';
+    this.extraHighlightStep = null;
     this.draw();
   }
 
   private onMouseLeave(): void {
     this.mouseState = 'idle';
+    this.extraHighlightStep = null;
     this.draw();
   }
 
@@ -660,13 +679,25 @@ class SequenceEditor extends EventTarget {
     }
     const role = button.getAttribute('data-role');
     if (role === 'center') {
-      this.setCameraZoom(5);
-      this.setCameraPosition({ x: 0, y: 0 });
-      this.draw();
+      const startStep = this.steps.find(s => s.type === 'start');
+      if (startStep) {
+        this.setCameraZoom(5);
+        this.setCameraPosition(startStep.rectangle.center);
+        this.draw();
+      }
     }
-    else if (role === 'dd') {
-      this.setCameraZoom(5);
-      this.setCameraPosition({ x: 100, y: 100 });
+    else if (role === 'help') {
+    }
+    else if (role === 'add') {
+      // Find highest id
+      let highestId = 0;
+      for (let i = 0; i < this.steps.length; ++i) {
+        if (highestId < this.steps[i].id) {
+          highestId = this.steps[i].id;
+        }
+      }
+      const type = button.getAttribute('data-step');
+      this.steps.push(new CanvasStep(++highestId, { x: this.cameraX, y: this.cameraY }, type as StepType, '', '', {}));
       this.draw();
     }
   }

@@ -1,3 +1,11 @@
+.pseq-bottomspace {
+  margin-bottom: 1rem;
+}
+
+.pseq-topspace {
+  margin-top: 15px;
+}
+
 #pseq-panelcontainer {
   position: absolute;
   top: 20px;
@@ -6,6 +14,7 @@
   width: 300px;
   z-index: 100;
   pointer-events: none;
+  overflow: hidden auto;
 }
 
 .pseq-panel {
@@ -15,6 +24,16 @@
   border-radius: 5px;
   pointer-events: all;
   user-select: none;
+}
+
+.pseq-buttongroup {
+  display: flex;
+  gap: 5px;
+}
+
+.pseq-buttongroup button {
+  display: block;
+  flex: 1 1 auto;
 }
 
 #pseq-editor {
@@ -29,6 +48,10 @@
   margin: 0;
 }
 
+.pseq-step-setting-help {
+  margin: 3px 0;
+}
+
 #pseq-canvas {
   position: absolute;
   top: 0;
@@ -37,9 +60,10 @@
   right: 0;
 }
 
-#pseq-controls {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: #520012;
+.pseq-header {
+  display: block;
+  color: var(--vscode-settings-headerForeground);
+  font-weight: 600;
+  line-height: 1.4em;
+  margin: 0;
 }
