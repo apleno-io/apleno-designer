@@ -1,14 +1,58 @@
 "use strict";
 (() => {
+  // src/webview/pseq/sequence-check.ts
+  var SequenceChecker = new class {
+    check(steps) {
+      const errors = [];
+      let countstart = 0;
+      let filesToCheck = [];
+      steps.forEach((step) => {
+        if (step.type === "start") {
+          ++countstart;
+        }
+        if (["start", "gui", "script", "condition", "sequence"].includes(step.type)) {
+          if (!("target" in step.parameters) || step.parameters.target === void 0 || steps.find((s) => s.id === step.parameters.target) === void 0 || step.parameters.target === step.id) {
+            errors.push({ stepId: step.id, error: "StepNoExit" });
+          }
+        }
+        if (step.type === "condition") {
+          if (!("targetOnFalse" in step.parameters) || step.parameters.targetOnFalse === void 0 || steps.find((s) => s.id === step.parameters.targetOnFalse) === void 0 || step.parameters.targetOnFalse === step.id) {
+            errors.push({ stepId: step.id, error: "StepNoExit" });
+          }
+          if (typeof step.parameters.code !== "string" || step.parameters.code.length < 1) {
+            errors.push({ stepId: step.id, error: "StepNoExit" });
+          }
+        }
+        if (["sequence", "script", "gui"].includes(step.type)) {
+          filesToCheck.push(step.parameters.file || "");
+        }
+        if (!["start", "end"].includes(step.type) && typeof step.customId === "string" && step.customId.length > 0 && steps.filter((s) => s.customId === step.customId).length > 1) {
+          errors.push({ error: "StepDuplicateId", stepId: step.id, errorExtras: { id: step.customId } });
+        }
+      });
+      if (countstart === 0) {
+        errors.push({ error: "SequenceNoStart" });
+      } else if (countstart > 1) {
+        errors.push({ error: "SequenceMultipleStarts" });
+      }
+      return errors;
+    }
+  }();
+  var sequence_check_default = SequenceChecker;
+
   // src/webview/pseq/sequence-details.ts
   var SequenceDetails = new class extends EventTarget {
     domContainer = document.getElementById("step-editor");
+    currentStep = null;
     constructor() {
       super();
-      this.domContainer.addEventListener("click", this.onClick.bind(this));
+      this.onChange = this.onChange.bind(this);
+      this.domContainer.querySelectorAll("input").forEach((i) => i.addEventListener("input", this.onChange));
+      this.domContainer.querySelectorAll("select").forEach((i) => i.addEventListener("change", this.onChange));
       this.showEmpty();
     }
     showStep(step) {
+      this.currentStep = step;
       document.getElementById("step-customid").value = step.customId || "";
       document.getElementById("step-name").value = step.customName || "";
       document.getElementById("step-file").value = step.parameters.file || "";
@@ -27,26 +71,68 @@
       document.getElementById("step-editor-nosetting").style.display = "none";
       document.getElementById("step-editor-empty").style.display = "block";
     }
-    onClick(e) {
-      const button = e.target.closest("[data-role]");
-      if (button === null) {
+    onChange() {
+      if (this.currentStep === null) {
         return;
       }
-      const role = button.dataset.role;
-      if (role === "cancel") {
-        return;
-      }
-      if (role === "save") {
-        this.dispatchEvent(new CustomEvent("save", {
-          detail: {}
-        }));
-      }
-      if (role === "delete") {
-        this.dispatchEvent(new CustomEvent("delete"));
-      }
+      const customId = !["start", "end"].includes(this.currentStep.type) ? document.getElementById("step-customid").value : "";
+      const customName = !["start", "end"].includes(this.currentStep.type) ? document.getElementById("step-name").value : "";
+      const step = new CanvasStep(this.currentStep.id, this.currentStep.rectangle.center, this.currentStep.type, customId, customName, {
+        code: document.getElementById("step-code").value,
+        file: document.getElementById("step-file").value,
+        language: document.getElementById("step-language").value === "python" ? "python" : "r"
+      });
+      this.dispatchEvent(new CustomEvent("change", { detail: step }));
     }
   }();
   var sequence_details_default = SequenceDetails;
+
+  // src/webview/pseq/sequence-errorbox.ts
+  var SequenceErrorBox = new class extends EventTarget {
+    domContainer = document.getElementById("pseq-errors");
+    constructor() {
+      super();
+      this.domContainer.addEventListener("click", this.onClick.bind(this));
+      this.domContainer.style.display = "none";
+    }
+    formatError(error) {
+      if (error.error === "SequenceNoStart") {
+        return `There is no start step.`;
+      }
+      if (error.error === "SequenceMultipleStarts") {
+        return "There is too much start steps.";
+      }
+      if (error.error === "ConditionEmptyTest") {
+        return "A condition does not have condition code.";
+      }
+      if (error.error === "StepNoExit") {
+        return "A step exit is not connected.";
+      }
+      if (error.error === "StepDuplicateId") {
+        return `Several steps share the same id ("${error.errorExtras.id}").`;
+      }
+      return "Unknow error.";
+    }
+    showErrors(errors) {
+      const output = [];
+      for (let i = 0; i < errors.length; ++i) {
+        output.push(`<div class="pseq-error" data-step="${errors[i].stepId ? errors[i].stepId : ""}">${this.formatError(errors[i])}</div>`);
+      }
+      this.domContainer.innerHTML = output.join("");
+      this.domContainer.style.display = errors.length > 0 ? "block" : "none";
+    }
+    clear() {
+      this.domContainer.innerHTML = "";
+      this.domContainer.style.display = "none";
+    }
+    onClick(e) {
+      const error = e.target.closest("[data-step]");
+      if (error && error.dataset.step && error.dataset.step.length > 0) {
+        this.dispatchEvent(new CustomEvent("showStep", { detail: parseInt(error.dataset.step) }));
+      }
+    }
+  }();
+  var sequence_errorbox_default = SequenceErrorBox;
 
   // src/webview/pseq/sequence-renderer.ts
   var Rectangle = class _Rectangle {
@@ -181,6 +267,25 @@
       window.addEventListener("resize", this.resize.bind(this));
       this.canvas.addEventListener("drop", this.onDrop.bind(this));
       this.canvas.addEventListener("dragover", this.onDragOver.bind(this));
+      sequence_errorbox_default.addEventListener("showStep", (e) => {
+        console.log("showing ", e.detail);
+        const step = this.steps.find((s) => s.id === e.detail);
+        if (step) {
+          this.selectedStep = step;
+          sequence_details_default.showStep(step);
+          this.setCameraZoom(5);
+          this.setCameraPosition(step.rectangle.center);
+          this.draw();
+        }
+      });
+      sequence_details_default.addEventListener("change", (e) => {
+        const step = this.steps.findIndex((s) => s.id === e.detail?.id);
+        if (e.detail && step >= 0) {
+          this.steps[step] = e.detail;
+          this.dataChanged();
+          this.draw();
+        }
+      });
       this.colorSteps = {
         //start: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
         //script: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-green'),
@@ -204,6 +309,7 @@
         this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customId, step.customName, step.parameters));
       }
       this.draw();
+      this.computeErrors();
     }
     getState() {
       return {
@@ -343,16 +449,16 @@
       if (step.type === "start") {
         this.ctx.fillText("Start", coordCenter.x, coordCenter.y, maxWidth);
       } else if (step.type === "gui") {
-        this.ctx.fillText(`(UI) ${step.customName}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+        this.ctx.fillText(`(UI) ${step.customName || "Unamed"}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
         this.ctx.fillText(step.parameters.file || "", coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
       } else if (step.type === "script") {
-        this.ctx.fillText(`(Script) ${step.customName}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+        this.ctx.fillText(`(Script) ${step.customName || "Unamed"}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
         this.ctx.fillText(step.parameters.file || "", coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
       } else if (step.type === "condition") {
         this.ctx.fillText(`${step.parameters.language === "python" ? "Python" : "R"} condition`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
         this.ctx.fillText(step.parameters.code || "", coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
       } else if (step.type === "sequence") {
-        this.ctx.fillText(`(Sequence) ${step.customName}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+        this.ctx.fillText(`(Sequence) ${step.customName || "Unamed"}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
         this.ctx.fillText(step.parameters.file || "", coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
       } else if (step.type === "end") {
         this.ctx.fillText("End", coordCenter.x, coordCenter.y, maxWidth);
@@ -452,6 +558,10 @@
       );
       this.ctx.stroke();
     }
+    computeErrors() {
+      const errors = sequence_check_default.check(this.steps);
+      sequence_errorbox_default.showErrors(errors);
+    }
     /**
      * Detect what is at world coordinate x/y. Can return {anchor: id} or {step: id}
      */
@@ -466,6 +576,9 @@
         }
       }
       return null;
+    }
+    dataChanged() {
+      this.computeErrors();
     }
     /**
      * Return the distance in pixels from the initial memorized click.
@@ -529,18 +642,24 @@
         if (el && el.type === "handle" && this.selectedHandle.step.id !== el.step.id) {
           if (el.handle === "top" && this.selectedHandle.handle === "bottom") {
             this.selectedHandle.step.parameters.target = el.step.id;
+            this.dataChanged();
           } else if (el.handle === "bottom" && this.selectedHandle.handle === "top") {
             el.step.parameters.target = this.selectedHandle.step.id;
+            this.dataChanged();
           } else if (el.handle === "top" && this.selectedHandle.handle === "right") {
             this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
+            this.dataChanged();
           } else if (el.handle === "right" && this.selectedHandle.handle === "top") {
             el.step.parameters.targetOnFalse = this.selectedHandle.step.id;
+            this.dataChanged();
           }
         } else if (el && el.type === "step" && this.selectedHandle.step.id !== el.step.id && (this.selectedHandle.handle === "bottom" || this.selectedHandle.handle === "right") && el.step.type !== "start") {
           if (this.selectedHandle.handle === "bottom") {
             this.selectedHandle.step.parameters.target = el.step.id;
+            this.dataChanged();
           } else if (this.selectedHandle.handle === "right") {
             this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
+            this.dataChanged();
           }
         }
       }
@@ -576,6 +695,7 @@
         }
         const type = button.getAttribute("data-step");
         this.steps.push(new CanvasStep(++highestId, { x: this.cameraX, y: this.cameraY }, type, "", "", {}));
+        this.dataChanged();
         this.draw();
       }
     }

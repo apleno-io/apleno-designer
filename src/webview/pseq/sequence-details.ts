@@ -2,13 +2,18 @@ import { CanvasStep } from "./sequence-renderer";
 
 const SequenceDetails = new class extends EventTarget {
   private domContainer: HTMLElement = document.getElementById('step-editor') as HTMLElement;
+  private currentStep: CanvasStep | null = null;
+
   constructor() {
     super();
-    this.domContainer.addEventListener('click', this.onClick.bind(this));
+    this.onChange = this.onChange.bind(this);
+    this.domContainer.querySelectorAll('input').forEach(i => i.addEventListener('input', this.onChange));
+    this.domContainer.querySelectorAll('select').forEach(i => i.addEventListener('change', this.onChange));
     this.showEmpty();
   }
 
   public showStep(step: CanvasStep) {
+    this.currentStep = step;
     (document.getElementById('step-customid') as HTMLInputElement).value = step.customId || '';
     (document.getElementById('step-name') as HTMLInputElement).value = step.customName || '';
     (document.getElementById('step-file') as HTMLInputElement).value = step.parameters.file || '';
@@ -29,27 +34,18 @@ const SequenceDetails = new class extends EventTarget {
     (document.getElementById('step-editor-empty') as HTMLElement).style.display = 'block';
   }
 
-  private onClick(e: MouseEvent) {
-    const button = (e.target as HTMLElement).closest('[data-role]') as HTMLElement;
-    if (button === null) {
+  private onChange() {
+    if (this.currentStep === null) {
       return;
     }
-    const role = button.dataset.role;
-
-    if (role === 'cancel') {
-      // todo: close form
-      return;
-    }
-    if (role === 'save') {
-      this.dispatchEvent(new CustomEvent('save', {
-        detail: {
-
-        }
-      }));
-    }
-    if (role === 'delete') {
-      this.dispatchEvent(new CustomEvent('delete'));
-    }
+    const customId = !['start', 'end'].includes(this.currentStep.type) ? (document.getElementById('step-customid') as HTMLInputElement).value : '';
+    const customName = !['start', 'end'].includes(this.currentStep.type) ? (document.getElementById('step-name') as HTMLInputElement).value : '';
+    const step = new CanvasStep(this.currentStep.id, this.currentStep.rectangle.center, this.currentStep.type, customId, customName, {
+      code: (document.getElementById('step-code') as HTMLInputElement).value,
+      file: (document.getElementById('step-file') as HTMLInputElement).value,
+      language: (document.getElementById('step-language') as HTMLSelectElement).value === 'python' ? 'python' : 'r'
+    });
+    this.dispatchEvent(new CustomEvent('change', { detail: step }));
   }
 };
 

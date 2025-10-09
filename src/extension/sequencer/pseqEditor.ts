@@ -410,7 +410,7 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
               <button data-role="add" data-step="end">End</button>
             </div>
           </div>
-          <div class="pseq-panel">
+          <div id="pseq-errors" class="pseq-panel">
             <div id="debug-1"></div>
             <div id="debug-2"></div>
             <div id="debug-3"></div>

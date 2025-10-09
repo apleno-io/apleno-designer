@@ -21,7 +21,7 @@
   background-color: rgba(0, 0, 0, 0.9);
   padding: 10px;
   margin-bottom: 10px;
-  border-radius: 5px;
+  border-radius: 2px;
   pointer-events: all;
   user-select: none;
 }
@@ -34,6 +34,18 @@
 .pseq-buttongroup button {
   display: block;
   flex: 1 1 auto;
+}
+
+.pseq-error {
+  padding: 3px;
+  color: var(--vscode-errorForeground);
+  border-radius: 2px;
+}
+
+.pseq-error:hover {
+  cursor: pointer;
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-statusBarItem-errorBackground);
 }
 
 #pseq-editor {

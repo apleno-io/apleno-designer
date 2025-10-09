@@ -1,3 +1,5 @@
+import { CanvasStep } from "./sequence-renderer";
+
 export interface SequenceError {
   error: 'SequenceNoStart' | 'SequenceMultipleStarts' | 'StepNoExit' | 'ConditionEmptyTest' | 'StepDuplicateId';
   stepId?: number;
@@ -38,8 +40,8 @@ const SequenceChecker = new class {
       }
 
       // Check for duplicate ID
-      if (!['start', 'end'].includes(step.type) && step.customId.length > 0 && steps.filter(s => s.customId === step.customId).length > 1) {
-        errors.push({ error: 'StepDuplicateId', errorExtras: { id: step.customId } });
+      if (!['start', 'end'].includes(step.type) && typeof step.customId === 'string' && step.customId.length > 0 && steps.filter(s => s.customId === step.customId).length > 1) {
+        errors.push({ error: 'StepDuplicateId', stepId: step.id, errorExtras: { id: step.customId } });
       }
     });
 

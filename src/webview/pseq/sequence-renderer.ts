@@ -13,7 +13,9 @@
 // - setCameraZoom
 // - setCameraPosition
 
+import SequenceChecker, { SequenceError } from "./sequence-check";
 import SequenceDetails from "./sequence-details";
+import SequenceErrorBox from "./sequence-errorbox";
 
 type StepType = 'start' | 'gui' | 'script' | 'condition' | 'sequence' | 'end';
 type StepHandle = 'top' | 'right' | 'bottom';
@@ -206,6 +208,25 @@ class SequenceEditor extends EventTarget {
     window.addEventListener('resize', this.resize.bind(this));
     this.canvas.addEventListener('drop', this.onDrop.bind(this));
     this.canvas.addEventListener('dragover', this.onDragOver.bind(this));
+    SequenceErrorBox.addEventListener('showStep', (e: CustomEventInit<number>) => {
+      console.log('showing ', e.detail);
+      const step = this.steps.find(s => s.id === e.detail);
+      if (step) {
+        this.selectedStep = step;
+        SequenceDetails.showStep(step);
+        this.setCameraZoom(5);
+        this.setCameraPosition(step.rectangle.center);
+        this.draw();
+      }
+    });
+    SequenceDetails.addEventListener('change', (e: CustomEventInit<CanvasStep>) => {
+      const step = this.steps.findIndex(s => s.id === e.detail?.id);
+      if (e.detail && step >= 0) {
+        this.steps[step] = e.detail;
+        this.dataChanged();
+        this.draw();
+      }
+    });
 
     // Get colors
     this.colorSteps = {
@@ -234,6 +255,7 @@ class SequenceEditor extends EventTarget {
       this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customId, step.customName, step.parameters));
     }
     this.draw();
+    this.computeErrors();
   }
 
   public getState(): any {
@@ -408,11 +430,11 @@ class SequenceEditor extends EventTarget {
       this.ctx.fillText('Start', coordCenter.x, coordCenter.y, maxWidth);
     }
     else if (step.type === 'gui') {
-      this.ctx.fillText(`(UI) ${step.customName}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+      this.ctx.fillText(`(UI) ${step.customName || 'Unamed'}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
       this.ctx.fillText(step.parameters.file || '', coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
     }
     else if (step.type === 'script') {
-      this.ctx.fillText(`(Script) ${step.customName}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+      this.ctx.fillText(`(Script) ${step.customName || 'Unamed'}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
       this.ctx.fillText(step.parameters.file || '', coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
     }
     else if (step.type === 'condition') {
@@ -420,7 +442,7 @@ class SequenceEditor extends EventTarget {
       this.ctx.fillText(step.parameters.code || '', coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
     }
     else if (step.type === 'sequence') {
-      this.ctx.fillText(`(Sequence) ${step.customName}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
+      this.ctx.fillText(`(Sequence) ${step.customName || 'Unamed'}`, coordCenter.x, coordCenter.y - spacingHalf, maxWidth);
       this.ctx.fillText(step.parameters.file || '', coordCenter.x, coordCenter.y + spacingHalf, maxWidth);
     }
     else if (step.type === 'end') {
@@ -545,6 +567,11 @@ class SequenceEditor extends EventTarget {
     this.ctx.stroke();
   }
 
+  private computeErrors() {
+    const errors: SequenceError[] = SequenceChecker.check(this.steps);
+    SequenceErrorBox.showErrors(errors);
+  }
+
   /**
    * Detect what is at world coordinate x/y. Can return {anchor: id} or {step: id}
    */
@@ -560,6 +587,10 @@ class SequenceEditor extends EventTarget {
       }
     }
     return null;
+  }
+
+  private dataChanged() {
+    this.computeErrors();
   }
 
   /**
@@ -640,24 +671,30 @@ class SequenceEditor extends EventTarget {
         // only valid handle connections are bottom-top and right-top
         if (el.handle === 'top' && this.selectedHandle.handle === 'bottom') {
           this.selectedHandle.step.parameters.target = el.step.id;
+          this.dataChanged();
         }
         else if (el.handle === 'bottom' && this.selectedHandle.handle === 'top') {
           el.step.parameters.target = this.selectedHandle.step.id;
+          this.dataChanged();
         }
         else if (el.handle === 'top' && this.selectedHandle.handle === 'right') {
           this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
+          this.dataChanged();
         }
         else if (el.handle === 'right' && this.selectedHandle.handle === 'top') {
           el.step.parameters.targetOnFalse = this.selectedHandle.step.id;
+          this.dataChanged();
         }
       }
       else if (el && el.type === 'step' && this.selectedHandle.step.id !== el.step.id && (this.selectedHandle.handle === 'bottom' || this.selectedHandle.handle === 'right') && el.step.type !== 'start') {
         // Here user directly targeted a step
         if (this.selectedHandle.handle === 'bottom') {
           this.selectedHandle.step.parameters.target = el.step.id;
+          this.dataChanged();
         }
         else if (this.selectedHandle.handle === 'right') {
           this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
+          this.dataChanged();
         }
       }
     }
@@ -698,6 +735,7 @@ class SequenceEditor extends EventTarget {
       }
       const type = button.getAttribute('data-step');
       this.steps.push(new CanvasStep(++highestId, { x: this.cameraX, y: this.cameraY }, type as StepType, '', '', {}));
+      this.dataChanged();
       this.draw();
     }
   }
