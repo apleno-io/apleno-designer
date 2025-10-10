@@ -2,6 +2,15 @@
 (() => {
   // src/webview/pseq/sequence-check.ts
   var SequenceChecker = new class {
+    getFilesToCheck(steps) {
+      const filesToCheck = [];
+      steps.forEach((step) => {
+        if (["sequence", "script", "gui"].includes(step.type) && typeof step.parameters.file === "string") {
+          filesToCheck.push(step.parameters.file);
+        }
+      });
+      return filesToCheck;
+    }
     check(steps) {
       const errors = [];
       let countstart = 0;

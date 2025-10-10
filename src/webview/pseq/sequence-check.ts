@@ -7,7 +7,17 @@ export interface SequenceError {
 }
 
 const SequenceChecker = new class {
-  public check(steps: CanvasStep[]): SequenceError[] {
+  public getFilesToCheck(steps: CanvasStep[]) {
+    const filesToCheck: string[] = [];
+    steps.forEach((step) => {
+      if (['sequence', 'script', 'gui'].includes(step.type) && typeof step.parameters.file === 'string') {
+        filesToCheck.push(step.parameters.file);
+      }
+    });
+    return filesToCheck;
+  }
+
+  public check(steps: CanvasStep[], missingFiles: string[]): SequenceError[] {
     const errors: SequenceError[] = [];
     let countstart = 0;
     let filesToCheck: string[] = [];
@@ -35,7 +45,7 @@ const SequenceChecker = new class {
       }
 
       // Check for missing files
-      if (['sequence', 'script', 'gui'].includes(step.type)) {
+      if (['sequence', 'script', 'gui'].includes(step.type) && step.parameters.) {
         filesToCheck.push(step.parameters.file || '');
       }
 
