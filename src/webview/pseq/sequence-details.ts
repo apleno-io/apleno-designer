@@ -43,7 +43,9 @@ const SequenceDetails = new class extends EventTarget {
     const step = new CanvasStep(this.currentStep.id, this.currentStep.rectangle.center, this.currentStep.type, customId, customName, {
       code: (document.getElementById('step-code') as HTMLInputElement).value,
       file: (document.getElementById('step-file') as HTMLInputElement).value,
-      language: (document.getElementById('step-language') as HTMLSelectElement).value === 'python' ? 'python' : 'r'
+      language: (document.getElementById('step-language') as HTMLSelectElement).value === 'python' ? 'python' : 'r',
+      target: this.currentStep.parameters.target,
+      targetOnFalse: this.currentStep.parameters.targetOnFalse
     });
     this.dispatchEvent(new CustomEvent('change', { detail: step }));
   }

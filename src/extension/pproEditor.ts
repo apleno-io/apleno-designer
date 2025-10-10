@@ -303,7 +303,6 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 					}
 				});
 				if (Array.isArray(res) && res.length > 0) {
-					console.log(res[0]);
 					this.postMessage(webviewPanel, 'select-sequence', vscode.workspace.asRelativePath(res[0].path));
 				}
 			}

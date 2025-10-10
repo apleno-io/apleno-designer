@@ -320,21 +320,22 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
           });
         }
       }
-      else if (e.type === 'select-file') {
-        const res = await vscode.window.showOpenDialog({
-          canSelectFiles: true,
-          canSelectFolders: false,
-          canSelectMany: false,
-          title: 'Select a file',
-          openLabel: 'Select',
-          filters: {
-            'Any file': ['*']
-          }
-        });
-        if (Array.isArray(res) && res.length > 0) {
-          console.log(res[0]);
-          this.postMessage(webviewPanel, 'select-file', vscode.workspace.asRelativePath(res[0].path));
+      else if (e.type === 'GetFileRelative') {
+        if (typeof e.path === 'string' && e.path.length > 0) {
+          this.postMessage(webviewPanel, 'GetFileRelativeResponse', vscode.workspace.asRelativePath(e.path));
         }
+      }
+      else if (e.type === 'CheckFiles') {
+        if (!Array.isArray(e.paths)) {
+          return;
+        }
+
+        const results = [];
+        for (let i = 0; i < e.paths.length; ++i) {
+          const result = await vscode.workspace.fs.stat(vscode.Uri.file(e.paths[i]));
+          results.push({ path: e.paths[i], exists: result && result.type === vscode.FileType.File });
+        }
+        this.postMessage(webviewPanel, 'CheckFilesResponse', results);
       }
     });
   }

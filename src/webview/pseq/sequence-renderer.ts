@@ -182,6 +182,7 @@ class SequenceEditor extends EventTarget {
   private selectedStep: CanvasStep | null = null;
   private selectedHandle: CanvasElement | null = null;
   private extraHighlightStep: CanvasStep | null = null;
+  private dropWorldCoordinate: Point | null = null;
 
   // Design
   private colorGrid = window.getComputedStyle(document.body).getPropertyValue('--vscode-widget-border');
@@ -199,7 +200,8 @@ class SequenceEditor extends EventTarget {
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
     // Events
-    (document.getElementById('pseq-controls') as HTMLElement).addEventListener('click', this.onClickControls.bind(this));
+    window.addEventListener('keydown', this.onKeyDown.bind(this));
+    document.getElementById('pseq-controls')?.addEventListener('click', this.onClickControls.bind(this));
     this.canvas.addEventListener('wheel', this.onMouseWheel.bind(this));
     this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
     this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
@@ -209,7 +211,6 @@ class SequenceEditor extends EventTarget {
     this.canvas.addEventListener('drop', this.onDrop.bind(this));
     this.canvas.addEventListener('dragover', this.onDragOver.bind(this));
     SequenceErrorBox.addEventListener('showStep', (e: CustomEventInit<number>) => {
-      console.log('showing ', e.detail);
       const step = this.steps.find(s => s.id === e.detail);
       if (step) {
         this.selectedStep = step;
@@ -740,23 +741,105 @@ class SequenceEditor extends EventTarget {
     }
   }
 
-  private onDrop(ev: DragEvent) {
-    if (ev.dataTransfer === null) {
+  private onDrop(e: DragEvent) {
+    if (e.dataTransfer === null) {
       return;
     }
-    const allDropVariations = JSON.stringify({
+    this.dropWorldCoordinate = this.screenToWorld({ x: e.offsetX, y: e.offsetY });
+    const filepath = e.dataTransfer.getData('text/plain');
+    this.dispatchEvent(new CustomEvent('GetFileRelative', { detail: filepath }));
+    /*const allDropVariations = JSON.stringify({
       'dataTransfer.types': Array.from(ev.dataTransfer.types),
       'dataTransfer.getData(text/uri-list)': ev.dataTransfer.getData('text/uri-list'),
       'dataTransfer.getData(text/plain)': ev.dataTransfer.getData('text/plain'),
       'dataTransfer.files.0.name': ev.dataTransfer.files.item(0)?.name,
     }, null, 2);
-    console.log(allDropVariations);
-    ev.preventDefault();
+    console.log(allDropVariations);*/
+    e.preventDefault();
   }
 
-  private onDragOver(ev: DragEvent) {
-    console.log("File(s) over drop zone");
-    ev.preventDefault();
+  private onDragOver(e: DragEvent) {
+    e.preventDefault();
+  }
+
+  /**
+   * Last phase when drag and dropping a file into editor. Will create the step.
+   */
+  public dropResponse(filepath: string) {
+    // Sanitize input
+    if (typeof filepath !== 'string' || filepath.length === 0) {
+      return;
+    }
+
+    // Detect type
+    let type: StepType = 'script';
+    filepath = filepath.toLowerCase();
+    if (filepath.endsWith('.pgui')) {
+      type = 'gui';
+    }
+    else if (filepath.endsWith('.pseq')) {
+      type = 'sequence';
+    }
+    else if (filepath.endsWith('.r') || filepath.endsWith('.py')) {
+      type = 'script';
+    }
+    else {
+      return;
+    }
+
+    // Generate name
+    const regexId = /^([^.]*)/m.exec(filepath);
+    const id = regexId ? regexId[1] : filepath;
+
+    // Find highest id
+    let highestId = 0;
+    for (let i = 0; i < this.steps.length; ++i) {
+      if (highestId < this.steps[i].id) {
+        highestId = this.steps[i].id;
+      }
+    }
+
+    // Add step
+    this.steps.push(new CanvasStep(++highestId, this.dropWorldCoordinate || { x: 0, y: 0 }, type, id, id, { file: filepath }));
+    this.dataChanged();
+    this.draw();
+  }
+
+  private onKeyDown(e: KeyboardEvent) {
+    console.log(e.key);
+    if (this.selectedStep && (e.key === 'Backspace' || e.key === 'Delete')) {
+      this.deleteCurrentStep();
+    }
+  }
+
+  /**
+   * Remove the currently selected step from the sequence.
+   */
+  private deleteCurrentStep() {
+    // Check
+    if (this.selectedStep === null) {
+      return;
+    }
+
+    // Remove all target to this step
+    this.steps.forEach(step => {
+      if (step.parameters.target === this.selectedStep?.id) {
+        step.parameters.target = undefined;
+      }
+      if (step.parameters.targetOnFalse === this.selectedStep?.id) {
+        step.parameters.targetOnFalse = undefined;
+      }
+    });
+
+    // Remove step
+    const index = this.steps.findIndex(s => s.id === this.selectedStep?.id);
+    this.steps.splice(index, 1);
+    this.selectedStep = null;
+
+    // Update UI
+    SequenceDetails.showEmpty();
+    this.computeErrors();
+    this.draw();
   }
 }
 
@@ -764,6 +847,12 @@ class SequenceEditor extends EventTarget {
   // @ts-ignore
   const vscode = acquireVsCodeApi();
   const editor = new SequenceEditor();
+  editor.addEventListener('GetFileRelative', (e: CustomEventInit<string>) => {
+    vscode.postMessage({ type: 'GetFileRelative', path: e.detail });
+  });
+  editor.addEventListener('CheckFiles', (e: CustomEventInit<string[]>) => {
+    vscode.postMessage({ type: 'CheckFiles', paths: e.detail });
+  });
 
   window.addEventListener('message', async e => {
     const { type, body, requestId } = e.data;
@@ -774,11 +863,14 @@ class SequenceEditor extends EventTarget {
       if (body.edits.length > 0) {
         editor.setState(body.edits[body.edits.length - 1].state);
       }
-      return;
     }
     else if (type === 'getFileData') {
       vscode.postMessage({ type: 'response', requestId, body: editor.getState() });
-      return;
+    }
+    else if (type === 'GetFileRelativeResponse') {
+      editor.dropResponse(body);
+    }
+    else if (type === 'CheckFilesResponse') {
     }
   });
 

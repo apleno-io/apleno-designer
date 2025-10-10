@@ -80,7 +80,9 @@
       const step = new CanvasStep(this.currentStep.id, this.currentStep.rectangle.center, this.currentStep.type, customId, customName, {
         code: document.getElementById("step-code").value,
         file: document.getElementById("step-file").value,
-        language: document.getElementById("step-language").value === "python" ? "python" : "r"
+        language: document.getElementById("step-language").value === "python" ? "python" : "r",
+        target: this.currentStep.parameters.target,
+        targetOnFalse: this.currentStep.parameters.targetOnFalse
       });
       this.dispatchEvent(new CustomEvent("change", { detail: step }));
     }
@@ -247,6 +249,7 @@
     selectedStep = null;
     selectedHandle = null;
     extraHighlightStep = null;
+    dropWorldCoordinate = null;
     // Design
     colorGrid = window.getComputedStyle(document.body).getPropertyValue("--vscode-widget-border");
     colorSelected = window.getComputedStyle(document.body).getPropertyValue("--vscode-foreground");
@@ -258,7 +261,8 @@
       this.parent = document.getElementById("pseq-editor");
       this.canvas = document.getElementById("pseq-canvas");
       this.ctx = this.canvas.getContext("2d");
-      document.getElementById("pseq-controls").addEventListener("click", this.onClickControls.bind(this));
+      window.addEventListener("keydown", this.onKeyDown.bind(this));
+      document.getElementById("pseq-controls")?.addEventListener("click", this.onClickControls.bind(this));
       this.canvas.addEventListener("wheel", this.onMouseWheel.bind(this));
       this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
       this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
@@ -268,7 +272,6 @@
       this.canvas.addEventListener("drop", this.onDrop.bind(this));
       this.canvas.addEventListener("dragover", this.onDragOver.bind(this));
       sequence_errorbox_default.addEventListener("showStep", (e) => {
-        console.log("showing ", e.detail);
         const step = this.steps.find((s) => s.id === e.detail);
         if (step) {
           this.selectedStep = step;
@@ -699,27 +702,86 @@
         this.draw();
       }
     }
-    onDrop(ev) {
-      if (ev.dataTransfer === null) {
+    onDrop(e) {
+      if (e.dataTransfer === null) {
         return;
       }
-      const allDropVariations = JSON.stringify({
-        "dataTransfer.types": Array.from(ev.dataTransfer.types),
-        "dataTransfer.getData(text/uri-list)": ev.dataTransfer.getData("text/uri-list"),
-        "dataTransfer.getData(text/plain)": ev.dataTransfer.getData("text/plain"),
-        "dataTransfer.files.0.name": ev.dataTransfer.files.item(0)?.name
-      }, null, 2);
-      console.log(allDropVariations);
-      ev.preventDefault();
+      this.dropWorldCoordinate = this.screenToWorld({ x: e.offsetX, y: e.offsetY });
+      const filepath = e.dataTransfer.getData("text/plain");
+      this.dispatchEvent(new CustomEvent("GetFileRelative", { detail: filepath }));
+      e.preventDefault();
     }
-    onDragOver(ev) {
-      console.log("File(s) over drop zone");
-      ev.preventDefault();
+    onDragOver(e) {
+      e.preventDefault();
+    }
+    /**
+     * Last phase when drag and dropping a file into editor. Will create the step.
+     */
+    dropResponse(filepath) {
+      if (typeof filepath !== "string" || filepath.length === 0) {
+        return;
+      }
+      let type = "script";
+      filepath = filepath.toLowerCase();
+      if (filepath.endsWith(".pgui")) {
+        type = "gui";
+      } else if (filepath.endsWith(".pseq")) {
+        type = "sequence";
+      } else if (filepath.endsWith(".r") || filepath.endsWith(".py")) {
+        type = "script";
+      } else {
+        return;
+      }
+      const regexId = /^([^.]*)/m.exec(filepath);
+      const id = regexId ? regexId[1] : filepath;
+      let highestId = 0;
+      for (let i = 0; i < this.steps.length; ++i) {
+        if (highestId < this.steps[i].id) {
+          highestId = this.steps[i].id;
+        }
+      }
+      this.steps.push(new CanvasStep(++highestId, this.dropWorldCoordinate || { x: 0, y: 0 }, type, id, id, { file: filepath }));
+      this.dataChanged();
+      this.draw();
+    }
+    onKeyDown(e) {
+      console.log(e.key);
+      if (this.selectedStep && (e.key === "Backspace" || e.key === "Delete")) {
+        this.deleteCurrentStep();
+      }
+    }
+    /**
+     * Remove the currently selected step from the sequence.
+     */
+    deleteCurrentStep() {
+      if (this.selectedStep === null) {
+        return;
+      }
+      this.steps.forEach((step) => {
+        if (step.parameters.target === this.selectedStep?.id) {
+          step.parameters.target = void 0;
+        }
+        if (step.parameters.targetOnFalse === this.selectedStep?.id) {
+          step.parameters.targetOnFalse = void 0;
+        }
+      });
+      const index = this.steps.findIndex((s) => s.id === this.selectedStep?.id);
+      this.steps.splice(index, 1);
+      this.selectedStep = null;
+      sequence_details_default.showEmpty();
+      this.computeErrors();
+      this.draw();
     }
   };
   (function() {
     const vscode = acquireVsCodeApi();
     const editor = new SequenceEditor();
+    editor.addEventListener("GetFileRelative", (e) => {
+      vscode.postMessage({ type: "GetFileRelative", path: e.detail });
+    });
+    editor.addEventListener("CheckFiles", (e) => {
+      vscode.postMessage({ type: "CheckFiles", paths: e.detail });
+    });
     window.addEventListener("message", async (e) => {
       const { type, body, requestId } = e.data;
       if (type === "init") {
@@ -728,10 +790,11 @@
         if (body.edits.length > 0) {
           editor.setState(body.edits[body.edits.length - 1].state);
         }
-        return;
       } else if (type === "getFileData") {
         vscode.postMessage({ type: "response", requestId, body: editor.getState() });
-        return;
+      } else if (type === "GetFileRelativeResponse") {
+        editor.dropResponse(body);
+      } else if (type === "CheckFilesResponse") {
       }
     });
     vscode.postMessage({ type: "ready" });
