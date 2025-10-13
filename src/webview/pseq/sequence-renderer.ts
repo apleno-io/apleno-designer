@@ -81,7 +81,7 @@ export class CanvasStep {
     this.type = type;
     this.customId = customId;
     this.customName = customName;
-    this.parameters = params;
+    this.parameters = structuredClone(params);
   }
 
   public setPosition(point: Point): void {
@@ -865,6 +865,7 @@ class SequenceEditor extends EventTarget {
 }
 
 (function () {
+  let initialState = {};
   let lastState = {};
 
   // @ts-ignore
@@ -873,7 +874,6 @@ class SequenceEditor extends EventTarget {
   editor.addEventListener('OnDidChange', () => {
     const newState = editor.getState();
     if (!deepEqual(lastState, newState)) {
-      console.log(newState);
       lastState = structuredClone(newState);
       vscode.postMessage({ type: 'OnDidChange', edit: { state: editor.getState() } });
     }
@@ -888,13 +888,16 @@ class SequenceEditor extends EventTarget {
   window.addEventListener('message', async e => {
     const { type, body, requestId } = e.data;
     if (type === 'init') {
-      editor.setState(body.untitled ? {} : body.value);
-      lastState = structuredClone(body.untitled ? {} : body.value);
+      initialState = structuredClone(body.untitled ? {} : body.value);
+      lastState = structuredClone(initialState);
+      editor.setState(initialState);
     }
     else if (type === 'update') {
       if (body.edits.length > 0) {
         editor.setState(body.edits[body.edits.length - 1].state);
-        lastState = structuredClone(body.edits[body.edits.length - 1].state);
+      }
+      else {
+        editor.setState(initialState);
       }
     }
     else if (type === 'getFileData') {
