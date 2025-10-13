@@ -1,26 +1,3 @@
-//////////////////////
-/*
-document.getElementById('drop-zone').addEventListener('drop', dropHandler);
-document.getElementById('drop-zone').addEventListener('dragover', dragOverHandler);
-
-function dropHandler(ev) {
-	const allDropVariations = JSON.stringify({
-		'dataTransfer.types': Array.from(ev.dataTransfer.types),
-		'dataTransfer.getData(text/uri-list)': ev.dataTransfer.getData('text/uri-list'),
-		'dataTransfer.getData(text/plain)': ev.dataTransfer.getData('text/plain'),
-		'dataTransfer.files.0.name': ev.dataTransfer.files.item(0)?.name,
-	}, null, 2);
-
-	ev.preventDefault();
-}
-
-function dragOverHandler(ev) {
-	console.log("File(s) over drop zone");
-	ev.preventDefault();
-}
-*/
-//////////////////////
-
 class ChangelogEditor extends EventTarget {
 	constructor(parent, changelog) {
 		super();
@@ -46,7 +23,7 @@ class ChangelogEditor extends EventTarget {
 		}, 0);
 	}
 
-	sanitize(input){
+	sanitize(input) {
 		return input.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 	}
 
@@ -99,7 +76,7 @@ class ChangelogEditor extends EventTarget {
 		const message = this.parent.querySelector('input[data-add="message"]').value;
 
 		// Add to changelog
-		this.changelog.unshift({date, author, version, message});
+		this.changelog.unshift({ date, author, version, message });
 		this.dispatchEvent(new CustomEvent('change'));
 		this.render();
 	}
@@ -323,15 +300,15 @@ class PProEditor extends EventTarget {
 		}
 	}
 
-	selectSequenceCallback(url){
+	selectSequenceCallback(url) {
 		document.querySelector('#project-sequence').value = url;
 	}
 
-	selectIconCallback(url){
+	selectIconCallback(url) {
 		document.querySelector('#project-icon').value = url;
 	}
 
-	selectLogoCallback(url){
+	selectLogoCallback(url) {
 		document.querySelector('#project-logo').value = url;
 	}
 

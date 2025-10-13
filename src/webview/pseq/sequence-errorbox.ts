@@ -25,6 +25,9 @@ const SequenceErrorBox = new class extends EventTarget {
     if (error.error === 'StepDuplicateId') {
       return `Several steps share the same id ("${error.errorExtras.id}").`;
     }
+    if (error.error === 'StepFileNotFound') {
+      return `A step has an unknown file ("${error.errorExtras.file}").`;
+    }
     return 'Unknow error.';
   }
 

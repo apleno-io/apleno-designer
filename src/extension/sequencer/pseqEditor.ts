@@ -326,14 +326,20 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
         }
       }
       else if (e.type === 'CheckFiles') {
-        if (!Array.isArray(e.paths)) {
+        if (!Array.isArray(e.paths) || vscode.workspace.workspaceFolders === undefined || vscode.workspace.workspaceFolders?.length === 0) {
+          this.postMessage(webviewPanel, 'CheckFilesResponse', {});
           return;
         }
 
         const results = [];
         for (let i = 0; i < e.paths.length; ++i) {
-          const result = await vscode.workspace.fs.stat(vscode.Uri.file(e.paths[i]));
-          results.push({ path: e.paths[i], exists: result && result.type === vscode.FileType.File });
+          try {
+            const result = await vscode.workspace.fs.stat(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, e.paths[i]));
+            results.push({ path: e.paths[i], exists: result && result.type === vscode.FileType.File });
+          }
+          catch {
+            results.push({ path: e.paths[i], exists: false });
+          }
         }
         this.postMessage(webviewPanel, 'CheckFilesResponse', results);
       }
@@ -477,7 +483,7 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
   }
 
   private async onMessage(document: PGMSequenceDocument, message: any) {
-    if (message.type === 'edit') {
+    if (message.type === 'OnDidChange') {
       document.makeEdit(message.edit as PGMSequenceDocumentEdit);
       return;
     }

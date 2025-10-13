@@ -1,7 +1,7 @@
 import { CanvasStep } from "./sequence-renderer";
 
 export interface SequenceError {
-  error: 'SequenceNoStart' | 'SequenceMultipleStarts' | 'StepNoExit' | 'ConditionEmptyTest' | 'StepDuplicateId';
+  error: 'SequenceNoStart' | 'SequenceMultipleStarts' | 'StepNoExit' | 'StepFileNotFound' | 'ConditionEmptyTest' | 'StepDuplicateId';
   stepId?: number;
   errorExtras?: any;
 }
@@ -20,7 +20,6 @@ const SequenceChecker = new class {
   public check(steps: CanvasStep[], missingFiles: string[]): SequenceError[] {
     const errors: SequenceError[] = [];
     let countstart = 0;
-    let filesToCheck: string[] = [];
     steps.forEach((step) => {
       // Check for start
       if (step.type === 'start') {
@@ -45,8 +44,8 @@ const SequenceChecker = new class {
       }
 
       // Check for missing files
-      if (['sequence', 'script', 'gui'].includes(step.type) && step.parameters.) {
-        filesToCheck.push(step.parameters.file || '');
+      if (['sequence', 'script', 'gui'].includes(step.type) && missingFiles.includes(step.parameters.file as any)) {
+        errors.push({ stepId: step.id, error: 'StepFileNotFound', errorExtras: { file: step.parameters.file } });
       }
 
       // Check for duplicate ID

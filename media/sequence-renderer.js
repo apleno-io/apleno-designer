@@ -1,5 +1,40 @@
 "use strict";
 (() => {
+  // src/common/utils/deep-equal.ts
+  function deepEqual(a, b) {
+    if (a === b) {
+      return true;
+    }
+    if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) {
+      return false;
+    }
+    if (Array.isArray(a)) {
+      if (!Array.isArray(b)) {
+        return false;
+      }
+      if (a.length !== b.length) {
+        return false;
+      }
+      for (let i = 0; i < a.length; i++) {
+        if (!deepEqual(a[i], b[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+    if (keysA.length !== keysB.length) {
+      return false;
+    }
+    for (const key of keysA) {
+      if (!keysB.includes(key) || !deepEqual(a[key], b[key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   // src/webview/pseq/sequence-check.ts
   var SequenceChecker = new class {
     getFilesToCheck(steps) {
@@ -11,10 +46,9 @@
       });
       return filesToCheck;
     }
-    check(steps) {
+    check(steps, missingFiles) {
       const errors = [];
       let countstart = 0;
-      let filesToCheck = [];
       steps.forEach((step) => {
         if (step.type === "start") {
           ++countstart;
@@ -32,8 +66,8 @@
             errors.push({ stepId: step.id, error: "StepNoExit" });
           }
         }
-        if (["sequence", "script", "gui"].includes(step.type)) {
-          filesToCheck.push(step.parameters.file || "");
+        if (["sequence", "script", "gui"].includes(step.type) && missingFiles.includes(step.parameters.file)) {
+          errors.push({ stepId: step.id, error: "StepFileNotFound", errorExtras: { file: step.parameters.file } });
         }
         if (!["start", "end"].includes(step.type) && typeof step.customId === "string" && step.customId.length > 0 && steps.filter((s) => s.customId === step.customId).length > 1) {
           errors.push({ error: "StepDuplicateId", stepId: step.id, errorExtras: { id: step.customId } });
@@ -121,6 +155,9 @@
       }
       if (error.error === "StepDuplicateId") {
         return `Several steps share the same id ("${error.errorExtras.id}").`;
+      }
+      if (error.error === "StepFileNotFound") {
+        return `A step has an unknown file ("${error.errorExtras.file}").`;
       }
       return "Unknow error.";
     }
@@ -320,6 +357,8 @@
         const step = state.steps[i];
         this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customId, step.customName, step.parameters));
       }
+      this.setCameraPosition({ x: state.cameraX || 0, y: state.cameraY || 0 });
+      this.setCameraZoom(state.cameraZoom || 6);
       this.draw();
       this.computeErrors();
     }
@@ -571,7 +610,12 @@
       this.ctx.stroke();
     }
     computeErrors() {
-      const errors = sequence_check_default.check(this.steps);
+      const filesToCheck = sequence_check_default.getFilesToCheck(this.steps);
+      this.dispatchEvent(new CustomEvent("CheckFiles", { detail: filesToCheck }));
+    }
+    computeErrorsWithMissingFiles(fileResults) {
+      const missingFiles = fileResults.filter((m) => !m.exists).map((f) => f.path);
+      const errors = sequence_check_default.check(this.steps, missingFiles);
       sequence_errorbox_default.showErrors(errors);
     }
     /**
@@ -590,6 +634,7 @@
       return null;
     }
     dataChanged() {
+      this.dispatchEvent(new CustomEvent("OnDidChange"));
       this.computeErrors();
     }
     /**
@@ -654,32 +699,32 @@
         if (el && el.type === "handle" && this.selectedHandle.step.id !== el.step.id) {
           if (el.handle === "top" && this.selectedHandle.handle === "bottom") {
             this.selectedHandle.step.parameters.target = el.step.id;
-            this.dataChanged();
           } else if (el.handle === "bottom" && this.selectedHandle.handle === "top") {
             el.step.parameters.target = this.selectedHandle.step.id;
-            this.dataChanged();
           } else if (el.handle === "top" && this.selectedHandle.handle === "right") {
             this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
-            this.dataChanged();
           } else if (el.handle === "right" && this.selectedHandle.handle === "top") {
             el.step.parameters.targetOnFalse = this.selectedHandle.step.id;
-            this.dataChanged();
           }
         } else if (el && el.type === "step" && this.selectedHandle.step.id !== el.step.id && (this.selectedHandle.handle === "bottom" || this.selectedHandle.handle === "right") && el.step.type !== "start") {
           if (this.selectedHandle.handle === "bottom") {
             this.selectedHandle.step.parameters.target = el.step.id;
-            this.dataChanged();
           } else if (this.selectedHandle.handle === "right") {
             this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
-            this.dataChanged();
           }
         }
+      }
+      if (this.mouseState !== "idle" && this.mouseState !== "cameraMove") {
+        this.dataChanged();
       }
       this.mouseState = "idle";
       this.extraHighlightStep = null;
       this.draw();
     }
     onMouseLeave() {
+      if (this.mouseState !== "idle" && this.mouseState !== "cameraMove") {
+        this.dataChanged();
+      }
       this.mouseState = "idle";
       this.extraHighlightStep = null;
       this.draw();
@@ -706,7 +751,10 @@
           }
         }
         const type = button.getAttribute("data-step");
-        this.steps.push(new CanvasStep(++highestId, { x: this.cameraX, y: this.cameraY }, type, "", "", {}));
+        const newStep = new CanvasStep(++highestId, { x: this.cameraX, y: this.cameraY }, type, "", "", {});
+        this.steps.push(newStep);
+        this.selectedStep = newStep;
+        sequence_details_default.showStep(this.selectedStep);
         this.dataChanged();
         this.draw();
       }
@@ -749,12 +797,18 @@
           highestId = this.steps[i].id;
         }
       }
-      this.steps.push(new CanvasStep(++highestId, this.dropWorldCoordinate || { x: 0, y: 0 }, type, id, id, { file: filepath }));
+      const newStep = new CanvasStep(++highestId, this.dropWorldCoordinate || { x: 0, y: 0 }, type, id, id, { file: filepath });
+      this.steps.push(newStep);
+      this.selectedStep = newStep;
+      sequence_details_default.showStep(this.selectedStep);
       this.dataChanged();
       this.draw();
     }
     onKeyDown(e) {
-      console.log(e.key);
+      const active = document.activeElement;
+      if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLElement && active.isContentEditable) {
+        return;
+      }
       if (this.selectedStep && (e.key === "Backspace" || e.key === "Delete")) {
         this.deleteCurrentStep();
       }
@@ -778,13 +832,22 @@
       this.steps.splice(index, 1);
       this.selectedStep = null;
       sequence_details_default.showEmpty();
-      this.computeErrors();
+      this.dataChanged();
       this.draw();
     }
   };
   (function() {
+    let lastState = {};
     const vscode = acquireVsCodeApi();
     const editor = new SequenceEditor();
+    editor.addEventListener("OnDidChange", () => {
+      const newState = editor.getState();
+      if (!deepEqual(lastState, newState)) {
+        console.log(newState);
+        lastState = structuredClone(newState);
+        vscode.postMessage({ type: "OnDidChange", edit: { state: editor.getState() } });
+      }
+    });
     editor.addEventListener("GetFileRelative", (e) => {
       vscode.postMessage({ type: "GetFileRelative", path: e.detail });
     });
@@ -795,15 +858,18 @@
       const { type, body, requestId } = e.data;
       if (type === "init") {
         editor.setState(body.untitled ? {} : body.value);
+        lastState = structuredClone(body.untitled ? {} : body.value);
       } else if (type === "update") {
         if (body.edits.length > 0) {
           editor.setState(body.edits[body.edits.length - 1].state);
+          lastState = structuredClone(body.edits[body.edits.length - 1].state);
         }
       } else if (type === "getFileData") {
         vscode.postMessage({ type: "response", requestId, body: editor.getState() });
       } else if (type === "GetFileRelativeResponse") {
         editor.dropResponse(body);
       } else if (type === "CheckFilesResponse") {
+        editor.computeErrorsWithMissingFiles(body);
       }
     });
     vscode.postMessage({ type: "ready" });

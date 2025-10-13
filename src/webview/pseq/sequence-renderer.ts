@@ -13,6 +13,7 @@
 // - setCameraZoom
 // - setCameraPosition
 
+import { deepEqual } from "../../common/utils/deep-equal";
 import SequenceChecker, { SequenceError } from "./sequence-check";
 import SequenceDetails from "./sequence-details";
 import SequenceErrorBox from "./sequence-errorbox";
@@ -255,6 +256,8 @@ class SequenceEditor extends EventTarget {
       const step: any = state.steps[i];
       this.steps.push(new CanvasStep(step.id, { x: step.x, y: step.y }, step.type, step.customId, step.customName, step.parameters));
     }
+    this.setCameraPosition({ x: state.cameraX || 0, y: state.cameraY || 0 });
+    this.setCameraZoom(state.cameraZoom || 6);
     this.draw();
     this.computeErrors();
   }
@@ -569,7 +572,13 @@ class SequenceEditor extends EventTarget {
   }
 
   private computeErrors() {
-    const errors: SequenceError[] = SequenceChecker.check(this.steps);
+    const filesToCheck = SequenceChecker.getFilesToCheck(this.steps);
+    this.dispatchEvent(new CustomEvent('CheckFiles', { detail: filesToCheck }));
+  }
+
+  public computeErrorsWithMissingFiles(fileResults: any[]) {
+    const missingFiles: string[] = fileResults.filter(m => !m.exists).map(f => f.path);
+    const errors: SequenceError[] = SequenceChecker.check(this.steps, missingFiles);
     SequenceErrorBox.showErrors(errors);
   }
 
@@ -591,6 +600,7 @@ class SequenceEditor extends EventTarget {
   }
 
   private dataChanged() {
+    this.dispatchEvent(new CustomEvent('OnDidChange'));
     this.computeErrors();
   }
 
@@ -672,32 +682,30 @@ class SequenceEditor extends EventTarget {
         // only valid handle connections are bottom-top and right-top
         if (el.handle === 'top' && this.selectedHandle.handle === 'bottom') {
           this.selectedHandle.step.parameters.target = el.step.id;
-          this.dataChanged();
         }
         else if (el.handle === 'bottom' && this.selectedHandle.handle === 'top') {
           el.step.parameters.target = this.selectedHandle.step.id;
-          this.dataChanged();
         }
         else if (el.handle === 'top' && this.selectedHandle.handle === 'right') {
           this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
-          this.dataChanged();
         }
         else if (el.handle === 'right' && this.selectedHandle.handle === 'top') {
           el.step.parameters.targetOnFalse = this.selectedHandle.step.id;
-          this.dataChanged();
         }
       }
       else if (el && el.type === 'step' && this.selectedHandle.step.id !== el.step.id && (this.selectedHandle.handle === 'bottom' || this.selectedHandle.handle === 'right') && el.step.type !== 'start') {
         // Here user directly targeted a step
         if (this.selectedHandle.handle === 'bottom') {
           this.selectedHandle.step.parameters.target = el.step.id;
-          this.dataChanged();
         }
         else if (this.selectedHandle.handle === 'right') {
           this.selectedHandle.step.parameters.targetOnFalse = el.step.id;
-          this.dataChanged();
         }
       }
+    }
+
+    if (this.mouseState !== 'idle' && this.mouseState !== 'cameraMove') {
+      this.dataChanged();
     }
     this.mouseState = 'idle';
     this.extraHighlightStep = null;
@@ -705,6 +713,9 @@ class SequenceEditor extends EventTarget {
   }
 
   private onMouseLeave(): void {
+    if (this.mouseState !== 'idle' && this.mouseState !== 'cameraMove') {
+      this.dataChanged();
+    }
     this.mouseState = 'idle';
     this.extraHighlightStep = null;
     this.draw();
@@ -735,7 +746,10 @@ class SequenceEditor extends EventTarget {
         }
       }
       const type = button.getAttribute('data-step');
-      this.steps.push(new CanvasStep(++highestId, { x: this.cameraX, y: this.cameraY }, type as StepType, '', '', {}));
+      const newStep = new CanvasStep(++highestId, { x: this.cameraX, y: this.cameraY }, type as StepType, '', '', {});
+      this.steps.push(newStep);
+      this.selectedStep = newStep;
+      SequenceDetails.showStep(this.selectedStep);
       this.dataChanged();
       this.draw();
     }
@@ -800,13 +814,20 @@ class SequenceEditor extends EventTarget {
     }
 
     // Add step
-    this.steps.push(new CanvasStep(++highestId, this.dropWorldCoordinate || { x: 0, y: 0 }, type, id, id, { file: filepath }));
+    const newStep = new CanvasStep(++highestId, this.dropWorldCoordinate || { x: 0, y: 0 }, type, id, id, { file: filepath });
+    this.steps.push(newStep);
+    this.selectedStep = newStep;
+    SequenceDetails.showStep(this.selectedStep);
     this.dataChanged();
     this.draw();
   }
 
   private onKeyDown(e: KeyboardEvent) {
-    console.log(e.key);
+    const active = document.activeElement;
+    if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || (active instanceof HTMLElement && active.isContentEditable)) {
+      return;
+    }
+
     if (this.selectedStep && (e.key === 'Backspace' || e.key === 'Delete')) {
       this.deleteCurrentStep();
     }
@@ -838,15 +859,25 @@ class SequenceEditor extends EventTarget {
 
     // Update UI
     SequenceDetails.showEmpty();
-    this.computeErrors();
+    this.dataChanged();
     this.draw();
   }
 }
 
 (function () {
+  let lastState = {};
+
   // @ts-ignore
   const vscode = acquireVsCodeApi();
   const editor = new SequenceEditor();
+  editor.addEventListener('OnDidChange', () => {
+    const newState = editor.getState();
+    if (!deepEqual(lastState, newState)) {
+      console.log(newState);
+      lastState = structuredClone(newState);
+      vscode.postMessage({ type: 'OnDidChange', edit: { state: editor.getState() } });
+    }
+  });
   editor.addEventListener('GetFileRelative', (e: CustomEventInit<string>) => {
     vscode.postMessage({ type: 'GetFileRelative', path: e.detail });
   });
@@ -858,10 +889,12 @@ class SequenceEditor extends EventTarget {
     const { type, body, requestId } = e.data;
     if (type === 'init') {
       editor.setState(body.untitled ? {} : body.value);
+      lastState = structuredClone(body.untitled ? {} : body.value);
     }
     else if (type === 'update') {
       if (body.edits.length > 0) {
         editor.setState(body.edits[body.edits.length - 1].state);
+        lastState = structuredClone(body.edits[body.edits.length - 1].state);
       }
     }
     else if (type === 'getFileData') {
@@ -871,6 +904,7 @@ class SequenceEditor extends EventTarget {
       editor.dropResponse(body);
     }
     else if (type === 'CheckFilesResponse') {
+      editor.computeErrorsWithMissingFiles(body);
     }
   });
 
