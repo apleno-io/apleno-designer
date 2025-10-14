@@ -401,29 +401,19 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
         <div id="pseq-editor">
           <canvas id="pseq-canvas"></canvas>
         </div>
-        <div id="pseq-panelcontainer">
-          <div id="pseq-controls" class="pseq-panel">
-            <div class="pseq-header">Utils</div>
-            <div class="pseq-buttongroup pseq-bottomspace">
-              <button data-role="center">Center on start</button>
-              <button data-role="help">Help</button>
-            </div>
-            <div class="pseq-header">Add</div>
-            <div class="pseq-buttongroup">
-              <button data-role="add" data-step="script">Script</button>
-              <button data-role="add" data-step="gui">UI</button>
-              <button data-role="add" data-step="condition">Cond.</button>
-              <button data-role="add" data-step="sequence">Seq.</button>
-              <button data-role="add" data-step="end">End</button>
-            </div>
-          </div>
-          <div id="pseq-errors" class="pseq-panel">
-            <div id="debug-1"></div>
-            <div id="debug-2"></div>
-            <div id="debug-3"></div>
-            <div id="debug-4"></div>
-            <div id="debug-5"></div>
-          </div>
+        <div id="pseq-topbar">
+          <div>Utils:</div>
+          <button data-role="center">Center on start</button>
+          <button data-role="help">Help</button>
+          <div>Add:</div>
+          <button data-role="add" data-step="script">Script</button>
+          <button data-role="add" data-step="gui">UI</button>
+          <button data-role="add" data-step="condition">Cond.</button>
+          <button data-role="add" data-step="sequence">Seq.</button>
+          <button data-role="add" data-step="end">End</button>
+        </div>
+        <div id="pseq-leftbar">
+          <div id="pseq-errors" class="pseq-panel"></div>
           <div id="step-editor" class="pseq-panel">
             <div id="step-editor-empty">Select a step to edit.</div>
             <div id="step-editor-nosetting">No setting for this step.</div>

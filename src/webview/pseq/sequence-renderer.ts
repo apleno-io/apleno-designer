@@ -202,7 +202,7 @@ class SequenceEditor extends EventTarget {
 
     // Events
     window.addEventListener('keydown', this.onKeyDown.bind(this));
-    document.getElementById('pseq-controls')?.addEventListener('click', this.onClickControls.bind(this));
+    document.getElementById('pseq-topbar')?.addEventListener('click', this.onClickControls.bind(this));
     this.canvas.addEventListener('wheel', this.onMouseWheel.bind(this));
     this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
     this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
