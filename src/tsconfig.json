@@ -7,6 +7,7 @@
       "DOM"
     ],
     "moduleResolution": "bundler",
-    "strict": true
+    "strict": true,
+    "rootDir": "."
   }
 }

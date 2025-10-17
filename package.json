@@ -30,6 +30,15 @@
             "filenamePattern": "*.pseq"
           }
         ]
+      },
+      {
+        "viewType": "pgm.pgui",
+        "displayName": "PGM Interface Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.pgui"
+          }
+        ]
       }
     ],
     "commands": [
@@ -40,6 +49,10 @@
       {
         "command": "pgm.pseq.new",
         "title": "Create new PGM Sequence file"
+      },
+      {
+        "command": "pgm.pgui.new",
+        "title": "Create new PGM Interface file"
       }
     ],
     "languages": [
@@ -61,6 +74,16 @@
         "icon": {
           "light": "./icons/pseq.svg",
           "dark": "./icons/pseq.svg"
+        }
+      },
+      {
+        "id": "pgui",
+        "extensions": [
+          ".pgui"
+        ],
+        "icon": {
+          "light": "./icons/pgui.svg",
+          "dark": "./icons/pgui.svg"
         }
       }
     ]
