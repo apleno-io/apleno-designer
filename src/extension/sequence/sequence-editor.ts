@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { SequenceFile, SequenceFileUtils } from '../normalizers/normalizeSequence';
+import { SequenceFile, SequenceFileUtils } from './sequence-utils';
 
 /**
  * Define the type of edits used in pseq files.
@@ -371,10 +371,10 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
    * Get the static HTML used for in our editor's webviews.
    */
   private getHtmlForWebview(webview: vscode.Webview): string {
-    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'sequence-renderer.js'));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/sequence/sequence.js'));
     const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'reset.css'));
     const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'vscode.css'));
-    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'pseq', 'pseq.css'));
+    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/pseq.css'));
     const nonce = getNonce(); // Use a nonce to whitelist scripts
 
     return `

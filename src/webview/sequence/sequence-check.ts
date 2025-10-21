@@ -1,4 +1,4 @@
-import { CanvasStep } from "./sequence-renderer";
+import { CanvasStep } from "./sequence";
 
 export interface SequenceError {
   error: 'SequenceNoStart' | 'SequenceMultipleStarts' | 'StepNoExit' | 'StepFileNotFound' | 'ConditionEmptyTest' | 'StepDuplicateId';

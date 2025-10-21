@@ -37,6 +37,9 @@ async function main() {
 		outfile: 'dist/extension.js',
 		external: ['vscode'],
 		logLevel: 'silent',
+		loader: {
+			'.html': 'text'
+		},
 		plugins: [
 			/* add to the end of plugins array */
 			esbuildProblemMatcherPlugin,
@@ -44,7 +47,9 @@ async function main() {
 	});
 	const ctxMedia = await esbuild.context({
 		entryPoints: [
-			'src/webview/pseq/sequence-renderer.ts'
+			'src/webview/sequence/sequence.ts',
+			'src/webview/gui/gui.ts',
+			'src/webview/gui/gui-iframe.ts'
 		],
 		bundle: true,
 		format: 'iife',
@@ -55,6 +60,9 @@ async function main() {
 		outdir: 'media',
 		external: ['vscode'],
 		logLevel: 'silent',
+		loader: {
+			'.html': 'text'
+		},
 		plugins: [
 			/* add to the end of plugins array */
 			esbuildProblemMatcherPlugin,

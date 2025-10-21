@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { PGMProjectFileEditorProvider } from './pproEditor';
-import { PGMSequenceFileEditorProvider } from './sequencer/pseqEditor';
+import { PGMProjectFileEditorProvider } from './project/project-editor';
+import { PGMSequenceFileEditorProvider } from './sequence/sequence-editor';
 import { PGMInterfaceFileEditorProvider } from './gui/gui-editor';
 
 export function activate(context: vscode.ExtensionContext) {

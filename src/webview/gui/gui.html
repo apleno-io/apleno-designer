@@ -1,0 +1,207 @@
+<html>
+
+<head>
+
+</head>
+
+<body>
+  <div id="gui">
+    <div id="gui-add"></div>
+    <div id="gui-preview"></div>
+    <div id="gui-propeditor">
+      <div class="prop">
+        <label for="prop-id">ID</label>
+        <input type="text" id="prop-id" value="" />
+      </div>
+      <div class="prop">
+        <label for="prop-css">Custom CSS</label>
+        <input type="text" id="prop-css" value="" />
+      </div>
+      <div class="prop">
+        <label for="prop-label">Label</label>
+        <input type="text" id="prop-label" value="" />
+      </div>
+      <div class="prop">
+        <label for="prop-labelpos">Label position</label>
+        <select id="prop-labelpos">
+          <option value="left">Left</option>
+          <option value="top">Top</option>
+          <option value="topaligned">Top (aligned)</option>
+          <option value="hidden">Hidden</option>
+        </select>
+      </div>
+      <div class="prop">
+        <label for="prop-margintop">Margin top</label>
+        <input type="number" id="prop-margintop" min="0" max="1000" value="10" />
+      </div>
+      <div class="prop">
+        <label for="prop-helptext">Help text</label>
+        <input type="text" id="prop-helptext" value="" />
+      </div>
+      <div class="prop">
+        <label for="prop-helppos">Help text position</label>
+        <select id="prop-helppos">
+          <option value="bottom">Bottom</option>
+          <option value="label">After label in icon</option>
+        </select>
+      </div>
+      <div class="prop">
+        <label for="prop-subtype">Widget subtype</label>
+        <select id="prop-subtype"></select>
+      </div>
+      <div class="prop">
+        <label for="prop-value">Value</label>
+        <input type="text" id="prop-value" value="" />
+      </div>
+      <div class="prop">
+        <input type="checkbox" id="prop-iscode"> <label for="prop-iscode">Value is expression code</label>
+      </div>
+      <div class="prop">
+        <label for="prop-onchange">Code on change</label>
+        <input type="text" id="prop-onchange" value="" />
+      </div>
+      <div class="prop">
+        <label for="prop-condition">Validation expression code</label>
+        <input type="text" id="prop-condition" value="" />
+      </div>
+      <div class="prop">
+        <input type="checkbox" id="prop-required"> <label for="prop-required">A value is required to submit</label>
+      </div>
+      <div class="prop" data-widgets="tabs">
+        <label>Tabs</label>
+        <button id="prop-tabs-add">Add tab</button>
+        <div id="prop-tabs"></div>
+      </div>
+      <div class="prop" data-widgets="columns">
+        <label>Columns</label>
+        <button id="prop-columns-add">Add column</button>
+        <div id="prop-columns"></div>
+      </div>
+      <div class="prop" data-widgets="box">
+        <label for="prop-box-header">Box header text</label>
+        <input type="text" id="prop-box-header" value="" />
+      </div>
+      <div class="prop" data-widgets="box">
+        <label for="prop-box-style">Box style</label>
+        <select id="prop-box-style">
+          <option value="primary">Primary (blue)</option>
+          <option value="secondary">Secondary (gray)</option>
+          <option value="success">Success (green)</option>
+          <option value="warning">Warning (yellow)</option>
+          <option value="danger">Danger (red)</option>
+          <option value="info">Info (teal)</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="none">None (invisible)</option>
+        </select>
+      </div>
+      <div class="prop" data-widgets="choices">
+        <label>Choices</label>
+        <button id="prop-choices-add">Add choice</button>
+        <div id="prop-choices"></div>
+      </div>
+      <div class="prop" data-widgets="choices">
+        <label for="prop-choices-values">Choices values variable</label>
+        <input type="text" id="prop-choices-values" value="" />
+      </div>
+      <div class="prop" data-widgets="choices">
+        <label for="prop-choices-labels">Choices labels variable</label>
+        <input type="text" id="prop-choices-labels" value="" />
+      </div>
+      <div class="prop" data-widgets="progress">
+        <label for="prop-progress-color">Progress color</label>
+        <input type="color" id="prop-progress-color" value="" />
+      </div>
+      <div class="prop" data-widgets="progress">
+        <label for="prop-progress-label">Progress label</label>
+        <input type="input" id="prop-progress-label" value="" />
+      </div>
+      <div class="prop" data-widgets="number">
+        <label for="prop-number-min">Min number</label>
+        <input type="number" id="prop-number-min" value="" />
+      </div>
+      <div class="prop" data-widgets="number">
+        <label for="prop-number-max">Max number</label>
+        <input type="number" id="prop-number-max" value="" />
+      </div>
+      <div class="prop" data-widgets="number">
+        <label for="prop-number-step">Step</label>
+        <input type="number" id="prop-number-step" value="" />
+      </div>
+      <div class="prop" data-widgets="interval">
+        <label for="prop-interval-code">Interval code</label>
+        <input type="text" id="prop-interval-code" value="" />
+      </div>
+      <div class="prop" data-widgets="interval">
+        <label for="prop-interval-time">Interval time in seconds</label>
+        <input type="number" min="10" step="1" id="prop-interval-time" value="" />
+      </div>
+      <div class="prop" data-widgets="graph">
+        <label for="prop-graph-width">Width (%)</label>
+        <input type="number" min="1" max="100" step="1" id="prop-graph-width" value="100" />
+      </div>
+      <div class="prop" data-widgets="graph">
+        <label for="prop-graph-height">Height (px)</label>
+        <input type="number" min="50" step="1" id="prop-graph-height" value="" />
+      </div>
+      <div class="prop" data-widgets="label">
+        <label for="prop-label-size">Font size (px)</label>
+        <input type="number" min="5" step="1" id="prop-label-size" value="" />
+      </div>
+      <div class="prop" data-widgets="label">
+        <label for="prop-label-color">Color</label>
+        <input type="color" id="prop-label-color" value="" />
+      </div>
+      <div class="prop" data-widgets="label">
+        <label for="prop-label-family">Font family</label>
+        <select id="prop-label-family">
+          <option value="default">Default</option>
+          <option value="arial">Arial</option>
+          <option value="courier">Courier New</option>
+          <option value="georgia">Georgia</option>
+          <option value="impact">Impact</option>
+          <option value="times">Times New Roman</option>
+          <option value="trebuchet">Trebuchet MS</option>
+          <option value="verdana">Verdana</option>
+        </select>
+      </div>
+      <div class="prop" data-widgets="button">
+        <label for="prop-button-onpress">Code on click</label>
+        <input type="text" id="prop-button-color" value="" />
+      </div>
+      <div class="prop" data-widgets="button">
+        <label for="prop-button-style">Code on click</label>
+        <select id="prop-button-style">
+          <option value="primary">Primary (blue)</option>
+          <option value="secondary">Secondary (gray)</option>
+          <option value="success">Success (green)</option>
+          <option value="warning">Warning (yellow)</option>
+          <option value="danger">Danger (red)</option>
+          <option value="info">Info (teal)</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="link">Link</option>
+          <option value="outline-primary">Outline - Primary (blue)</option>
+          <option value="outline-secondary">Outline - Secondary (gray)</option>
+          <option value="outline-success">Outline - Success (green)</option>
+          <option value="outline-warning">Outline - Warning (yellow)</option>
+          <option value="outline-danger">Outline - Danger (red)</option>
+          <option value="outline-info">Outline - Info (teal)</option>
+          <option value="outline-light">Outline - Light</option>
+          <option value="outline-dark">Outline - Dark</option>
+        </select>
+      </div>
+      <div class="prop" data-widgets="button">
+        <label for="prop-button-size">Code on click</label>
+        <select id="prop-button-size">
+          <option value="sm">Small</option>
+          <option value="md">Medium</option>
+          <option value="lg">Large</option>
+          <option value="fw">Full width</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -35,7 +35,7 @@
     return true;
   }
 
-  // src/webview/pseq/sequence-check.ts
+  // src/webview/sequence/sequence-check.ts
   var SequenceChecker = new class {
     getFilesToCheck(steps) {
       const filesToCheck = [];
@@ -83,7 +83,7 @@
   }();
   var sequence_check_default = SequenceChecker;
 
-  // src/webview/pseq/sequence-details.ts
+  // src/webview/sequence/sequence-details.ts
   var SequenceDetails = new class extends EventTarget {
     domContainer = document.getElementById("step-editor");
     currentStep = null;
@@ -132,7 +132,7 @@
   }();
   var sequence_details_default = SequenceDetails;
 
-  // src/webview/pseq/sequence-errorbox.ts
+  // src/webview/sequence/sequence-errorbox.ts
   var SequenceErrorBox = new class extends EventTarget {
     domContainer = document.getElementById("pseq-errors");
     constructor() {
@@ -182,7 +182,7 @@
   }();
   var sequence_errorbox_default = SequenceErrorBox;
 
-  // src/webview/pseq/sequence-renderer.ts
+  // src/webview/sequence/sequence.ts
   var Rectangle = class _Rectangle {
     static DEFAULT_WIDTH = 200;
     static DEFAULT_HEIGHT = 50;
@@ -877,4 +877,4 @@
     vscode.postMessage({ type: "ready" });
   })();
 })();
-//# sourceMappingURL=sequence-renderer.js.map
+//# sourceMappingURL=sequence.js.map

@@ -1,4 +1,4 @@
-import { CanvasStep } from "./sequence-renderer";
+import { CanvasStep } from "./sequence";
 
 const SequenceDetails = new class extends EventTarget {
   private domContainer: HTMLElement = document.getElementById('step-editor') as HTMLElement;
