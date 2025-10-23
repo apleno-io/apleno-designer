@@ -371,9 +371,8 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
    */
   private getHtmlForWebview(webview: vscode.Webview): string {
     const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui.js'));
-    const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/reset.css'));
-    const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/vscode.css'));
-    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/pseq.css'));
+    const ifScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui-iframe.js'));
+    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui.css'));
     const nonce = getNonce(); // Use a nonce to whitelist scripts
 
     return `
@@ -381,22 +380,16 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-
-        <!--
-        Use a content security policy to only allow loading images from https or from our extension directory,
-        and only allow scripts that have a specific nonce.
-        -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
-
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src ${webview.cspSource}; script-src * 'unsafe-inline';">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <link href="${styleResetUri}" rel="stylesheet" />
-        <link href="${styleVSCodeUri}" rel="stylesheet" />
         <link href="${styleMainUri}" rel="stylesheet" />
-
-        <title>P</title>
+        <title></title>
       </head>
       <body>
+        <script>
+          window.CSP_SOURCE = "${webview.cspSource}";
+          window.CSP_NONCE = "${nonce}";
+        </script>
         <script nonce="${nonce}" src="${scriptUri}"></script>
       </body>
       </html>`;

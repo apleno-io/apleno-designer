@@ -1,0 +1,131 @@
+:root {
+	--container-padding: 20px;
+	--input-padding-vertical: 6px;
+	--input-padding-horizontal: 4px;
+	--input-margin-vertical: 4px;
+	--input-margin-horizontal: 0;
+}
+
+body {
+	padding: 0 var(--container-padding);
+	color: var(--vscode-foreground);
+	font-size: var(--vscode-font-size);
+	font-weight: var(--vscode-font-weight);
+	font-family: var(--vscode-font-family);
+	background-color: var(--vscode-editor-background);
+}
+
+ol,
+ul {
+	padding-left: var(--container-padding);
+}
+
+body>*,
+form>* {
+	margin-block-start: var(--input-margin-vertical);
+	margin-block-end: var(--input-margin-vertical);
+}
+
+*:focus {
+	outline-color: var(--vscode-focusBorder) !important;
+}
+
+a {
+	color: var(--vscode-textLink-foreground);
+}
+
+a:hover,
+a:active {
+	color: var(--vscode-textLink-activeForeground);
+}
+
+code {
+	font-size: var(--vscode-editor-font-size);
+	font-family: var(--vscode-editor-font-family);
+}
+
+/* BUTTONS */
+button {
+	border: none;
+	padding: var(--input-padding-vertical) 8px;
+	text-align: center;
+	outline: 1px solid transparent;
+	outline-offset: 2px !important;
+	color: var(--vscode-button-foreground);
+	background: var(--vscode-button-background);
+	border: 1px solid var(--vscode-button-border, transparent);
+	border-radius: 2px;
+}
+
+button:hover {
+	cursor: pointer;
+	background: var(--vscode-button-hoverBackground);
+}
+
+button:focus {
+	outline-color: var(--vscode-focusBorder);
+}
+
+button.secondary {
+	color: var(--vscode-button-secondaryForeground);
+	background: var(--vscode-button-secondaryBackground);
+}
+
+button.secondary:hover {
+	background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.btn-large {
+	width: 100%;
+}
+
+.btn-transparent {
+	background: transparent;
+	border: none;
+	height: 31px;
+	line-height: 31px;
+	color: var(--vscode-foreground);
+}
+
+.btn-transparent:disabled {
+	opacity: 0;
+}
+
+.btn-transparent:not(:disabled):hover {
+	background-color: transparent;
+	color: var(--vscode-settings-headerForeground);
+	background-color: var(--vscode-input-background);
+}
+
+/* INPUTS */
+label {
+	display: block;
+	color: var(--vscode-settings-headerForeground);
+	font-weight: 600;
+	line-height: 1.4em;
+	margin-bottom: 8px;
+}
+
+input:not([type='checkbox']),
+textarea,
+select {
+	display: block;
+	width: 100%;
+	max-width: 300px;
+	font-family: var(--vscode-font-family);
+	padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-input-border);
+	background-color: var(--vscode-input-background);
+	border-radius: 2px;
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: var(--vscode-input-placeholderForeground);
+}
+
+.input-large {
+	max-width: none !important;
+	width: 100%;
+}
