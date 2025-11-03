@@ -7,5 +7,9 @@
     setWidget(widget) {
     }
   }();
+  (() => {
+    document.addEventListener("DOMContentLoaded", () => {
+    });
+  })();
 })();
 //# sourceMappingURL=gui-iframe.js.map

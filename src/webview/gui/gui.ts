@@ -6,7 +6,6 @@ import templateUI from './gui.html';
 
 const UIEditor = new class {
   private state: GUIInterface | null = null;
-  private iframeContent: Document | null = null;
 
   public inject(): void {
     document.body.insertAdjacentHTML('afterbegin', templateUI);
@@ -16,18 +15,21 @@ const UIEditor = new class {
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${(window as any).CSP_SOURCE} blob:; style-src ${(window as any).CSP_SOURCE}; script-src * 'unsafe-inline';">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${(window as any).CSP_SOURCE} blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title></title>
+        <style>${(window as any).IFRAME_CSS}</style>
       </head>
-      <body></body>
+      <body>
+        <div class="pgm-gui"></div>
+        <script>${(window as any).IFRAME_JS}</script>
+      </body>
     </html>`.trim();
     setTimeout(() => {
       (document.getElementById('gui-preview') as HTMLElement).appendChild(iframe);
       setTimeout(() => {
-        this.iframeContent = ((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentDocument as Document);
         this.renderAll();
-      }, 0);
+      }, 5);
     }, 0);
   }
 
@@ -41,15 +43,17 @@ const UIEditor = new class {
   }
 
   public renderAll() {
-    if (this.state === null || this.iframeContent === null) {
+    if (this.state === null) {
       return;
     }
+
+    console.log(this.state?.widgets);
 
     const html = [];
     for (let i = 0; i < this.state?.widgets.length; ++i) {
       html.push(WidgetFactory.getWidgetHTML(this.state.widgets[i]));
     }
-    ((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.body.innerHTML = html.join('');
+    ((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.querySelector('.pgm-gui')?.insertAdjacentHTML('beforeend', html.join(''));
   }
 };
 

@@ -1,6 +1,6 @@
 {
   "version": 3,
   "sources": ["../../src/webview/gui/gui-iframe.ts"],
-  "mappings": ";;;AAEO,MAAM,gBAAgB,IAAI,MAAM;AAAA,IAC9B,MAAM,SAAsB;AAAA,IAEnC;AAAA,IAEO,UAAU,QAAmB;AAAA,IAEpC;AAAA,EACF;",
+  "mappings": ";;;AAEO,MAAM,gBAAgB,IAAI,MAAM;AAAA,IAC9B,MAAM,SAAsB;AAAA,IAEnC;AAAA,IAEO,UAAU,QAAmB;AAAA,IAEpC;AAAA,EACF;AAEA,GAAC,MAAM;AACL,aAAS,iBAAiB,oBAAoB,MAAM;AAAA,IACpD,CAAC;AAAA,EACH,GAAG;",
   "names": []
 }

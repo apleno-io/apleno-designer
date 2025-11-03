@@ -9,3 +9,8 @@ export const IframeContent = new class {
 
   }
 };
+
+(() => {
+  document.addEventListener('DOMContentLoaded', () => {
+  });
+})();

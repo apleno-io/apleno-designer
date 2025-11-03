@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { normalizeGUI } from './gui-utils';
+import { normalizeGUI, normalizeWidget } from './gui-utils';
 import { GUIInterface } from '../../common/gui';
 
 /**
@@ -60,6 +60,7 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
 
     try {
       const sanitized: GUIInterface | null = normalizeGUI(JSONContent);
+      sanitized.widgets.map(w => normalizeWidget(w));
       if (sanitized === null) {
         return defaultFile;
       }
@@ -300,7 +301,7 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
 
     // Setup initial content for the webview
     webviewPanel.webview.options = { enableScripts: true };
-    webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
+    webviewPanel.webview.html = await this.getHtmlForWebview(webviewPanel.webview);
     webviewPanel.webview.onDidReceiveMessage(e => this.onMessage(document, e));
 
     // Wait for the webview to be properly ready before we init
@@ -369,24 +370,33 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
   /**
    * Get the static HTML used for in our editor's webviews.
    */
-  private getHtmlForWebview(webview: vscode.Webview): string {
+  private async getHtmlForWebview(webview: vscode.Webview): Promise<string> {
     const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui.js'));
-    const ifScriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui-iframe.js'));
     const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui.css'));
     const nonce = getNonce(); // Use a nonce to whitelist scripts
+
+    // Get content of JS for iframe
+    let iframeJS = '';
+    let iframeCSS = '';
+    try {
+      iframeJS = Buffer.from(await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui-iframe.js'))).toString('utf8');
+      iframeCSS = Buffer.from(await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/pgm-client.min.css'))).toString('utf8');
+    } catch (e) { }
 
     return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src ${webview.cspSource}; script-src * 'unsafe-inline';">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${styleMainUri}" rel="stylesheet" />
         <title></title>
       </head>
       <body>
         <script>
+          window.IFRAME_JS = \`${iframeJS.replace(/`/g, '\\`')}\`;
+          window.IFRAME_CSS = \`${iframeCSS.replace(/`/g, '\\`')}\`;
           window.CSP_SOURCE = "${webview.cspSource}";
           window.CSP_NONCE = "${nonce}";
         </script>
