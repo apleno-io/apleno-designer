@@ -60,7 +60,6 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
 
     try {
       const sanitized: GUIInterface | null = normalizeGUI(JSONContent);
-      sanitized.widgets.map(w => normalizeWidget(w));
       if (sanitized === null) {
         return defaultFile;
       }

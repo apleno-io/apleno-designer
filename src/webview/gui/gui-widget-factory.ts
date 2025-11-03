@@ -74,11 +74,6 @@ export const WidgetFactory = new class {
     return `<div id="${widget.id}" data-id="${widget.id}">${result}</div>`;
   }
 
-  private isTrue(value: any): boolean {
-    value = (`${value}`).toLowerCase().trim();
-    return value === 'true' || value === '1';
-  }
-
   private getWidgetCSS(widgetCSS: string): WidgetCSS {
     const result: WidgetCSS = {
       hasStyle: false,
@@ -124,7 +119,9 @@ export const WidgetFactory = new class {
       else if (css.hasStyle) {
         html = `<div style="${style}" class="pgm-widget-label ${css.classContent}">${val}</div>`;
       }
-      html = `<div style="${style}" class="pgm-widget-label">${val}</div>`;
+      else {
+        html = `<div style="${style}" class="pgm-widget-label">${val}</div>`;
+      }
     }
     else if (el.type === 'image') {
       html = `<img class="pgm-widget-image ${css.classContent}" ${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''} src=""/>`;
@@ -139,7 +136,9 @@ export const WidgetFactory = new class {
       if (el.data.subType && ['text', 'password'].includes(el.data.subType)) {
         html = `<input type="${el.data.subType === 'text' ? 'text' : 'password'}" class="pgm-widget-input ${css.hasStyle && css.type === WidgetCSSType.CLASS ? css.classContent : ''}" value="${val}"${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''}/>`;
       }
-      html = `<textarea class="pgm-widget-input ${css.hasStyle && css.type === WidgetCSSType.CLASS ? css.classContent : ''}" ${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''}  rows="5">${val}</textarea>`;
+      else {
+        html = `<textarea class="pgm-widget-input ${css.hasStyle && css.type === WidgetCSSType.CLASS ? css.classContent : ''}" ${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''}  rows="5">${val}</textarea>`;
+      }
     }
     else if (el.type === 'number') {
       const cssStyle: string = css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : '';
@@ -154,7 +153,9 @@ export const WidgetFactory = new class {
       if (el.data.subType === 'slider') {
         html = `<input class="pgm-widget-input ${cssClass}" type="range"${min}${max}${step}${cssStyle} value="${val}"/>`;
       }
-      html = `<input class="pgm-widget-input ${cssClass}" type="number"${min}${max}${step}${cssStyle} value="${val}"/>`;
+      else {
+        html = `<input class="pgm-widget-input ${cssClass}" type="number"${min}${max}${step}${cssStyle} value="${val}"/>`;
+      }
     }
     else if (el.type === 'path') {
       html = `
@@ -202,7 +203,9 @@ export const WidgetFactory = new class {
       if (el.data.subType === 'checkbox') {
         html = `<input type="checkbox" class="pgm-widget-checkbox ${css.classContent}" style="${css.styleContent}" ${checked}/>`;
       }
-      html = `<label class="pgm-widget-switch ${css.classContent}" style="${css.styleContent}"><input type="checkbox" ${checked}/><span class="pgm-widget-switch-slider"></span></label>`;
+      else {
+        html = `<label class="pgm-widget-switch ${css.classContent}" style="${css.styleContent}"><input type="checkbox" ${checked}/><span class="pgm-widget-switch-slider"></span></label>`;
+      }
     }
     else if (el.type === 'button') {
       if (val.length === 0) {

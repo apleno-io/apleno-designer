@@ -313,6 +313,9 @@ export function normalizeWidget(infos: any): GUIWidget {
   // Update: NO, see end of normalizeGUI
 
   // TODO: Check values of string properties like labelPosition, gridType etc.
+  if (infos.widgets) {
+    infos.widgets = infos.widgets.map((w: GUIWidget) => normalizeWidget(w));
+  }
 
   return infos as GUIWidget;
 }
@@ -346,5 +349,6 @@ export function normalizeGUI(infos: any): GUIInterface {
   }
 
   // Don't normalize widgets because it will be per-widget during creation (because of end users functions like gui.add)
+  result.widgets = result.widgets.map(w => normalizeWidget(w));
   return result;
 };

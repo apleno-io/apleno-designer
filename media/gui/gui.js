@@ -68,10 +68,6 @@
       }
       return `<div id="${widget.id}" data-id="${widget.id}">${result}</div>`;
     }
-    isTrue(value) {
-      value = `${value}`.toLowerCase().trim();
-      return value === "true" || value === "1";
-    }
     getWidgetCSS(widgetCSS) {
       const result = {
         hasStyle: false,
@@ -110,8 +106,9 @@
           html = `<div style="${style};${css.styleContent}" class="pgm-widget-label">${val}</div>`;
         } else if (css.hasStyle) {
           html = `<div style="${style}" class="pgm-widget-label ${css.classContent}">${val}</div>`;
+        } else {
+          html = `<div style="${style}" class="pgm-widget-label">${val}</div>`;
         }
-        html = `<div style="${style}" class="pgm-widget-label">${val}</div>`;
       } else if (el.type === "image") {
         html = `<img class="pgm-widget-image ${css.classContent}" ${css.hasStyle && css.type === 0 /* STYLE */ ? css.fullHTMLTag : ""} src=""/>`;
       } else if (el.type === "iframe") {
@@ -121,8 +118,9 @@
       } else if (el.type === "text") {
         if (el.data.subType && ["text", "password"].includes(el.data.subType)) {
           html = `<input type="${el.data.subType === "text" ? "text" : "password"}" class="pgm-widget-input ${css.hasStyle && css.type === 1 /* CLASS */ ? css.classContent : ""}" value="${val}"${css.hasStyle && css.type === 0 /* STYLE */ ? css.fullHTMLTag : ""}/>`;
+        } else {
+          html = `<textarea class="pgm-widget-input ${css.hasStyle && css.type === 1 /* CLASS */ ? css.classContent : ""}" ${css.hasStyle && css.type === 0 /* STYLE */ ? css.fullHTMLTag : ""}  rows="5">${val}</textarea>`;
         }
-        html = `<textarea class="pgm-widget-input ${css.hasStyle && css.type === 1 /* CLASS */ ? css.classContent : ""}" ${css.hasStyle && css.type === 0 /* STYLE */ ? css.fullHTMLTag : ""}  rows="5">${val}</textarea>`;
       } else if (el.type === "number") {
         const cssStyle = css.hasStyle && css.type === 0 /* STYLE */ ? css.fullHTMLTag : "";
         const cssClass = css.hasStyle && css.type === 1 /* CLASS */ ? css.classContent : "";
@@ -135,8 +133,9 @@
         }
         if (el.data.subType === "slider") {
           html = `<input class="pgm-widget-input ${cssClass}" type="range"${min}${max}${step}${cssStyle} value="${val2}"/>`;
+        } else {
+          html = `<input class="pgm-widget-input ${cssClass}" type="number"${min}${max}${step}${cssStyle} value="${val2}"/>`;
         }
-        html = `<input class="pgm-widget-input ${cssClass}" type="number"${min}${max}${step}${cssStyle} value="${val2}"/>`;
       } else if (el.type === "path") {
         html = `
         <div class="pgm-row pgm-widget-path ${css.classContent}" style="${css.styleContent}">
@@ -176,8 +175,9 @@
         const checked = el.data.value ? "checked" : "";
         if (el.data.subType === "checkbox") {
           html = `<input type="checkbox" class="pgm-widget-checkbox ${css.classContent}" style="${css.styleContent}" ${checked}/>`;
+        } else {
+          html = `<label class="pgm-widget-switch ${css.classContent}" style="${css.styleContent}"><input type="checkbox" ${checked}/><span class="pgm-widget-switch-slider"></span></label>`;
         }
-        html = `<label class="pgm-widget-switch ${css.classContent}" style="${css.styleContent}"><input type="checkbox" ${checked}/><span class="pgm-widget-switch-slider"></span></label>`;
       } else if (el.type === "button") {
         if (val.length === 0) {
           val = `<i>No value</i>`;
