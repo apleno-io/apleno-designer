@@ -1,5 +1,30 @@
 "use strict";
 (() => {
+  // src/common/gui.ts
+  function getMaxId(widgets) {
+    let maxId = 0;
+    for (let i = 0; i < widgets.length; ++i) {
+      if ("widgets" in widgets[i] && Array.isArray(widgets[i].widgets) && widgets[i].widgets.length > 0) {
+        maxId = Math.max(maxId, getMaxId(widgets[i].widgets));
+      }
+      const parsedId = parseInt(`${widgets[i].id}`);
+      maxId = Math.max(maxId, widgets[i].id !== null && !isNaN(parsedId) ? parsedId : 0);
+    }
+    return maxId;
+  }
+  function fixIds(widgets, nextId = null) {
+    nextId = nextId === null ? getMaxId(widgets) + 1 : nextId;
+    for (let i = 0; i < widgets.length; ++i) {
+      if (widgets[i].id === null || isNaN(parseInt(`${widgets[i].id}`))) {
+        widgets[i].id = nextId++;
+      }
+      if (Array.isArray(widgets[i].widgets) && widgets[i].widgets.length > 0) {
+        nextId = fixIds(widgets[i].widgets, nextId);
+      }
+    }
+    return nextId;
+  }
+
   // src/common/utils/sanitize.ts
   var Sanitizer = new class {
     xssContent(input) {
@@ -219,11 +244,13 @@
       } else if (el.type === "tabs" && el.widgets) {
         const tabs = [];
         const content = [];
+        let currentTabIndex = parseInt(`${el.data.tabsSelected}`) || 0;
+        currentTabIndex = isNaN(currentTabIndex) || currentTabIndex >= el.widgets.length ? 0 : currentTabIndex;
         for (let i = 0; i < el.widgets.length; ++i) {
           const label = i < el.data.tabsNames.length ? el.data.tabsNames[i] : `#${i}`;
-          const isCurrent = i === (el.data.tabsSelected || 0);
+          const isCurrent = i === currentTabIndex;
           tabs.push(`<div class="pgm-widget-tab${isCurrent ? " pgm-widget-tab-selected" : ""}" data-tabs="${el.id}" data-tab="${i}">${label}</div>`);
-          content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? "block" : "none"}" data-tabs="${el.id}" data-tab="${i}">${el.widgets[i]}</div>`);
+          content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? "block" : "none"}" data-tabs="${el.id}" data-tab="${i}">${this.getWidgetHTML(el.widgets[i])}</div>`);
         }
         html = `
       <div class="pgm-widget-tabs-container ${css.hasStyle && css.type === 1 /* CLASS */ ? css.classContent : ""}" ${css.hasStyle && css.type === 0 /* STYLE */ ? css.fullHTMLTag : ""}>
@@ -281,6 +308,7 @@
 
   // src/webview/gui/gui.ts
   var UIEditor = new class {
+    iframeReady = false;
     state = null;
     inject() {
       document.body.insertAdjacentHTML("afterbegin", gui_default);
@@ -303,19 +331,21 @@
       setTimeout(() => {
         document.getElementById("gui-preview").appendChild(iframe);
         setTimeout(() => {
+          this.iframeReady = true;
           this.renderAll();
         }, 5);
       }, 0);
     }
     setState(state) {
       this.state = state;
+      fixIds(this.state.widgets);
       this.renderAll();
     }
     getState() {
       return {};
     }
     renderAll() {
-      if (this.state === null) {
+      if (this.state === null || !this.iframeReady) {
         return;
       }
       console.log(this.state?.widgets);

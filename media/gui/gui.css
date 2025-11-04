@@ -172,5 +172,6 @@ textarea::placeholder {
   left: 0;
   bottom: 0px;
   overflow: hidden auto;
+  padding: 0 10px;
 }
 /*# sourceMappingURL=gui.css.map */

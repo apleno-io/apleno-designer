@@ -1,10 +1,11 @@
-import { GUIInterface } from '../../common/gui';
+import { fixIds, GUIInterface } from '../../common/gui';
 import { WidgetFactory } from './gui-widget-factory';
 import './gui.css';
 
 import templateUI from './gui.html';
 
 const UIEditor = new class {
+  private iframeReady: boolean = false;
   private state: GUIInterface | null = null;
 
   public inject(): void {
@@ -28,13 +29,15 @@ const UIEditor = new class {
     setTimeout(() => {
       (document.getElementById('gui-preview') as HTMLElement).appendChild(iframe);
       setTimeout(() => {
+        this.iframeReady = true;
         this.renderAll();
       }, 5);
     }, 0);
   }
 
-  public setState(state: any): void {
+  public setState(state: GUIInterface): void {
     this.state = state;
+    fixIds(this.state.widgets);
     this.renderAll();
   }
 
@@ -43,7 +46,7 @@ const UIEditor = new class {
   }
 
   public renderAll() {
-    if (this.state === null) {
+    if (this.state === null || !this.iframeReady) {
       return;
     }
 
@@ -70,14 +73,14 @@ const UIEditor = new class {
     if (type === 'init') {
       initialState = structuredClone(body.untitled ? {} : body.value);
       lastState = structuredClone(initialState);
-      UIEditor.setState(initialState);
+      UIEditor.setState(initialState as GUIInterface);
     }
     else if (type === 'update') {
       if (body.edits.length > 0) {
         UIEditor.setState(body.edits[body.edits.length - 1].state);
       }
       else {
-        UIEditor.setState(initialState);
+        UIEditor.setState(initialState as GUIInterface);
       }
     }
     else if (type === 'getFileData') {

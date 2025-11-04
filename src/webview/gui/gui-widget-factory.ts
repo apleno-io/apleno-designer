@@ -257,11 +257,13 @@ export const WidgetFactory = new class {
     else if (el.type === 'tabs' && el.widgets) {
       const tabs: string[] = [];
       const content: string[] = [];
+      let currentTabIndex = parseInt(`${el.data.tabsSelected}`) || 0;
+      currentTabIndex = isNaN(currentTabIndex) || currentTabIndex >= el.widgets.length ? 0 : currentTabIndex;
       for (let i = 0; i < el.widgets.length; ++i) {
         const label: string = i < el.data.tabsNames.length ? el.data.tabsNames[i] : `#${i}`;
-        const isCurrent: boolean = i === (el.data.tabsSelected || 0);
+        const isCurrent = i === currentTabIndex;
         tabs.push(`<div class="pgm-widget-tab${isCurrent ? ' pgm-widget-tab-selected' : ''}" data-tabs="${el.id}" data-tab="${i}">${label}</div>`);
-        content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? 'block' : 'none'}" data-tabs="${el.id}" data-tab="${i}">${el.widgets[i]}</div>`);
+        content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? 'block' : 'none'}" data-tabs="${el.id}" data-tab="${i}">${this.getWidgetHTML(el.widgets[i])}</div>`);
       }
 
       html = `

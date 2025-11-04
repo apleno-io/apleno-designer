@@ -77,3 +77,28 @@ export interface GUIInterface {
 export function isContainerWidget(type: string) {
   return ['box', 'columns', 'tabs'].includes(type);
 }
+
+export function getMaxId(widgets: GUIWidget[]): number {
+  let maxId = 0;
+  for (let i = 0; i < widgets.length; ++i) {
+    if ('widgets' in widgets[i] && Array.isArray(widgets[i].widgets) && (widgets[i].widgets as any).length > 0) {
+      maxId = Math.max(maxId, getMaxId(widgets[i].widgets as any));
+    }
+    const parsedId = parseInt(`${widgets[i].id}`);
+    maxId = Math.max(maxId, widgets[i].id !== null && !isNaN(parsedId) ? parsedId : 0);
+  }
+  return maxId;
+}
+
+export function fixIds(widgets: GUIWidget[], nextId: number | null = null): number {
+  nextId = nextId === null ? getMaxId(widgets) + 1 : nextId;
+  for (let i = 0; i < widgets.length; ++i) {
+    if (widgets[i].id === null || isNaN(parseInt(`${widgets[i].id}`))) {
+      widgets[i].id = nextId++;
+    }
+    if (Array.isArray(widgets[i].widgets) && (widgets[i].widgets as any).length > 0) {
+      nextId = fixIds(widgets[i].widgets as any, nextId);
+    }
+  }
+  return nextId;
+}
