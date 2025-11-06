@@ -6,6 +6,21 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, Segoe WPC, Segoe UI, HelveticaNeue-Light, Ubuntu, Droid Sans, sans-serif
 }
 
+.gui-widget-hover {
+  background-color: rgba(0, 0, 0, 0.027);
+  outline: 3px rgb(0, 110, 255) inset;
+}
+
+.gui-widget-selected {
+  background-color: rgba(0, 0, 0, 0.027);
+  outline: 3px rgb(255 0 0) inset;
+  box-shadow: 0 0 20px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-widget-id] {
+  user-select: none;
+}
+
 .pgm-button {
   cursor: default;
   color: #292b2c;

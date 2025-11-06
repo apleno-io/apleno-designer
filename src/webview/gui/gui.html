@@ -9,19 +9,19 @@
     <div id="gui-add"></div>
     <div id="gui-preview"></div>
     <div id="gui-propeditor">
-      <div class="prop">
+      <div data-property="customId" class="prop">
         <label for="prop-id">ID</label>
         <input type="text" id="prop-id" value="" />
       </div>
-      <div class="prop">
+      <div data-property="css" class="prop">
         <label for="prop-css">Custom CSS</label>
         <input type="text" id="prop-css" value="" />
       </div>
-      <div class="prop">
+      <div data-property="labelText" class="prop">
         <label for="prop-label">Label</label>
         <input type="text" id="prop-label" value="" />
       </div>
-      <div class="prop">
+      <div data-property="labelPosition" class="prop">
         <label for="prop-labelpos">Label position</label>
         <select id="prop-labelpos">
           <option value="left">Left</option>
@@ -30,58 +30,58 @@
           <option value="hidden">Hidden</option>
         </select>
       </div>
-      <div class="prop">
+      <div data-property="marginTop" class="prop">
         <label for="prop-margintop">Margin top</label>
         <input type="number" id="prop-margintop" min="0" max="1000" value="10" />
       </div>
-      <div class="prop">
+      <div data-property="helpText" class="prop">
         <label for="prop-helptext">Help text</label>
         <input type="text" id="prop-helptext" value="" />
       </div>
-      <div class="prop">
+      <div data-property="helpPosition" class="prop">
         <label for="prop-helppos">Help text position</label>
         <select id="prop-helppos">
           <option value="bottom">Bottom</option>
           <option value="label">After label in icon</option>
         </select>
       </div>
-      <div class="prop">
+      <div data-property="subType" class="prop">
         <label for="prop-subtype">Widget subtype</label>
         <select id="prop-subtype"></select>
       </div>
-      <div class="prop">
+      <div data-property="value" class="prop">
         <label for="prop-value">Value</label>
         <input type="text" id="prop-value" value="" />
       </div>
-      <div class="prop">
+      <div data-property="language" class="prop">
         <input type="checkbox" id="prop-iscode"> <label for="prop-iscode">Value is expression code</label>
       </div>
-      <div class="prop">
+      <div data-property="codeOnChange" class="prop">
         <label for="prop-onchange">Code on change</label>
         <input type="text" id="prop-onchange" value="" />
       </div>
-      <div class="prop">
+      <div data-property="conditionOnSubmit" class="prop">
         <label for="prop-condition">Validation expression code</label>
         <input type="text" id="prop-condition" value="" />
       </div>
-      <div class="prop">
+      <div data-property="isRequired" class="prop">
         <input type="checkbox" id="prop-required"> <label for="prop-required">A value is required to submit</label>
       </div>
-      <div class="prop" data-widgets="tabs">
+      <div data-widgets="tabs" class="prop">
         <label>Tabs</label>
         <button id="prop-tabs-add">Add tab</button>
         <div id="prop-tabs"></div>
       </div>
-      <div class="prop" data-widgets="columns">
+      <div data-widgets="columns" class="prop">
         <label>Columns</label>
         <button id="prop-columns-add">Add column</button>
         <div id="prop-columns"></div>
       </div>
-      <div class="prop" data-widgets="box">
+      <div data-property="boxHeader" class="prop">
         <label for="prop-box-header">Box header text</label>
         <input type="text" id="prop-box-header" value="" />
       </div>
-      <div class="prop" data-widgets="box">
+      <div data-property="boxDesign" class="prop">
         <label for="prop-box-style">Box style</label>
         <select id="prop-box-style">
           <option value="primary">Primary (blue)</option>
@@ -95,64 +95,64 @@
           <option value="none">None (invisible)</option>
         </select>
       </div>
-      <div class="prop" data-widgets="choices">
+      <div data-widgets="choices" class="prop">
         <label>Choices</label>
         <button id="prop-choices-add">Add choice</button>
         <div id="prop-choices"></div>
       </div>
-      <div class="prop" data-widgets="choices">
+      <div data-property="choicesLanguageValues" class="prop">
         <label for="prop-choices-values">Choices values variable</label>
         <input type="text" id="prop-choices-values" value="" />
       </div>
-      <div class="prop" data-widgets="choices">
+      <div data-property="choicesLanguageTexts" class="prop">
         <label for="prop-choices-labels">Choices labels variable</label>
         <input type="text" id="prop-choices-labels" value="" />
       </div>
-      <div class="prop" data-widgets="progress">
+      <div data-property="progressBarColor" class="prop">
         <label for="prop-progress-color">Progress color</label>
         <input type="color" id="prop-progress-color" value="" />
       </div>
-      <div class="prop" data-widgets="progress">
+      <div data-property="progressBarDescription" class="prop">
         <label for="prop-progress-label">Progress label</label>
         <input type="input" id="prop-progress-label" value="" />
       </div>
-      <div class="prop" data-widgets="number">
+      <div data-property="numberMinValue" class="prop">
         <label for="prop-number-min">Min number</label>
         <input type="number" id="prop-number-min" value="" />
       </div>
-      <div class="prop" data-widgets="number">
+      <div data-property="numberMaxValue" class="prop">
         <label for="prop-number-max">Max number</label>
         <input type="number" id="prop-number-max" value="" />
       </div>
-      <div class="prop" data-widgets="number">
+      <div data-property="numberStepChange" class="prop">
         <label for="prop-number-step">Step</label>
         <input type="number" id="prop-number-step" value="" />
       </div>
-      <div class="prop" data-widgets="interval">
+      <div data-property="repeaterCode" class="prop">
         <label for="prop-interval-code">Interval code</label>
         <input type="text" id="prop-interval-code" value="" />
       </div>
-      <div class="prop" data-widgets="interval">
+      <div data-property="repeaterTimeMS" class="prop">
         <label for="prop-interval-time">Interval time in seconds</label>
         <input type="number" min="10" step="1" id="prop-interval-time" value="" />
       </div>
-      <div class="prop" data-widgets="graph">
+      <div data-property="graphWidth" class="prop">
         <label for="prop-graph-width">Width (%)</label>
         <input type="number" min="1" max="100" step="1" id="prop-graph-width" value="100" />
       </div>
-      <div class="prop" data-widgets="graph">
+      <div data-property="graphHeight" class="prop">
         <label for="prop-graph-height">Height (px)</label>
         <input type="number" min="50" step="1" id="prop-graph-height" value="" />
       </div>
-      <div class="prop" data-widgets="label">
+      <div data-property="textSize" class="prop">
         <label for="prop-label-size">Font size (px)</label>
         <input type="number" min="5" step="1" id="prop-label-size" value="" />
       </div>
-      <div class="prop" data-widgets="label">
+      <div data-property="textColor" class="prop">
         <label for="prop-label-color">Color</label>
         <input type="color" id="prop-label-color" value="" />
       </div>
-      <div class="prop" data-widgets="label">
+      <div data-property="textFamily" class="prop">
         <label for="prop-label-family">Font family</label>
         <select id="prop-label-family">
           <option value="default">Default</option>
@@ -165,11 +165,11 @@
           <option value="verdana">Verdana</option>
         </select>
       </div>
-      <div class="prop" data-widgets="button">
+      <div data-property="buttonCode" class="prop">
         <label for="prop-button-onpress">Code on click</label>
         <input type="text" id="prop-button-color" value="" />
       </div>
-      <div class="prop" data-widgets="button">
+      <div data-property="buttonDesign" class="prop">
         <label for="prop-button-style">Code on click</label>
         <select id="prop-button-style">
           <option value="primary">Primary (blue)</option>
@@ -191,7 +191,7 @@
           <option value="outline-dark">Outline - Dark</option>
         </select>
       </div>
-      <div class="prop" data-widgets="button">
+      <div data-property="buttonSize" class="prop">
         <label for="prop-button-size">Code on click</label>
         <select id="prop-button-size">
           <option value="sm">Small</option>

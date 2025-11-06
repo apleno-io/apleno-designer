@@ -1,4 +1,5 @@
-import { fixIds, GUIInterface } from '../../common/gui';
+import { fixIds, GUIInterface, GUIWidget, isContainerWidget } from '../../common/gui';
+import { WidgetPropertyEditor } from './gui-propeditor';
 import { WidgetFactory } from './gui-widget-factory';
 import './gui.css';
 
@@ -28,10 +29,11 @@ const UIEditor = new class {
     </html>`.trim();
     setTimeout(() => {
       (document.getElementById('gui-preview') as HTMLElement).appendChild(iframe);
-      setTimeout(() => {
+      iframe.addEventListener('load', () => {
+        window.addEventListener('message', this.handleChildMessage.bind(this));
         this.iframeReady = true;
         this.renderAll();
-      }, 5);
+      });
     }, 0);
   }
 
@@ -50,13 +52,52 @@ const UIEditor = new class {
       return;
     }
 
-    console.log(this.state?.widgets);
-
     const html = [];
     for (let i = 0; i < this.state?.widgets.length; ++i) {
       html.push(WidgetFactory.getWidgetHTML(this.state.widgets[i]));
     }
     ((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.querySelector('.pgm-gui')?.insertAdjacentHTML('beforeend', html.join(''));
+  }
+
+  private handleChildMessage(msg: MessageEvent) {
+    if (msg.data.type === 'onDidClickWidet') {
+      console.log(msg.data.widgetId);
+      if (msg.data.widgetId === null) {
+        WidgetPropertyEditor.setNoWidget();
+        return;
+      }
+
+      const widget = this.findWidget((widget: GUIWidget) => { return widget.id === msg.data.widgetId; });
+      if (widget) {
+        WidgetPropertyEditor.setWidget(widget);
+      }
+      else {
+        WidgetPropertyEditor.setNoWidget();
+      }
+    }
+  }
+
+  private findWidget(predicate: (widget: GUIWidget) => boolean, widgets: GUIWidget[] | null = null): GUIWidget | null {
+    if (widgets === null) {
+      if (this.state === null) {
+        return null;
+      }
+      widgets = this.state?.widgets;
+    }
+
+    for (let i = 0; i < widgets.length; ++i) {
+      if (predicate(widgets[i])) {
+        return widgets[i];
+      }
+      if (isContainerWidget(widgets[i].type) && widgets[i].widgets) {
+        const subWidget = this.findWidget(predicate, widgets[i].widgets);
+        if (subWidget) {
+          return subWidget;
+        }
+      }
+    }
+
+    return null;
   }
 };
 

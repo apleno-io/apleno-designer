@@ -394,8 +394,8 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
       </head>
       <body>
         <script>
-          window.IFRAME_JS = \`${iframeJS.replace(/`/g, '\\`')}\`;
-          window.IFRAME_CSS = \`${iframeCSS.replace(/`/g, '\\`')}\`;
+          window.IFRAME_JS = \`${iframeJS.replace(/`/g, '\\`').replace(/\$/g, '\\\$')}\`;
+          window.IFRAME_CSS = \`${iframeCSS}\`;
           window.CSP_SOURCE = "${webview.cspSource}";
           window.CSP_NONCE = "${nonce}";
         </script>

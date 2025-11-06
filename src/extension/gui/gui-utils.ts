@@ -134,7 +134,7 @@ const WidgetPropertiesDefaults: any = {
   repeaterTimeMS: 1000
 };
 
-const WidgetProperties: ObjectStringArray = {
+export const WidgetProperties: ObjectStringArray = {
   label: ['value', 'language', 'css', 'marginTop', 'labelText', 'labelPosition', 'helpText', 'helpPosition', 'textSize', 'textFamily', 'textColor'],
   image: ['value', 'language', 'css', 'marginTop', 'labelText', 'labelPosition', 'helpText', 'helpPosition'],
   iframe: ['value', 'language', 'css', 'marginTop', 'labelText', 'labelPosition', 'helpText', 'helpPosition'],
