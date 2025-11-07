@@ -159,7 +159,7 @@ export const WidgetProperties: ObjectStringArray = {
   interval: ['repeaterCode', 'repeaterTimeMS']
 };
 
-const WidgetSubTypes: ObjectStringArray = {
+export const WidgetSubTypes: ObjectStringArray = {
   text: ['text', 'textarea', 'password'],
   number: ['float', 'integer', 'slider'],
   path: ['file', 'folder'],

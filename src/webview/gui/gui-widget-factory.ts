@@ -275,9 +275,9 @@ export const WidgetFactory = new class {
     else if (el.type === 'progress') {
       const cssClassTag: string = css.hasStyle && css.type === WidgetCSSType.STYLE ? ` ${css.fullHTMLTag}` : '';
 
-      let perp: any = el.data.value;
-      if (typeof perp === 'string' || perp === null || isNaN(perp)) {
-        perp = 0;
+      let perp: any = parseInt(`${el.data.value}`);
+      if (el.data.language === true || isNaN(perp)) {
+        perp = 50;
       }
       perp = Math.max(Math.min(100, perp), 0);
 

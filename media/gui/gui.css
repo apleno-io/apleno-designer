@@ -172,6 +172,18 @@ textarea::placeholder {
   left: 0;
   bottom: 0px;
   overflow: hidden auto;
-  padding: 0 10px;
+  padding: 0 10px 10px;
+}
+#gui-propeditor label {
+  margin: 10px 0 2px;
+  user-select: none;
+}
+#gui-propeditor input:not([type=checkbox]),
+textarea,
+select {
+  padding: 3px;
+}
+#gui-propeditor input[type=checkbox] {
+  vertical-align: text-top;
 }
 /*# sourceMappingURL=gui.css.map */

@@ -61,7 +61,6 @@ const UIEditor = new class {
 
   private handleChildMessage(msg: MessageEvent) {
     if (msg.data.type === 'onDidClickWidet') {
-      console.log(msg.data.widgetId);
       if (msg.data.widgetId === null) {
         WidgetPropertyEditor.setNoWidget();
         return;
