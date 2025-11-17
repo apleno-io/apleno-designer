@@ -20,7 +20,19 @@ const subTypesLocalisation: { [key: string]: string } = {
   progresscircle: 'Circle'
 };
 
-export const WidgetPropertyEditor = new class {
+export const WidgetPropertyEditor = new class extends EventTarget {
+  private currentWidget: GUIWidget | null = null;
+
+  constructor() {
+    super();
+    this.onChange = this.onChange.bind(this);
+  }
+
+  public inject() {
+    document.querySelectorAll('#gui-propeditor input').forEach(el => (el as HTMLInputElement).addEventListener('change', this.onChange));
+    document.querySelectorAll('#gui-propeditor select').forEach(el => (el as HTMLInputElement).addEventListener('change', this.onChange));
+  }
+
   /**
    * Show empty form state when no widget are selected.
    */
@@ -34,6 +46,8 @@ export const WidgetPropertyEditor = new class {
    * Display the widget settings.
    */
   public setWidget(widget: GUIWidget) {
+    this.currentWidget = JSON.parse(JSON.stringify(widget));
+
     if (!(widget.type in WidgetProperties)) {
       this.setNoWidget();
       return;
@@ -73,6 +87,7 @@ export const WidgetPropertyEditor = new class {
     if (['language', 'isRequired'].includes(name)) {
       return (document.querySelector(`#prop-${name}`) as HTMLInputElement).checked;
     }
+    return null;
   }
 
   /**
@@ -89,5 +104,18 @@ export const WidgetPropertyEditor = new class {
       (document.querySelector(`#prop-${name}`) as HTMLInputElement).checked = value;
       return;
     }
+  }
+
+  private onChange() {
+    if (this.currentWidget === null) {
+      return;
+    }
+
+    // Values
+    WidgetProperties[this.currentWidget.type].forEach(propName => {
+      (this.currentWidget as any)[propName] = this.getProperty(propName);
+    });
+
+    this.dispatchEvent(new CustomEvent('onDidChange', { detail: { widget: this.currentWidget } }));
   }
 };

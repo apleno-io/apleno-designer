@@ -71,7 +71,7 @@ export const WidgetFactory = new class {
       }
     }
 
-    return `<div data-widget-id="${widget.id}">${result}</div>`;
+    return result;
   }
 
   private getWidgetCSS(widgetCSS: string): WidgetCSS {

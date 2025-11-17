@@ -77,7 +77,16 @@
     progressbar: "Bar",
     progresscircle: "Circle"
   };
-  var WidgetPropertyEditor = new class {
+  var WidgetPropertyEditor = new class extends EventTarget {
+    currentWidget = null;
+    constructor() {
+      super();
+      this.onChange = this.onChange.bind(this);
+    }
+    inject() {
+      document.querySelectorAll("#gui-propeditor input").forEach((el) => el.addEventListener("change", this.onChange));
+      document.querySelectorAll("#gui-propeditor select").forEach((el) => el.addEventListener("change", this.onChange));
+    }
     /**
      * Show empty form state when no widget are selected.
      */
@@ -90,6 +99,7 @@
      * Display the widget settings.
      */
     setWidget(widget) {
+      this.currentWidget = JSON.parse(JSON.stringify(widget));
       if (!(widget.type in WidgetProperties)) {
         this.setNoWidget();
         return;
@@ -121,6 +131,7 @@
       if (["language", "isRequired"].includes(name)) {
         return document.querySelector(`#prop-${name}`).checked;
       }
+      return null;
     }
     /**
      * Set the value of a property.
@@ -135,6 +146,15 @@
         document.querySelector(`#prop-${name}`).checked = value;
         return;
       }
+    }
+    onChange() {
+      if (this.currentWidget === null) {
+        return;
+      }
+      WidgetProperties[this.currentWidget.type].forEach((propName) => {
+        this.currentWidget[propName] = this.getProperty(propName);
+      });
+      this.dispatchEvent(new CustomEvent("onDidChange", { detail: { widget: this.currentWidget } }));
     }
   }();
 
@@ -204,7 +224,7 @@
           result += `<div class="pgm-widget-help">${widget.data.helpText}</div>`;
         }
       }
-      return `<div data-widget-id="${widget.id}">${result}</div>`;
+      return result;
     }
     getWidgetCSS(widgetCSS) {
       const result = {
@@ -442,31 +462,50 @@
       </body>
     </html>`.trim();
       setTimeout(() => {
+        WidgetPropertyEditor.inject();
+        WidgetPropertyEditor.addEventListener("onDidChange", (event) => {
+          const widget = JSON.parse(JSON.stringify(event.detail.widget));
+          this.forEachWidget((w) => {
+            if (w.widgets) {
+            }
+          });
+        });
         document.getElementById("gui-preview").appendChild(iframe);
         iframe.addEventListener("load", () => {
           window.addEventListener("message", this.handleChildMessage.bind(this));
           this.iframeReady = true;
-          this.renderAll();
+          this.drawAll();
         });
       }, 0);
     }
     setState(state) {
       this.state = state;
       fixIds(this.state.widgets);
-      this.renderAll();
+      this.drawAll();
     }
     getState() {
       return {};
     }
-    renderAll() {
+    drawAll() {
       if (this.state === null || !this.iframeReady) {
         return;
       }
       const html = [];
       for (let i = 0; i < this.state?.widgets.length; ++i) {
-        html.push(WidgetFactory.getWidgetHTML(this.state.widgets[i]));
+        html.push(`<div data-widget-id="${this.state.widgets[i].id}">${WidgetFactory.getWidgetHTML(this.state.widgets[i])}</div>`);
       }
       document.querySelector("#gui-preview iframe").contentWindow.document.querySelector(".pgm-gui")?.insertAdjacentHTML("beforeend", html.join(""));
+    }
+    redrawWidget(id) {
+      if (this.state === null || !this.iframeReady) {
+        return;
+      }
+      const widget = this.findWidget((w) => w.id === id);
+      const parent = document.querySelector("#gui-preview iframe").contentWindow.document.querySelector(`[data-widget-id="${id}"]`);
+      if (widget === null || parent === null) {
+        return;
+      }
+      parent.innerHTML = WidgetFactory.getWidgetHTML(widget);
     }
     handleChildMessage(msg) {
       if (msg.data.type === "onDidClickWidet") {
@@ -503,6 +542,34 @@
         }
       }
       return null;
+    }
+    forEachWidget(cb, widgets = null) {
+      if (widgets === null) {
+        if (this.state === null) {
+          return null;
+        }
+        widgets = this.state?.widgets;
+      }
+      for (let i = 0; i < widgets.length; ++i) {
+        cb(widgets[i]);
+        if (isContainerWidget(widgets[i].type) && widgets[i].widgets) {
+          this.forEachWidget(cb, widgets[i].widgets);
+        }
+      }
+    }
+    forEachContainers(cb, widgets = null) {
+      if (widgets === null) {
+        if (this.state === null) {
+          return null;
+        }
+        widgets = this.state?.widgets;
+      }
+      cb(widgets);
+      for (let i = 0; i < widgets.length; ++i) {
+        if (isContainerWidget(widgets[i].type) && widgets[i].widgets) {
+          this.forEachContainers(cb, widgets[i].widgets);
+        }
+      }
     }
   }();
   (function() {

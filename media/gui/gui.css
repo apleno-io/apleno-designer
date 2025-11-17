@@ -146,16 +146,9 @@ textarea::placeholder {
   bottom: 0;
   left: 0;
 }
-#gui-add {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 30px;
-}
 #gui-preview {
   position: absolute;
-  top: 30px;
+  top: 0;
   right: 0;
   left: 300px;
   bottom: 0px;
@@ -167,7 +160,7 @@ textarea::placeholder {
 }
 #gui-propeditor {
   position: absolute;
-  top: 30px;
+  top: 0;
   width: 300px;
   left: 0;
   bottom: 0px;

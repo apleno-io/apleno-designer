@@ -28,11 +28,19 @@ const UIEditor = new class {
       </body>
     </html>`.trim();
     setTimeout(() => {
+      WidgetPropertyEditor.inject();
+      WidgetPropertyEditor.addEventListener('onDidChange', (event: Event) => {
+        // replace widget in state & redraw
+        const widget = JSON.parse(JSON.stringify((event as CustomEvent).detail.widget));
+        this.forEachWidget(w => {
+          if (w.widgets) { }
+        });
+      });
       (document.getElementById('gui-preview') as HTMLElement).appendChild(iframe);
       iframe.addEventListener('load', () => {
         window.addEventListener('message', this.handleChildMessage.bind(this));
         this.iframeReady = true;
-        this.renderAll();
+        this.drawAll();
       });
     }, 0);
   }
@@ -40,23 +48,37 @@ const UIEditor = new class {
   public setState(state: GUIInterface): void {
     this.state = state;
     fixIds(this.state.widgets);
-    this.renderAll();
+    this.drawAll();
   }
 
   public getState(): any {
     return {};
   }
 
-  public renderAll() {
+  public drawAll() {
     if (this.state === null || !this.iframeReady) {
       return;
     }
 
     const html = [];
     for (let i = 0; i < this.state?.widgets.length; ++i) {
-      html.push(WidgetFactory.getWidgetHTML(this.state.widgets[i]));
+      html.push(`<div data-widget-id="${this.state.widgets[i].id}">${WidgetFactory.getWidgetHTML(this.state.widgets[i])}</div>`);
     }
     ((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.querySelector('.pgm-gui')?.insertAdjacentHTML('beforeend', html.join(''));
+  }
+
+  public redrawWidget(id: number) {
+    if (this.state === null || !this.iframeReady) {
+      return;
+    }
+
+    const widget = this.findWidget(w => w.id === id);
+    const parent = ((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.querySelector(`[data-widget-id="${id}"]`);
+    if (widget === null || parent === null) {
+      return;
+    }
+
+    parent.innerHTML = WidgetFactory.getWidgetHTML(widget);
   }
 
   private handleChildMessage(msg: MessageEvent) {
@@ -97,6 +119,39 @@ const UIEditor = new class {
     }
 
     return null;
+  }
+
+  private forEachWidget(cb: (widget: GUIWidget) => void, widgets: GUIWidget[] | null = null) {
+    if (widgets === null) {
+      if (this.state === null) {
+        return null;
+      }
+      widgets = this.state?.widgets;
+    }
+
+    for (let i = 0; i < widgets.length; ++i) {
+      cb(widgets[i]);
+      if (isContainerWidget(widgets[i].type) && widgets[i].widgets) {
+        this.forEachWidget(cb, widgets[i].widgets);
+      }
+    }
+  }
+
+  private forEachContainers(cb: (widgets: GUIWidget[]) => void, widgets: GUIWidget[] | null = null) {
+    if (widgets === null) {
+      if (this.state === null) {
+        return null;
+      }
+      widgets = this.state?.widgets;
+    }
+
+    cb(widgets);
+
+    for (let i = 0; i < widgets.length; ++i) {
+      if (isContainerWidget(widgets[i].type) && widgets[i].widgets) {
+        this.forEachContainers(cb, widgets[i].widgets);
+      }
+    }
   }
 };
 
