@@ -37,6 +37,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
    * Show empty form state when no widget are selected.
    */
   public setNoWidget() {
+    (document.getElementById('gui-propeditor-empty') as HTMLElement).style.display = 'block';
     document.querySelectorAll('[data-property]').forEach((setting: Element) => {
       (setting as HTMLElement).style.display = 'none';
     });
@@ -52,6 +53,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
       this.setNoWidget();
       return;
     }
+    (document.getElementById('gui-propeditor-empty') as HTMLElement).style.display = 'none';
 
     // Visibility
     document.querySelectorAll('[data-property]').forEach((setting: Element) => {

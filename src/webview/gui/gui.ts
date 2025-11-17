@@ -29,6 +29,7 @@ const UIEditor = new class {
     </html>`.trim();
     setTimeout(() => {
       WidgetPropertyEditor.inject();
+      WidgetPropertyEditor.setNoWidget();
       WidgetPropertyEditor.addEventListener('onDidChange', (event: Event) => {
         // replace widget in state & redraw
         const widget = JSON.parse(JSON.stringify((event as CustomEvent).detail.widget));
@@ -78,7 +79,7 @@ const UIEditor = new class {
       return;
     }
 
-    parent.innerHTML = WidgetFactory.getWidgetHTML(widget);
+    parent.outerHTML = WidgetFactory.getWidgetHTML(widget);
   }
 
   private handleChildMessage(msg: MessageEvent) {

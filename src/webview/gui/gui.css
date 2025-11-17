@@ -23,7 +23,7 @@
   border: 0;
 }
 
-#gui-propeditor {
+#gui-sidebar {
   position: absolute;
   top: 0;
   width: 300px;
@@ -31,6 +31,23 @@
   bottom: 0px;
   overflow: hidden auto;
   padding: 0 10px 10px;
+}
+
+#gui-sidebar-tabs {
+  display: flex;
+}
+
+#gui-sidebar-tabs button {
+  flex: 1 1 auto;
+  border: 1px solid var(--vscode-button-background);
+  border-width: 0 0 1px 0;
+  background-color: transparent;
+  border-radius: 2px 2px 0 0;
+}
+
+#gui-sidebar-tabs button.selected,
+#gui-sidebar-tabs button:hover {
+  background: var(--vscode-button-background);
 }
 
 #gui-propeditor label {
