@@ -28,15 +28,34 @@ const UIEditor = new class {
       </body>
     </html>`.trim();
     setTimeout(() => {
+      // Tabs
+      this.setTab('props');
+      document.getElementById('gui-sidebar-tabs')?.addEventListener('click', (event: MouseEvent) => {
+        const button = (event.target as HTMLElement).closest('[data-tab]');
+        if (button === null) {
+          return;
+        }
+        this.setTab((button as HTMLElement).dataset.tab as any);
+      });
+
+      // Widget editor
       WidgetPropertyEditor.inject();
       WidgetPropertyEditor.setNoWidget();
       WidgetPropertyEditor.addEventListener('onDidChange', (event: Event) => {
         // replace widget in state & redraw
-        const widget = JSON.parse(JSON.stringify((event as CustomEvent).detail.widget));
-        this.forEachWidget(w => {
-          if (w.widgets) { }
+        const widget: GUIWidget = JSON.parse(JSON.stringify((event as CustomEvent).detail.widget));
+        this.forEachContainers((widgets: GUIWidget[]) => {
+          for (let i = 0; i < widgets.length; ++i) {
+            if (widgets[i].id === widget.id) {
+              widgets[i] = widget;
+              break;
+            }
+          }
         });
+        this.redrawWidget(widget.id);
       });
+
+      // Iframe
       (document.getElementById('gui-preview') as HTMLElement).appendChild(iframe);
       iframe.addEventListener('load', () => {
         window.addEventListener('message', this.handleChildMessage.bind(this));
@@ -54,6 +73,23 @@ const UIEditor = new class {
 
   public getState(): any {
     return {};
+  }
+
+  public setTab(tab: 'add' | 'tree' | 'props' | 'ui') {
+    document.querySelectorAll('#gui-sidebar-tabs [data-tab]').forEach((el: Element) => {
+      if (!(el instanceof HTMLElement)) {
+        return;
+      }
+
+      if (el.dataset.tab === tab) {
+        el.classList.add('selected');
+        (document.querySelector(`[data-tab-content="${el.dataset.tab}"]`) as HTMLElement).style.display = 'block';
+      }
+      else {
+        el.classList.remove('selected');
+        (document.querySelector(`[data-tab-content="${el.dataset.tab}"]`) as HTMLElement).style.display = 'none';
+      }
+    });
   }
 
   public drawAll() {
@@ -78,12 +114,11 @@ const UIEditor = new class {
     if (widget === null || parent === null) {
       return;
     }
-
-    parent.outerHTML = WidgetFactory.getWidgetHTML(widget);
+    parent.innerHTML = WidgetFactory.getWidgetHTML(widget, false);
   }
 
   private handleChildMessage(msg: MessageEvent) {
-    if (msg.data.type === 'onDidClickWidet') {
+    if (msg.data.type === 'onDidClickWidget') {
       if (msg.data.widgetId === null) {
         WidgetPropertyEditor.setNoWidget();
         return;

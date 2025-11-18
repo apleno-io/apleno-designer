@@ -115,7 +115,12 @@ export const WidgetPropertyEditor = new class extends EventTarget {
 
     // Values
     WidgetProperties[this.currentWidget.type].forEach(propName => {
-      (this.currentWidget as any)[propName] = this.getProperty(propName);
+      if (propName === 'customId') {
+        (this.currentWidget as GUIWidget).customId = this.getProperty(propName);
+      }
+      else {
+        (this.currentWidget as any).data[propName] = this.getProperty(propName);
+      }
     });
 
     this.dispatchEvent(new CustomEvent('onDidChange', { detail: { widget: this.currentWidget } }));

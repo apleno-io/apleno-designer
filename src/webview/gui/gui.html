@@ -9,12 +9,21 @@
     <div id="gui-preview"></div>
     <div id="gui-sidebar">
       <div id="gui-sidebar-tabs">
-        <button>Add</button>
-        <button>Tree</button>
-        <button>Properties</button>
-        <button>UI</button>
+        <button data-tab="add">Add</button>
+        <button data-tab="tree">Tree</button>
+        <button data-tab="props">Properties</button>
+        <button data-tab="ui">UI</button>
       </div>
-      <div id="gui-propeditor">
+      <div data-tab-content="add">
+        Add menu
+      </div>
+      <div data-tab-content="tree">
+        Tree menu
+      </div>
+      <div data-tab-content="ui">
+        UI menu
+      </div>
+      <div data-tab-content="props" id="gui-propeditor">
         <div id="gui-propeditor-empty">Please select a widget to edit</div>
         <div data-property="customId" class="prop">
           <label for="prop-customId">ID</label>

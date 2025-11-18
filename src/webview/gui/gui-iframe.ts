@@ -44,7 +44,7 @@ export const IframeContent = new class {
     const w: HTMLElement | null = topElement.closest('[data-widget-id]');
     if (w !== this.selectedWidget) {
       this.selectedWidget = w;
-      parent.postMessage({ type: 'onDidClickWidet', widgetId: this.selectedWidget !== null ? parseInt(`${this.selectedWidget.dataset.widgetId}`) : null });
+      parent.postMessage({ type: 'onDidClickWidget', widgetId: this.selectedWidget !== null ? parseInt(`${this.selectedWidget.dataset.widgetId}`) : null });
       document.body.querySelectorAll('[data-widget-id]').forEach(w => w.classList.remove('gui-widget-selected'));
       if (w) {
         w.classList.add('gui-widget-selected');

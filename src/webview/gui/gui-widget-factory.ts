@@ -15,7 +15,7 @@ interface WidgetCSS {
 }
 
 export const WidgetFactory = new class {
-  public getWidgetHTML(widget: GUIWidget): string {
+  public getWidgetHTML(widget: GUIWidget, includeParentHTML: boolean = true): string {
     // Content
     const widgetContent = this.getContent(widget);
 
@@ -71,7 +71,7 @@ export const WidgetFactory = new class {
       }
     }
 
-    return `<div data-widget-id="${widget.id}">${result}</div>`;
+    return includeParentHTML ? `<div data-widget-id="${widget.id}">${result}</div>` : result;
   }
 
   private getWidgetCSS(widgetCSS: string): WidgetCSS {
