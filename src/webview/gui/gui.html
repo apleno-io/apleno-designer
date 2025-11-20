@@ -15,13 +15,47 @@
         <button data-tab="ui">UI</button>
       </div>
       <div data-tab-content="add">
-        Add menu
+        <h2>Display</h2>
+        <button data-add-widget="graph">Graph</button>
+        <button data-add-widget="iframe">Iframe</button>
+        <button data-add-widget="image">Image</button>
+        <button data-add-widget="progress">Progress bar</button>
+        <button data-add-widget="table">Table</button>
+        <button data-add-widget="label">Text Display</button>
+        <h2>Data</h2>
+        <button data-add-widget="checkbox">Checkbox</button>
+        <button data-add-widget="date">Date</button>
+        <button data-add-widget="grid">Excel-like grid</button>
+        <button data-add-widget="number">Number</button>
+        <button data-add-widget="path">Path</button>
+        <button data-add-widget="select">Select</button>
+        <button data-add-widget="text">Text</button>
+        <h2>Actions</h2>
+        <button data-add-widget="button">Button</button>
+        <button data-add-widget="repeater">Code Repeater</button>
+        <h2>Layout</h2>
+        <button data-add-widget="columns">Columns</button>
+        <button data-add-widget="list">List</button>
+        <button data-add-widget="tabs">Tabs</button>
       </div>
       <div data-tab-content="tree">
         Tree menu
       </div>
       <div data-tab-content="ui">
-        UI menu
+        <div class="prop">
+          <label for="settings-language">Language used in UI</label>
+          <select id="settings-language">
+            <option value="r">R</option>
+            <option value="python">Python</option>
+          </select>
+        </div>
+        <div class="prop">
+          <label for="settings-submit">Submit button</label>
+          <select id="settings-submit">
+            <option value="visibile">Visible</option>
+            <option value="hidden">Hidden</option>
+          </select>
+        </div>
       </div>
       <div data-tab-content="props" id="gui-propeditor">
         <div id="gui-propeditor-empty">Please select a widget to edit</div>
@@ -86,8 +120,11 @@
         </div>
         <div data-widgets="tabs" class="prop">
           <label>Tabs</label>
-          <button id="prop-tabs-add">Add tab</button>
           <div id="prop-tabs"></div>
+        </div>
+        <div data-property="tabsSelected" class="prop">
+          <label for="prop-tabsSelected">Selected tab index</label>
+          <input type="number" id="prop-tabsSelected" min="0" />
         </div>
         <div data-widgets="columns" class="prop">
           <label>Columns</label>

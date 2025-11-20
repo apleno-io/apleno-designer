@@ -50,6 +50,7 @@
   background: var(--vscode-button-background);
 }
 
+/* PROP EDITOR */
 #gui-propeditor label {
   margin: 10px 0 2px;
   user-select: none;
@@ -63,4 +64,16 @@ select {
 
 #gui-propeditor input[type=checkbox] {
   vertical-align: text-top;
+}
+
+.tabs-editor-entry {
+  display: flex;
+}
+
+.tabs-editor-entry-text {
+  flex: 1 1 auto;
+}
+
+.tabs-editor-entry-options {
+  flex: 1 0 auto;
 }

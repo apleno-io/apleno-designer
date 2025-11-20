@@ -1,5 +1,6 @@
 import { GUIWidget } from "../../common/gui";
 import { WidgetProperties, WidgetSubTypes } from "../../extension/gui/gui-utils";
+import { WidgetTabEditor } from "./gui-propeditor-tabs";
 
 const subTypesLocalisation: { [key: string]: string } = {
   text: 'Text',
@@ -23,14 +24,19 @@ const subTypesLocalisation: { [key: string]: string } = {
 export const WidgetPropertyEditor = new class extends EventTarget {
   private currentWidget: GUIWidget | null = null;
 
+  private editorTabs: WidgetTabEditor | null = null;
+
   constructor() {
     super();
     this.onChange = this.onChange.bind(this);
   }
 
   public inject() {
-    document.querySelectorAll('#gui-propeditor input').forEach(el => (el as HTMLInputElement).addEventListener('change', this.onChange));
-    document.querySelectorAll('#gui-propeditor select').forEach(el => (el as HTMLInputElement).addEventListener('change', this.onChange));
+    this.editorTabs = new WidgetTabEditor(document.getElementById('prop-tabs') as HTMLElement);
+    this.editorTabs.addEventListener('onDidChange', this.onChange);
+    // Don't hook on sub-widget editors
+    document.querySelectorAll('#gui-propeditor > .prop > input').forEach(el => (el as HTMLInputElement).addEventListener('input', this.onChange));
+    document.querySelectorAll('#gui-propeditor > .prop > select').forEach(el => (el as HTMLInputElement).addEventListener('change', this.onChange));
   }
 
   /**
@@ -40,6 +46,9 @@ export const WidgetPropertyEditor = new class extends EventTarget {
     (document.getElementById('gui-propeditor-empty') as HTMLElement).style.display = 'block';
     document.querySelectorAll('[data-property]').forEach((setting: Element) => {
       (setting as HTMLElement).style.display = 'none';
+    });
+    document.querySelectorAll('#gui-propeditor [data-widgets]').forEach((editor: Element) => {
+      (editor as HTMLElement).style.display = 'none';
     });
   }
 
@@ -56,9 +65,12 @@ export const WidgetPropertyEditor = new class extends EventTarget {
     (document.getElementById('gui-propeditor-empty') as HTMLElement).style.display = 'none';
 
     // Visibility
-    document.querySelectorAll('[data-property]').forEach((setting: Element) => {
+    document.querySelectorAll('#gui-propeditor [data-property]').forEach((setting: Element) => {
       const y = (WidgetProperties[widget.type].includes((setting as HTMLElement).dataset.property as string)) || (setting as HTMLElement).dataset.property === 'customId';
       (setting as HTMLElement).style.display = y ? 'block' : 'none';
+    });
+    document.querySelectorAll('#gui-propeditor [data-widgets]').forEach((editor: Element) => {
+      (editor as HTMLElement).style.display = widget.type === (editor as HTMLElement).dataset.widgets ? 'block' : 'none';
     });
 
     // SubTypes
@@ -67,9 +79,15 @@ export const WidgetPropertyEditor = new class extends EventTarget {
 
     // Values
     setTimeout(() => {
+      this.setProperty('customId', widget.customId);
+
       WidgetProperties[widget.type].forEach(propName => {
-        this.setProperty(propName, propName === 'customId' ? widget.customId : (widget.data as any)[propName]);
+        this.setProperty(propName, (widget.data as any)[propName]);
       });
+
+      if (widget.type === 'tabs' && this.editorTabs) {
+        this.editorTabs.setValues(widget.data.tabsNames);
+      }
     }, 0);
   }
 
@@ -89,6 +107,12 @@ export const WidgetPropertyEditor = new class extends EventTarget {
     if (['language', 'isRequired'].includes(name)) {
       return (document.querySelector(`#prop-${name}`) as HTMLInputElement).checked;
     }
+
+    if (name === 'tabsNames') {
+      return this.editorTabs?.getValues();
+    }
+
+    console.error('[PGUI] getProperty: Could not find ' + name + ' value!');
     return null;
   }
 
@@ -106,6 +130,8 @@ export const WidgetPropertyEditor = new class extends EventTarget {
       (document.querySelector(`#prop-${name}`) as HTMLInputElement).checked = value;
       return;
     }
+
+    console.error('[PGUI] setProperty: Could not find ' + name + ' value!');
   }
 
   private onChange() {
@@ -114,14 +140,13 @@ export const WidgetPropertyEditor = new class extends EventTarget {
     }
 
     // Values
+    (this.currentWidget as GUIWidget).customId = this.getProperty('customId');
     WidgetProperties[this.currentWidget.type].forEach(propName => {
-      if (propName === 'customId') {
-        (this.currentWidget as GUIWidget).customId = this.getProperty(propName);
-      }
-      else {
-        (this.currentWidget as any).data[propName] = this.getProperty(propName);
-      }
+      (this.currentWidget as any).data[propName] = this.getProperty(propName);
     });
+    if (this.currentWidget.type === 'tabs' && this.editorTabs) {
+      this.currentWidget.data.tabsNames = this.editorTabs.getValues();
+    }
 
     this.dispatchEvent(new CustomEvent('onDidChange', { detail: { widget: this.currentWidget } }));
   }

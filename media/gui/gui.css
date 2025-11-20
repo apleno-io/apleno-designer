@@ -193,4 +193,13 @@ select {
 #gui-propeditor input[type=checkbox] {
   vertical-align: text-top;
 }
+.tabs-editor-entry {
+  display: flex;
+}
+.tabs-editor-entry-text {
+  flex: 1 1 auto;
+}
+.tabs-editor-entry-options {
+  flex: 1 0 auto;
+}
 /*# sourceMappingURL=gui.css.map */

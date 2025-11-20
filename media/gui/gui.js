@@ -58,6 +58,118 @@
     progress: ["progressbar", "progresscircle"]
   };
 
+  // src/common/utils/sanitize.ts
+  var Sanitizer = new class {
+    xssContent(input) {
+      input = `${input}`.replace(/&/g, "&amp;");
+      input = input.replace(/</g, "&lt;");
+      input = input.replace(/>/g, "&gt;");
+      input = input.replace(/"/g, "&quot;");
+      input = input.replace(/'/g, "&#x27;");
+      input = input.replace(/\//g, "&#x2F;");
+      return input;
+    }
+    xssAttribute(input, quote = '"') {
+      input = `${input}`;
+      if (quote == '"') {
+        return input.replace(/"/g, "&quot;");
+      }
+      return input.replace(/'/g, "&#x27;");
+    }
+  }();
+
+  // src/webview/gui/gui-propeditor-tabs.ts
+  var WidgetTabEditor = class extends EventTarget {
+    parent;
+    values = [];
+    constructor(parent) {
+      super();
+      this.parent = parent;
+      this.parent.innerHTML = `
+			<div id="tabs-editor"></div>
+      <button data-role="add">New tab</button>
+		`;
+      this.parent.addEventListener("click", this.onClick.bind(this));
+      this.parent.addEventListener("input", this.onChange.bind(this));
+    }
+    setValues(names) {
+      this.values = names;
+      this.render();
+    }
+    getValues() {
+      return this.values;
+    }
+    render() {
+      this.parent.querySelector("#tabs-editor").innerHTML = `
+			${this.values.map((value, i) => `
+				<div class="tabs-editor-entry" data-entry="${i}">
+          <div class="tabs-editor-entry-text"><input type="text" value="${Sanitizer.xssAttribute(value)}"></div>
+          <div class="tabs-editor-entry-options">
+            <button class="flex-child-shrink flex-margin-left btn-transparent" data-role="up">
+							<svg width="20" height="20" stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M7 15L12 9L17 15" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
+						</button>
+						<button class="flex-child-shrink flex-margin-left btn-transparent" data-role="down">
+							<svg width="20" height="20" stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M7 9L12 15L17 9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
+						</button>
+						<button class="flex-child-shrink flex-margin-left btn-transparent" data-role="remove">
+							<svg width="20" height="20" stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
+						</button>
+          </div>
+				</div>
+			`).join("")}`;
+    }
+    addEntry() {
+      this.values.push("");
+      this.dispatchEvent(new CustomEvent("onDidChange"));
+      this.render();
+    }
+    moveEntry(entryId, direction) {
+      const newIndex = entryId + direction;
+      if (newIndex < 0 || newIndex >= this.values.length) {
+        return;
+      }
+      const temp = this.values[entryId];
+      this.values[entryId] = this.values[newIndex];
+      this.values[newIndex] = temp;
+      this.dispatchEvent(new CustomEvent("onDidChange"));
+      this.render();
+    }
+    removeEntry(entryId) {
+      this.values.splice(entryId, 1);
+      this.dispatchEvent(new CustomEvent("onDidChange"));
+      this.render();
+    }
+    onClick(e) {
+      const button = e.target.closest("button");
+      if (button) {
+        const role = button.dataset.role;
+        if (role === "add") {
+          this.addEntry();
+          return;
+        }
+        const entryId = e.target.closest("[data-entry]");
+        if (entryId === null) {
+          return;
+        }
+        if (role === "up") {
+          this.moveEntry(parseInt(entryId.dataset.entry), -1);
+        } else if (role === "down") {
+          this.moveEntry(parseInt(entryId.dataset.entry), 1);
+        } else if (role === "remove") {
+          this.removeEntry(parseInt(entryId.dataset.entry));
+        }
+      }
+    }
+    onChange() {
+      console.log("onchange");
+      this.values = [];
+      document.querySelectorAll("#tabs-editor input").forEach((el) => {
+        this.values.push(el.value);
+      });
+      this.dispatchEvent(new CustomEvent("onDidChange"));
+    }
+  };
+
   // src/webview/gui/gui-propeditor.ts
   var subTypesLocalisation = {
     text: "Text",
@@ -79,13 +191,16 @@
   };
   var WidgetPropertyEditor = new class extends EventTarget {
     currentWidget = null;
+    editorTabs = null;
     constructor() {
       super();
       this.onChange = this.onChange.bind(this);
     }
     inject() {
-      document.querySelectorAll("#gui-propeditor input").forEach((el) => el.addEventListener("change", this.onChange));
-      document.querySelectorAll("#gui-propeditor select").forEach((el) => el.addEventListener("change", this.onChange));
+      this.editorTabs = new WidgetTabEditor(document.getElementById("prop-tabs"));
+      this.editorTabs.addEventListener("onDidChange", this.onChange);
+      document.querySelectorAll("#gui-propeditor > .prop > input").forEach((el) => el.addEventListener("input", this.onChange));
+      document.querySelectorAll("#gui-propeditor > .prop > select").forEach((el) => el.addEventListener("change", this.onChange));
     }
     /**
      * Show empty form state when no widget are selected.
@@ -94,6 +209,9 @@
       document.getElementById("gui-propeditor-empty").style.display = "block";
       document.querySelectorAll("[data-property]").forEach((setting) => {
         setting.style.display = "none";
+      });
+      document.querySelectorAll("#gui-propeditor [data-widgets]").forEach((editor) => {
+        editor.style.display = "none";
       });
     }
     /**
@@ -106,16 +224,23 @@
         return;
       }
       document.getElementById("gui-propeditor-empty").style.display = "none";
-      document.querySelectorAll("[data-property]").forEach((setting) => {
+      document.querySelectorAll("#gui-propeditor [data-property]").forEach((setting) => {
         const y = WidgetProperties[widget.type].includes(setting.dataset.property) || setting.dataset.property === "customId";
         setting.style.display = y ? "block" : "none";
+      });
+      document.querySelectorAll("#gui-propeditor [data-widgets]").forEach((editor) => {
+        editor.style.display = widget.type === editor.dataset.widgets ? "block" : "none";
       });
       const subTypes = widget.type in WidgetSubTypes ? WidgetSubTypes[widget.type] : [];
       document.querySelector('[data-property="subType"] select').innerHTML = subTypes.map((s) => `<option value="${s}">${subTypesLocalisation[s]}</option>`).join("");
       setTimeout(() => {
+        this.setProperty("customId", widget.customId);
         WidgetProperties[widget.type].forEach((propName) => {
-          this.setProperty(propName, propName === "customId" ? widget.customId : widget.data[propName]);
+          this.setProperty(propName, widget.data[propName]);
         });
+        if (widget.type === "tabs" && this.editorTabs) {
+          this.editorTabs.setValues(widget.data.tabsNames);
+        }
       }, 0);
     }
     /**
@@ -133,6 +258,10 @@
       if (["language", "isRequired"].includes(name)) {
         return document.querySelector(`#prop-${name}`).checked;
       }
+      if (name === "tabsNames") {
+        return this.editorTabs?.getValues();
+      }
+      console.error("[PGUI] getProperty: Could not find " + name + " value!");
       return null;
     }
     /**
@@ -148,39 +277,20 @@
         document.querySelector(`#prop-${name}`).checked = value;
         return;
       }
+      console.error("[PGUI] setProperty: Could not find " + name + " value!");
     }
     onChange() {
       if (this.currentWidget === null) {
         return;
       }
+      this.currentWidget.customId = this.getProperty("customId");
       WidgetProperties[this.currentWidget.type].forEach((propName) => {
-        if (propName === "customId") {
-          this.currentWidget.customId = this.getProperty(propName);
-        } else {
-          this.currentWidget.data[propName] = this.getProperty(propName);
-        }
+        this.currentWidget.data[propName] = this.getProperty(propName);
       });
-      this.dispatchEvent(new CustomEvent("onDidChange", { detail: { widget: this.currentWidget } }));
-    }
-  }();
-
-  // src/common/utils/sanitize.ts
-  var Sanitizer = new class {
-    xssContent(input) {
-      input = `${input}`.replace(/&/g, "&amp;");
-      input = input.replace(/</g, "&lt;");
-      input = input.replace(/>/g, "&gt;");
-      input = input.replace(/"/g, "&quot;");
-      input = input.replace(/'/g, "&#x27;");
-      input = input.replace(/\//g, "&#x2F;");
-      return input;
-    }
-    xssAttribute(input, quote = '"') {
-      input = `${input}`;
-      if (quote == '"') {
-        return input.replace(/"/g, "&quot;");
+      if (this.currentWidget.type === "tabs" && this.editorTabs) {
+        this.currentWidget.data.tabsNames = this.editorTabs.getValues();
       }
-      return input.replace(/'/g, "&#x27;");
+      this.dispatchEvent(new CustomEvent("onDidChange", { detail: { widget: this.currentWidget } }));
     }
   }();
 
@@ -385,11 +495,12 @@
         const content = [];
         let currentTabIndex = parseInt(`${el.data.tabsSelected}`) || 0;
         currentTabIndex = isNaN(currentTabIndex) || currentTabIndex >= el.widgets.length ? 0 : currentTabIndex;
-        for (let i = 0; i < el.widgets.length; ++i) {
+        const max = Math.max(el.widgets.length, el.data.tabsNames.length);
+        for (let i = 0; i < max; ++i) {
           const label = i < el.data.tabsNames.length ? el.data.tabsNames[i] : `#${i}`;
           const isCurrent = i === currentTabIndex;
           tabs.push(`<div class="pgm-widget-tab${isCurrent ? " pgm-widget-tab-selected" : ""}" data-tabs="${el.id}" data-tab="${i}">${label}</div>`);
-          content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? "block" : "none"}" data-tabs="${el.id}" data-tab="${i}">${this.getWidgetHTML(el.widgets[i])}</div>`);
+          content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? "block" : "none"}" data-tabs="${el.id}" data-tab="${i}">${i < el.widgets.length ? this.getWidgetHTML(el.widgets[i]) : ""}</div>`);
         }
         html = `
       <div class="pgm-widget-tabs-container ${css.hasStyle && css.type === 1 /* CLASS */ ? css.classContent : ""}" ${css.hasStyle && css.type === 0 /* STYLE */ ? css.fullHTMLTag : ""}>
@@ -443,7 +554,7 @@
   }();
 
   // src/webview/gui/gui.html
-  var gui_default = '<html>\r\n\r\n<head>\r\n\r\n</head>\r\n\r\n<body>\r\n  <div id="gui">\r\n    <div id="gui-preview"></div>\r\n    <div id="gui-sidebar">\r\n      <div id="gui-sidebar-tabs">\r\n        <button data-tab="add">Add</button>\r\n        <button data-tab="tree">Tree</button>\r\n        <button data-tab="props">Properties</button>\r\n        <button data-tab="ui">UI</button>\r\n      </div>\r\n      <div data-tab-content="add">\r\n        Add menu\r\n      </div>\r\n      <div data-tab-content="tree">\r\n        Tree menu\r\n      </div>\r\n      <div data-tab-content="ui">\r\n        UI menu\r\n      </div>\r\n      <div data-tab-content="props" id="gui-propeditor">\r\n        <div id="gui-propeditor-empty">Please select a widget to edit</div>\r\n        <div data-property="customId" class="prop">\r\n          <label for="prop-customId">ID</label>\r\n          <input type="text" id="prop-customId" value="" />\r\n        </div>\r\n        <div data-property="css" class="prop">\r\n          <label for="prop-css">Custom CSS</label>\r\n          <input type="text" id="prop-css" value="" />\r\n        </div>\r\n        <div data-property="labelText" class="prop">\r\n          <label for="prop-labelText">Label</label>\r\n          <input type="text" id="prop-labelText" value="" />\r\n        </div>\r\n        <div data-property="labelPosition" class="prop">\r\n          <label for="prop-labelPosition">Label position</label>\r\n          <select id="prop-labelPosition">\r\n            <option value="left">Left</option>\r\n            <option value="top">Top</option>\r\n            <option value="topaligned">Top (aligned)</option>\r\n            <option value="hidden">Hidden</option>\r\n          </select>\r\n        </div>\r\n        <div data-property="marginTop" class="prop">\r\n          <label for="prop-marginTop">Margin top</label>\r\n          <input type="number" id="prop-marginTop" min="0" max="1000" value="10" />\r\n        </div>\r\n        <div data-property="helpText" class="prop">\r\n          <label for="prop-helpText">Help text</label>\r\n          <input type="text" id="prop-helpText" value="" />\r\n        </div>\r\n        <div data-property="helpPosition" class="prop">\r\n          <label for="prop-helpPosition">Help text position</label>\r\n          <select id="prop-helpPosition">\r\n            <option value="bottom">Bottom</option>\r\n            <option value="label">After label in icon</option>\r\n          </select>\r\n        </div>\r\n        <div data-property="subType" class="prop">\r\n          <label for="prop-subType">Widget subtype</label>\r\n          <select id="prop-subType"></select>\r\n        </div>\r\n        <div data-property="value" class="prop">\r\n          <label for="prop-value">Value</label>\r\n          <input type="text" id="prop-value" value="" />\r\n        </div>\r\n        <div data-property="language" class="prop">\r\n          <label for="prop-language"><input type="checkbox" id="prop-language"> Value is expression code</label>\r\n        </div>\r\n        <div data-property="codeOnChange" class="prop">\r\n          <label for="prop-codeOnChange">Code on change</label>\r\n          <input type="text" id="prop-codeOnChange" value="" />\r\n        </div>\r\n        <div data-property="conditionOnSubmit" class="prop">\r\n          <label for="prop-conditionOnSubmit">Validation expression code</label>\r\n          <input type="text" id="prop-conditionOnSubmit" value="" />\r\n        </div>\r\n        <div data-property="isRequired" class="prop">\r\n          <label for="prop-isRequired"><input type="checkbox" id="prop-isRequired"> A value is required to\r\n            submit</label>\r\n        </div>\r\n        <div data-widgets="tabs" class="prop">\r\n          <label>Tabs</label>\r\n          <button id="prop-tabs-add">Add tab</button>\r\n          <div id="prop-tabs"></div>\r\n        </div>\r\n        <div data-widgets="columns" class="prop">\r\n          <label>Columns</label>\r\n          <button id="prop-columns-add">Add column</button>\r\n          <div id="prop-columns"></div>\r\n        </div>\r\n        <div data-property="boxHeader" class="prop">\r\n          <label for="prop-box-boxHeader">Box header text</label>\r\n          <input type="text" id="prop-boxHeader" value="" />\r\n        </div>\r\n        <div data-property="boxDesign" class="prop">\r\n          <label for="prop-boxDesign">Box style</label>\r\n          <select id="prop-boxDesign">\r\n            <option value="primary">Primary (blue)</option>\r\n            <option value="secondary">Secondary (gray)</option>\r\n            <option value="success">Success (green)</option>\r\n            <option value="warning">Warning (yellow)</option>\r\n            <option value="danger">Danger (red)</option>\r\n            <option value="info">Info (teal)</option>\r\n            <option value="light">Light</option>\r\n            <option value="dark">Dark</option>\r\n            <option value="none">None (invisible)</option>\r\n          </select>\r\n        </div>\r\n        <div data-widgets="choices" class="prop">\r\n          <label>Choices</label>\r\n          <button id="prop-choices-add">Add choice</button>\r\n          <div id="prop-choices"></div>\r\n        </div>\r\n        <div data-property="choicesLanguageValues" class="prop">\r\n          <label for="prop-choicesLanguageValues">Choices values variable</label>\r\n          <input type="text" id="prop-choicesLanguageValues" value="" />\r\n        </div>\r\n        <div data-property="choicesLanguageTexts" class="prop">\r\n          <label for="prop-choicesLanguageTexts">Choices labels variable</label>\r\n          <input type="text" id="prop-choicesLanguageTexts" value="" />\r\n        </div>\r\n        <div data-property="progressBarColor" class="prop">\r\n          <label for="prop-progressBarColor">Progress color</label>\r\n          <input type="color" id="prop-progressBarColor" value="" />\r\n        </div>\r\n        <div data-property="progressBarDescription" class="prop">\r\n          <label for="prop-progressBarDescription">Progress label</label>\r\n          <input type="input" id="prop-progressBarDescription" value="" />\r\n        </div>\r\n        <div data-property="numberMinValue" class="prop">\r\n          <label for="prop-numberMinValue">Min number</label>\r\n          <input type="number" id="prop-numberMinValue" value="" />\r\n        </div>\r\n        <div data-property="numberMaxValue" class="prop">\r\n          <label for="prop-numberMaxValue">Max number</label>\r\n          <input type="number" id="prop-numberMaxValue" value="" />\r\n        </div>\r\n        <div data-property="numberStepChange" class="prop">\r\n          <label for="prop-numberStepChange">Step</label>\r\n          <input type="number" id="prop-numberStepChange" value="" />\r\n        </div>\r\n        <div data-property="repeaterCode" class="prop">\r\n          <label for="prop-repeaterCode">Interval code</label>\r\n          <input type="text" id="prop-repeaterCode" value="" />\r\n        </div>\r\n        <div data-property="repeaterTimeMS" class="prop">\r\n          <label for="prop-repeaterTimeMS">Interval time in seconds</label>\r\n          <input type="number" min="10" step="1" id="prop-repeaterTimeMS" value="" />\r\n        </div>\r\n        <div data-property="graphWidth" class="prop">\r\n          <label for="prop-graphWidth">Width (%)</label>\r\n          <input type="number" min="1" max="100" step="1" id="prop-graphWidth" value="100" />\r\n        </div>\r\n        <div data-property="graphHeight" class="prop">\r\n          <label for="prop-graphHeight">Height (px)</label>\r\n          <input type="number" min="50" step="1" id="prop-graphHeight" value="" />\r\n        </div>\r\n        <div data-property="textSize" class="prop">\r\n          <label for="prop-textSize">Font size (px)</label>\r\n          <input type="number" min="5" step="1" id="prop-textSize" value="" />\r\n        </div>\r\n        <div data-property="textColor" class="prop">\r\n          <label for="prop-textColor">Color</label>\r\n          <input type="color" id="prop-textColor" value="" />\r\n        </div>\r\n        <div data-property="textFamily" class="prop">\r\n          <label for="prop-textFamily">Font family</label>\r\n          <select id="prop-textFamily">\r\n            <option value="default">Default</option>\r\n            <option value="arial">Arial</option>\r\n            <option value="courier">Courier New</option>\r\n            <option value="georgia">Georgia</option>\r\n            <option value="impact">Impact</option>\r\n            <option value="times">Times New Roman</option>\r\n            <option value="trebuchet">Trebuchet MS</option>\r\n            <option value="verdana">Verdana</option>\r\n          </select>\r\n        </div>\r\n        <div data-property="buttonCode" class="prop">\r\n          <label for="prop-buttonCode">Code on click</label>\r\n          <input type="text" id="prop-buttonCode" value="" />\r\n        </div>\r\n        <div data-property="buttonDesign" class="prop">\r\n          <label for="prop-buttonDesign">Code on click</label>\r\n          <select id="prop-buttonDesign">\r\n            <option value="primary">Primary (blue)</option>\r\n            <option value="secondary">Secondary (gray)</option>\r\n            <option value="success">Success (green)</option>\r\n            <option value="warning">Warning (yellow)</option>\r\n            <option value="danger">Danger (red)</option>\r\n            <option value="info">Info (teal)</option>\r\n            <option value="light">Light</option>\r\n            <option value="dark">Dark</option>\r\n            <option value="link">Link</option>\r\n            <option value="outline-primary">Outline - Primary (blue)</option>\r\n            <option value="outline-secondary">Outline - Secondary (gray)</option>\r\n            <option value="outline-success">Outline - Success (green)</option>\r\n            <option value="outline-warning">Outline - Warning (yellow)</option>\r\n            <option value="outline-danger">Outline - Danger (red)</option>\r\n            <option value="outline-info">Outline - Info (teal)</option>\r\n            <option value="outline-light">Outline - Light</option>\r\n            <option value="outline-dark">Outline - Dark</option>\r\n          </select>\r\n        </div>\r\n        <div data-property="buttonSize" class="prop">\r\n          <label for="prop-buttonSize">Code on click</label>\r\n          <select id="prop-buttonSize">\r\n            <option value="sm">Small</option>\r\n            <option value="md">Medium</option>\r\n            <option value="lg">Large</option>\r\n            <option value="fw">Full width</option>\r\n          </select>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</body>\r\n\r\n</html>';
+  var gui_default = '<html>\r\n\r\n<head>\r\n\r\n</head>\r\n\r\n<body>\r\n  <div id="gui">\r\n    <div id="gui-preview"></div>\r\n    <div id="gui-sidebar">\r\n      <div id="gui-sidebar-tabs">\r\n        <button data-tab="add">Add</button>\r\n        <button data-tab="tree">Tree</button>\r\n        <button data-tab="props">Properties</button>\r\n        <button data-tab="ui">UI</button>\r\n      </div>\r\n      <div data-tab-content="add">\r\n        <h2>Display</h2>\r\n        <button data-add-widget="graph">Graph</button>\r\n        <button data-add-widget="iframe">Iframe</button>\r\n        <button data-add-widget="image">Image</button>\r\n        <button data-add-widget="progress">Progress bar</button>\r\n        <button data-add-widget="table">Table</button>\r\n        <button data-add-widget="label">Text Display</button>\r\n        <h2>Data</h2>\r\n        <button data-add-widget="checkbox">Checkbox</button>\r\n        <button data-add-widget="date">Date</button>\r\n        <button data-add-widget="grid">Excel-like grid</button>\r\n        <button data-add-widget="number">Number</button>\r\n        <button data-add-widget="path">Path</button>\r\n        <button data-add-widget="select">Select</button>\r\n        <button data-add-widget="text">Text</button>\r\n        <h2>Actions</h2>\r\n        <button data-add-widget="button">Button</button>\r\n        <button data-add-widget="repeater">Code Repeater</button>\r\n        <h2>Layout</h2>\r\n        <button data-add-widget="columns">Columns</button>\r\n        <button data-add-widget="list">List</button>\r\n        <button data-add-widget="tabs">Tabs</button>\r\n      </div>\r\n      <div data-tab-content="tree">\r\n        Tree menu\r\n      </div>\r\n      <div data-tab-content="ui">\r\n        <div class="prop">\r\n          <label for="settings-language">Language used in UI</label>\r\n          <select id="settings-language">\r\n            <option value="r">R</option>\r\n            <option value="python">Python</option>\r\n          </select>\r\n        </div>\r\n        <div class="prop">\r\n          <label for="settings-submit">Submit button</label>\r\n          <select id="settings-submit">\r\n            <option value="visibile">Visible</option>\r\n            <option value="hidden">Hidden</option>\r\n          </select>\r\n        </div>\r\n      </div>\r\n      <div data-tab-content="props" id="gui-propeditor">\r\n        <div id="gui-propeditor-empty">Please select a widget to edit</div>\r\n        <div data-property="customId" class="prop">\r\n          <label for="prop-customId">ID</label>\r\n          <input type="text" id="prop-customId" value="" />\r\n        </div>\r\n        <div data-property="css" class="prop">\r\n          <label for="prop-css">Custom CSS</label>\r\n          <input type="text" id="prop-css" value="" />\r\n        </div>\r\n        <div data-property="labelText" class="prop">\r\n          <label for="prop-labelText">Label</label>\r\n          <input type="text" id="prop-labelText" value="" />\r\n        </div>\r\n        <div data-property="labelPosition" class="prop">\r\n          <label for="prop-labelPosition">Label position</label>\r\n          <select id="prop-labelPosition">\r\n            <option value="left">Left</option>\r\n            <option value="top">Top</option>\r\n            <option value="topaligned">Top (aligned)</option>\r\n            <option value="hidden">Hidden</option>\r\n          </select>\r\n        </div>\r\n        <div data-property="marginTop" class="prop">\r\n          <label for="prop-marginTop">Margin top</label>\r\n          <input type="number" id="prop-marginTop" min="0" max="1000" value="10" />\r\n        </div>\r\n        <div data-property="helpText" class="prop">\r\n          <label for="prop-helpText">Help text</label>\r\n          <input type="text" id="prop-helpText" value="" />\r\n        </div>\r\n        <div data-property="helpPosition" class="prop">\r\n          <label for="prop-helpPosition">Help text position</label>\r\n          <select id="prop-helpPosition">\r\n            <option value="bottom">Bottom</option>\r\n            <option value="label">After label in icon</option>\r\n          </select>\r\n        </div>\r\n        <div data-property="subType" class="prop">\r\n          <label for="prop-subType">Widget subtype</label>\r\n          <select id="prop-subType"></select>\r\n        </div>\r\n        <div data-property="value" class="prop">\r\n          <label for="prop-value">Value</label>\r\n          <input type="text" id="prop-value" value="" />\r\n        </div>\r\n        <div data-property="language" class="prop">\r\n          <label for="prop-language"><input type="checkbox" id="prop-language"> Value is expression code</label>\r\n        </div>\r\n        <div data-property="codeOnChange" class="prop">\r\n          <label for="prop-codeOnChange">Code on change</label>\r\n          <input type="text" id="prop-codeOnChange" value="" />\r\n        </div>\r\n        <div data-property="conditionOnSubmit" class="prop">\r\n          <label for="prop-conditionOnSubmit">Validation expression code</label>\r\n          <input type="text" id="prop-conditionOnSubmit" value="" />\r\n        </div>\r\n        <div data-property="isRequired" class="prop">\r\n          <label for="prop-isRequired"><input type="checkbox" id="prop-isRequired"> A value is required to\r\n            submit</label>\r\n        </div>\r\n        <div data-widgets="tabs" class="prop">\r\n          <label>Tabs</label>\r\n          <div id="prop-tabs"></div>\r\n        </div>\r\n        <div data-property="tabsSelected" class="prop">\r\n          <label for="prop-tabsSelected">Selected tab index</label>\r\n          <input type="number" id="prop-tabsSelected" min="0" />\r\n        </div>\r\n        <div data-widgets="columns" class="prop">\r\n          <label>Columns</label>\r\n          <button id="prop-columns-add">Add column</button>\r\n          <div id="prop-columns"></div>\r\n        </div>\r\n        <div data-property="boxHeader" class="prop">\r\n          <label for="prop-box-boxHeader">Box header text</label>\r\n          <input type="text" id="prop-boxHeader" value="" />\r\n        </div>\r\n        <div data-property="boxDesign" class="prop">\r\n          <label for="prop-boxDesign">Box style</label>\r\n          <select id="prop-boxDesign">\r\n            <option value="primary">Primary (blue)</option>\r\n            <option value="secondary">Secondary (gray)</option>\r\n            <option value="success">Success (green)</option>\r\n            <option value="warning">Warning (yellow)</option>\r\n            <option value="danger">Danger (red)</option>\r\n            <option value="info">Info (teal)</option>\r\n            <option value="light">Light</option>\r\n            <option value="dark">Dark</option>\r\n            <option value="none">None (invisible)</option>\r\n          </select>\r\n        </div>\r\n        <div data-widgets="choices" class="prop">\r\n          <label>Choices</label>\r\n          <button id="prop-choices-add">Add choice</button>\r\n          <div id="prop-choices"></div>\r\n        </div>\r\n        <div data-property="choicesLanguageValues" class="prop">\r\n          <label for="prop-choicesLanguageValues">Choices values variable</label>\r\n          <input type="text" id="prop-choicesLanguageValues" value="" />\r\n        </div>\r\n        <div data-property="choicesLanguageTexts" class="prop">\r\n          <label for="prop-choicesLanguageTexts">Choices labels variable</label>\r\n          <input type="text" id="prop-choicesLanguageTexts" value="" />\r\n        </div>\r\n        <div data-property="progressBarColor" class="prop">\r\n          <label for="prop-progressBarColor">Progress color</label>\r\n          <input type="color" id="prop-progressBarColor" value="" />\r\n        </div>\r\n        <div data-property="progressBarDescription" class="prop">\r\n          <label for="prop-progressBarDescription">Progress label</label>\r\n          <input type="input" id="prop-progressBarDescription" value="" />\r\n        </div>\r\n        <div data-property="numberMinValue" class="prop">\r\n          <label for="prop-numberMinValue">Min number</label>\r\n          <input type="number" id="prop-numberMinValue" value="" />\r\n        </div>\r\n        <div data-property="numberMaxValue" class="prop">\r\n          <label for="prop-numberMaxValue">Max number</label>\r\n          <input type="number" id="prop-numberMaxValue" value="" />\r\n        </div>\r\n        <div data-property="numberStepChange" class="prop">\r\n          <label for="prop-numberStepChange">Step</label>\r\n          <input type="number" id="prop-numberStepChange" value="" />\r\n        </div>\r\n        <div data-property="repeaterCode" class="prop">\r\n          <label for="prop-repeaterCode">Interval code</label>\r\n          <input type="text" id="prop-repeaterCode" value="" />\r\n        </div>\r\n        <div data-property="repeaterTimeMS" class="prop">\r\n          <label for="prop-repeaterTimeMS">Interval time in seconds</label>\r\n          <input type="number" min="10" step="1" id="prop-repeaterTimeMS" value="" />\r\n        </div>\r\n        <div data-property="graphWidth" class="prop">\r\n          <label for="prop-graphWidth">Width (%)</label>\r\n          <input type="number" min="1" max="100" step="1" id="prop-graphWidth" value="100" />\r\n        </div>\r\n        <div data-property="graphHeight" class="prop">\r\n          <label for="prop-graphHeight">Height (px)</label>\r\n          <input type="number" min="50" step="1" id="prop-graphHeight" value="" />\r\n        </div>\r\n        <div data-property="textSize" class="prop">\r\n          <label for="prop-textSize">Font size (px)</label>\r\n          <input type="number" min="5" step="1" id="prop-textSize" value="" />\r\n        </div>\r\n        <div data-property="textColor" class="prop">\r\n          <label for="prop-textColor">Color</label>\r\n          <input type="color" id="prop-textColor" value="" />\r\n        </div>\r\n        <div data-property="textFamily" class="prop">\r\n          <label for="prop-textFamily">Font family</label>\r\n          <select id="prop-textFamily">\r\n            <option value="default">Default</option>\r\n            <option value="arial">Arial</option>\r\n            <option value="courier">Courier New</option>\r\n            <option value="georgia">Georgia</option>\r\n            <option value="impact">Impact</option>\r\n            <option value="times">Times New Roman</option>\r\n            <option value="trebuchet">Trebuchet MS</option>\r\n            <option value="verdana">Verdana</option>\r\n          </select>\r\n        </div>\r\n        <div data-property="buttonCode" class="prop">\r\n          <label for="prop-buttonCode">Code on click</label>\r\n          <input type="text" id="prop-buttonCode" value="" />\r\n        </div>\r\n        <div data-property="buttonDesign" class="prop">\r\n          <label for="prop-buttonDesign">Code on click</label>\r\n          <select id="prop-buttonDesign">\r\n            <option value="primary">Primary (blue)</option>\r\n            <option value="secondary">Secondary (gray)</option>\r\n            <option value="success">Success (green)</option>\r\n            <option value="warning">Warning (yellow)</option>\r\n            <option value="danger">Danger (red)</option>\r\n            <option value="info">Info (teal)</option>\r\n            <option value="light">Light</option>\r\n            <option value="dark">Dark</option>\r\n            <option value="link">Link</option>\r\n            <option value="outline-primary">Outline - Primary (blue)</option>\r\n            <option value="outline-secondary">Outline - Secondary (gray)</option>\r\n            <option value="outline-success">Outline - Success (green)</option>\r\n            <option value="outline-warning">Outline - Warning (yellow)</option>\r\n            <option value="outline-danger">Outline - Danger (red)</option>\r\n            <option value="outline-info">Outline - Info (teal)</option>\r\n            <option value="outline-light">Outline - Light</option>\r\n            <option value="outline-dark">Outline - Dark</option>\r\n          </select>\r\n        </div>\r\n        <div data-property="buttonSize" class="prop">\r\n          <label for="prop-buttonSize">Code on click</label>\r\n          <select id="prop-buttonSize">\r\n            <option value="sm">Small</option>\r\n            <option value="md">Medium</option>\r\n            <option value="lg">Large</option>\r\n            <option value="fw">Full width</option>\r\n          </select>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</body>\r\n\r\n</html>';
 
   // src/webview/gui/gui.ts
   var UIEditor = new class {
