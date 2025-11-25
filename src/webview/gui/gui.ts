@@ -127,6 +127,7 @@ const UIEditor = new class {
       const widget = this.findWidget((widget: GUIWidget) => { return widget.id === msg.data.widgetId; });
       if (widget) {
         WidgetPropertyEditor.setWidget(widget);
+        this.setTab('props');
       }
       else {
         WidgetPropertyEditor.setNoWidget();

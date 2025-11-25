@@ -47,7 +47,7 @@ export interface GUIWidgetData {
   columnsPadding?: number;
 
   tabsNames?: any;
-  tabsSelected?: string;
+  tabsSelected?: number;
 
   progressBarColor?: string;
   progressBarDescription?: string;

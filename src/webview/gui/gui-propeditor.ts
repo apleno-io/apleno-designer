@@ -86,7 +86,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
       });
 
       if (widget.type === 'tabs' && this.editorTabs) {
-        this.editorTabs.setValues(widget.data.tabsNames);
+        this.editorTabs.setValues(widget.data.tabsNames, widget.data.tabsSelected as any);
       }
     }, 0);
   }
@@ -109,7 +109,10 @@ export const WidgetPropertyEditor = new class extends EventTarget {
     }
 
     if (name === 'tabsNames') {
-      return this.editorTabs?.getValues();
+      return this.editorTabs?.getValues().values;
+    }
+    else if (name === 'tabsSelected') {
+      return this.editorTabs?.getValues().selected;
     }
 
     console.error('[PGUI] getProperty: Could not find ' + name + ' value!');
@@ -131,6 +134,11 @@ export const WidgetPropertyEditor = new class extends EventTarget {
       return;
     }
 
+    const ignoreCustom = ['tabsNames', 'tabsSelected'];
+    if (ignoreCustom.includes(name)) {
+      return;
+    }
+
     console.error('[PGUI] setProperty: Could not find ' + name + ' value!');
   }
 
@@ -145,7 +153,8 @@ export const WidgetPropertyEditor = new class extends EventTarget {
       (this.currentWidget as any).data[propName] = this.getProperty(propName);
     });
     if (this.currentWidget.type === 'tabs' && this.editorTabs) {
-      this.currentWidget.data.tabsNames = this.editorTabs.getValues();
+      this.currentWidget.data.tabsNames = this.editorTabs.getValues().values;
+      this.currentWidget.data.tabsSelected = this.editorTabs.getValues().selected;
     }
 
     this.dispatchEvent(new CustomEvent('onDidChange', { detail: { widget: this.currentWidget } }));

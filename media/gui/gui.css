@@ -195,11 +195,19 @@ select {
 }
 .tabs-editor-entry {
   display: flex;
+  gap: 5px;
+  margin-bottom: 3px;
 }
 .tabs-editor-entry-text {
   flex: 1 1 auto;
 }
-.tabs-editor-entry-options {
-  flex: 1 0 auto;
+.tabs-editor-entry button {
+  flex: 0 0 auto;
+  padding: 0 2px;
+  height: 25px;
+  width: 22px;
+}
+.tabs-editor-entry button.selected {
+  color: var(--vscode-charts-green);
 }
 /*# sourceMappingURL=gui.css.map */
