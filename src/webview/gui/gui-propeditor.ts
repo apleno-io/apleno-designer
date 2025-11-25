@@ -1,5 +1,6 @@
 import { GUIWidget } from "../../common/gui";
 import { WidgetProperties, WidgetSubTypes } from "../../extension/gui/gui-utils";
+import { WidgetColumnEditor } from "./gui-propeditor-columns";
 import { WidgetTabEditor } from "./gui-propeditor-tabs";
 
 const subTypesLocalisation: { [key: string]: string } = {
@@ -25,6 +26,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
   private currentWidget: GUIWidget | null = null;
 
   private editorTabs: WidgetTabEditor | null = null;
+  private editorColumns: WidgetColumnEditor | null = null;
 
   constructor() {
     super();
@@ -32,8 +34,12 @@ export const WidgetPropertyEditor = new class extends EventTarget {
   }
 
   public inject() {
+    // Custom editors
     this.editorTabs = new WidgetTabEditor(document.getElementById('prop-tabs') as HTMLElement);
     this.editorTabs.addEventListener('onDidChange', this.onChange);
+    this.editorColumns = new WidgetColumnEditor(document.getElementById('prop-columns') as HTMLElement);
+    this.editorColumns.addEventListener('onDidChange', this.onChange);
+
     // Don't hook on sub-widget editors
     document.querySelectorAll('#gui-propeditor > .prop > input').forEach(el => (el as HTMLInputElement).addEventListener('input', this.onChange));
     document.querySelectorAll('#gui-propeditor > .prop > select').forEach(el => (el as HTMLInputElement).addEventListener('change', this.onChange));
@@ -88,6 +94,9 @@ export const WidgetPropertyEditor = new class extends EventTarget {
       if (widget.type === 'tabs' && this.editorTabs) {
         this.editorTabs.setValues(widget.data.tabsNames, widget.data.tabsSelected as any);
       }
+      if (widget.type === 'columns' && this.editorColumns) {
+        this.editorColumns.setValues(widget.data.columnsWidths as number[]);
+      }
     }, 0);
   }
 
@@ -96,7 +105,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
    */
   private getProperty(name: string): any {
     const simpleInputs = ['customId', 'css', 'labelText', 'labelPosition', 'marginTop', 'helpText', 'helpPosition', 'subType', 'value', 'codeOnChange', 'conditionOnSubmit', 'boxHeader', 'boxDesign', 'choicesLanguagesValues', 'choicesLanguagesTexts', 'progressBarColor', 'progressBarDescription', 'numberMinValue', 'numberMaxValue', 'numberStepChange', 'repeaterCode', 'repeaterTimeMS', 'graphWidth', 'graphHeight', 'textSize', 'textColor', 'textFamily', 'buttonCode', 'buttonDesign', 'buttonSize'];
-    const simpleNumbers = ['marginTop', 'numberMinValue', 'numberMaxValue', 'numberStepChange', 'repeaterTimeMS', 'graphWidth', 'graphHeight', 'textSize'];
+    const simpleNumbers = ['marginTop', 'numberMinValue', 'numberMaxValue', 'numberStepChange', 'repeaterTimeMS', 'graphWidth', 'graphHeight', 'textSize', 'columnsPadding'];
     if (simpleNumbers.includes(name)) {
       return parseInt((document.querySelector(`#prop-${name}`) as HTMLInputElement).value);
     }
@@ -114,6 +123,9 @@ export const WidgetPropertyEditor = new class extends EventTarget {
     else if (name === 'tabsSelected') {
       return this.editorTabs?.getValues().selected;
     }
+    else if (name === 'columnsWidths') {
+      return this.editorColumns?.getValues();
+    }
 
     console.error('[PGUI] getProperty: Could not find ' + name + ' value!');
     return null;
@@ -123,7 +135,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
    * Set the value of a property.
    */
   private setProperty(name: string, value: any) {
-    const simpleInputs = ['customId', 'css', 'labelText', 'labelPosition', 'marginTop', 'helpText', 'helpPosition', 'subType', 'value', 'codeOnChange', 'conditionOnSubmit', 'boxHeader', 'boxDesign', 'choicesLanguagesValues', 'choicesLanguagesTexts', 'progressBarColor', 'progressBarDescription', 'numberMinValue', 'numberMaxValue', 'numberStepChange', 'repeaterCode', 'repeaterTimeMS', 'graphWidth', 'graphHeight', 'textSize', 'textColor', 'textFamily', 'buttonCode', 'buttonDesign', 'buttonSize'];
+    const simpleInputs = ['customId', 'css', 'labelText', 'labelPosition', 'marginTop', 'helpText', 'helpPosition', 'subType', 'value', 'codeOnChange', 'conditionOnSubmit', 'boxHeader', 'boxDesign', 'choicesLanguagesValues', 'choicesLanguagesTexts', 'progressBarColor', 'progressBarDescription', 'numberMinValue', 'numberMaxValue', 'numberStepChange', 'repeaterCode', 'repeaterTimeMS', 'graphWidth', 'graphHeight', 'textSize', 'textColor', 'textFamily', 'buttonCode', 'buttonDesign', 'buttonSize', 'columnsPadding'];
     if (simpleInputs.includes(name)) {
       (document.querySelector(`#prop-${name}`) as HTMLInputElement).value = value;
       return;
@@ -134,7 +146,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
       return;
     }
 
-    const ignoreCustom = ['tabsNames', 'tabsSelected'];
+    const ignoreCustom = ['tabsNames', 'tabsSelected', 'columnsWidths'];
     if (ignoreCustom.includes(name)) {
       return;
     }
@@ -155,6 +167,9 @@ export const WidgetPropertyEditor = new class extends EventTarget {
     if (this.currentWidget.type === 'tabs' && this.editorTabs) {
       this.currentWidget.data.tabsNames = this.editorTabs.getValues().values;
       this.currentWidget.data.tabsSelected = this.editorTabs.getValues().selected;
+    }
+    if (this.currentWidget.type === 'columns' && this.editorColumns) {
+      this.currentWidget.data.columnsWidths = this.editorColumns.getValues();
     }
 
     this.dispatchEvent(new CustomEvent('onDidChange', { detail: { widget: this.currentWidget } }));

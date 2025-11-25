@@ -115,7 +115,6 @@ export class WidgetTabEditor extends EventTarget {
   }
 
   private onChange(): void {
-    console.log('onchange');
     this.values = [];
     document.querySelectorAll('#tabs-editor input').forEach((el: Element) => {
       this.values.push((el as HTMLInputElement).value);
