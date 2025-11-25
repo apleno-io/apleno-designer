@@ -1,3 +1,8 @@
+export interface GUIWidgetDataChoice {
+  value: string;
+  text: string;
+}
+
 export interface GUIWidgetData {
   subType?: string;
 
@@ -18,7 +23,7 @@ export interface GUIWidgetData {
   textFamily?: string;
   textColor?: string;
 
-  choicesEntries?: any;
+  choicesEntries?: GUIWidgetDataChoice[];
   choicesLanguageValues?: string;
   choicesLanguageTexts?: string;
 

@@ -194,16 +194,19 @@ select {
   vertical-align: text-top;
 }
 .tabs-editor-entry,
+.choices-editor-entry,
 .columns-editor-entry {
   display: flex;
   gap: 5px;
   margin-bottom: 3px;
 }
 .tabs-editor-entry-text,
+.choices-editor-entry-text,
 .columns-editor-entry-text {
   flex: 1 1 auto;
 }
 .tabs-editor-entry button,
+.choices-editor-entry button,
 .columns-editor-entry button {
   flex: 0 0 auto;
   padding: 0 2px;

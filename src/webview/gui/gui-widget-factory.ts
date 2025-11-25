@@ -183,16 +183,16 @@ export const WidgetFactory = new class {
       // Create
       if (el.data.subType === 'radio' || el.data.subType === 'multicheckboxes') {
         const type: string = el.data.subType === 'radio' ? 'radio' : 'checkbox';
-        html = el.data.choicesEntries.map((x: any) => {
+        html = el.data.choicesEntries ? el.data.choicesEntries.map((x: any) => {
           const selected: boolean = Array.isArray(el.data.value) ? el.data.value.includes(`${x.value}`) : `${x.value}` === el.data.value;
           return `
                 <div class="${css.classContent}" style="${css.styleContent}">
                     <label><input type="${type}" name="pgm-widget-${type}-${el.id}" value="${Sanitizer.xssContent(x.value)}"${selected ? ' checked' : ''}/> ${x.text}</label>
                 </div>`;
-        }).join('\r');
+        }).join('\r') : '';
       }
       else if (el.data.subType === 'select' || el.data.subType === 'multiselect') {
-        html = `<select class="pgm-widget-input ${css.hasStyle && css.type === WidgetCSSType.CLASS ? css.classContent : ''}" ${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''} ${el.data.subType === 'multiselect' ? 'multiple' : ''}>${el.data.choicesEntries.map((x: any) => {
+        html = `<select class="pgm-widget-input ${css.hasStyle && css.type === WidgetCSSType.CLASS ? css.classContent : ''}" ${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''} ${el.data.subType === 'multiselect' ? 'multiple' : ''}>${el.data.choicesEntries?.map((x: any) => {
           const selected: boolean = Array.isArray(el.data.value) ? el.data.value.includes(`${x.value}`) : `${x.value}` === el.data.value;
           return `<option value="${Sanitizer.xssAttribute(x.value)}" title="${Sanitizer.xssAttribute(x.text)}"${selected ? ' selected' : ''}>${Sanitizer.xssContent(x.text)}</option>`;
         }).join('\r')}</select>`;
