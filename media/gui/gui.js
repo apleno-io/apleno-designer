@@ -880,8 +880,7 @@
         return;
       }
       if (msg.data.type === "onDidDropWidget") {
-        console.log(msg);
-        console.log(JSON.stringify(msg.data.widgetType));
+        console.log(msg.data);
       }
     }
     findWidget(predicate, widgets = null) {

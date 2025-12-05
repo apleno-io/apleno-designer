@@ -1,3 +1,10 @@
+interface WidgetPosition {
+  widget: HTMLElement;
+  topZone: DOMRect;
+  bottomZone: DOMRect;
+  mouse: 'top' | 'bottom' | null;
+}
+
 export const IframeContent = new class {
   // Selection
   private lastHoverWidget: HTMLElement | null = null;
@@ -27,13 +34,17 @@ export const IframeContent = new class {
       document.body.addEventListener('drop', (e: DragEvent) => {
         e.preventDefault();
         const wtype = `${e.dataTransfer?.getData('text/plain')}`;
-        parent.postMessage({ type: 'onDidDropWidget', widgetType: wtype });
+        const position = this.getWidgetFromPosition(e.clientX, e.clientY);
         this.setDrop(false);
+        if (position && (position.mouse === 'top' || position.mouse === 'bottom')) {
+          parent.postMessage({
+            type: 'onDidDropWidget',
+            widgetType: wtype,
+            positionWidget: position.widget.dataset.widgetId,
+            position: position.mouse === 'top' ? 'before' : 'after'
+          });
+        }
       }, { capture: true });
-      document.addEventListener('mouseleave', e => {
-        console.log('mouseleave');
-        this.setDrop(false);
-      });
 
       setInterval(() => {
         if (Date.now() - this.dragLast > 200) {
@@ -61,6 +72,29 @@ export const IframeContent = new class {
 
   private isPositionInRect(x: number, y: number, rect: DOMRect): boolean {
     return x > rect.x && x < rect.x + rect.width && y > rect.y && y < rect.y + rect.height;
+  }
+
+  private getWidgetFromPosition(x: number, y: number): WidgetPosition | null {
+    const topElement: Element | null = document.elementFromPoint(x, y);
+    if (topElement === null) {
+      return null;
+    }
+    const w: HTMLElement | null = topElement.closest('[data-widget-id]');
+    if (w === null) {
+      return null;
+    }
+    const wRect = w.getBoundingClientRect();
+    const zonesHeight = wRect.height * 0.2 < 15 ? wRect.height * 0.5 : wRect.height * 0.2;
+    const top = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY, wRect.width, zonesHeight);
+    const bottom = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY + wRect.height - zonesHeight, wRect.width, zonesHeight);
+    const isOnTop = this.isPositionInRect(x, y, top);
+    const isOnBottom = this.isPositionInRect(x, y, bottom);
+    return {
+      widget: w,
+      topZone: top,
+      bottomZone: bottom,
+      mouse: isOnTop ? 'top' : (isOnBottom ? 'bottom' : null)
+    };
   }
 
   private onMouseMove(ev: MouseEvent) {
