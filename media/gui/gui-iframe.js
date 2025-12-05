@@ -6,21 +6,27 @@
     lastHoverWidget = null;
     selectedWidget = null;
     // Dropping
-    isDropping = false;
+    mouseMode = "none" /* None */;
     dropTop = null;
     dropBottom = null;
     dragLast = Date.now();
+    // Internal drop
+    internalDropStartX = 0;
+    internalDropStartY = 0;
+    internalDropWidgetId = null;
     // Debug
     debug = false;
     inject() {
       document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener("mousedown", this.onMouseDown.bind(this));
         document.body.addEventListener("mousemove", this.onMouseMove.bind(this));
+        document.body.addEventListener("mouseup", this.onMouseUp.bind(this));
         document.body.addEventListener("click", this.onMouseClick.bind(this));
         document.body.addEventListener("dragover", (e) => {
           e.preventDefault();
           this.dragLast = Date.now();
-          if (this.isDropping === false) {
-            this.setDrop(true);
+          if (this.mouseMode === "none" /* None */) {
+            this.setMouseMode("ext" /* ExternalDrag */);
           }
           this.onMouseMove(e);
         }, { capture: true });
@@ -28,7 +34,7 @@
           e.preventDefault();
           const wtype = `${e.dataTransfer?.getData("text/plain")}`;
           const position = this.getWidgetFromPosition(e.clientX, e.clientY);
-          this.setDrop(false);
+          this.setMouseMode("none" /* None */);
           if (position && (position.mouse === "top" || position.mouse === "bottom")) {
             parent.postMessage({
               type: "onDidDropWidget",
@@ -39,18 +45,18 @@
           }
         }, { capture: true });
         setInterval(() => {
-          if (Date.now() - this.dragLast > 200) {
-            this.setDrop(false);
+          if (this.mouseMode === "ext" /* ExternalDrag */ && Date.now() - this.dragLast > 200) {
+            this.setMouseMode("none" /* None */);
           }
         }, 50);
       });
     }
-    setDrop(isDropping) {
-      if (this.isDropping === isDropping) {
+    setMouseMode(mouseMode) {
+      if (this.mouseMode === mouseMode) {
         return;
       }
-      this.isDropping = isDropping;
-      if (this.isDropping) {
+      this.mouseMode = mouseMode;
+      if (this.mouseMode !== "none" /* None */) {
         document.body.insertAdjacentHTML("beforeend", `<div id="drop"></div>${this.debug ? '<div id="dropt"></div><div id="dropb"></div>' : ""}`);
       } else {
         document.getElementById("drop")?.remove();
@@ -83,13 +89,33 @@
         mouse: isOnTop ? "top" : isOnBottom ? "bottom" : null
       };
     }
+    /**
+     * User pressed mouse: start _possible_ internal drag
+     */
+    onMouseDown(ev) {
+      if (this.mouseMode !== "none" /* None */) {
+        return;
+      }
+      const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
+      if (position === null) {
+        return;
+      }
+      this.internalDropStartX = ev.clientX;
+      this.internalDropStartY = ev.clientY;
+      this.internalDropWidgetId = position.widget.dataset.widgetId;
+    }
+    /**
+     * User moved the mouse:
+     * - Hover widget below cursor
+     * - DnD: Show drop indicators
+     */
     onMouseMove(ev) {
       const topElement = document.elementFromPoint(ev.clientX, ev.clientY);
       if (topElement === null) {
         return;
       }
       const w = topElement.closest("[data-widget-id]");
-      if (this.isDropping) {
+      if (this.mouseMode !== "none" /* None */) {
         if (w && w !== this.lastHoverWidget) {
           const wRect = w.getBoundingClientRect();
           const boxesHeight = wRect.height * 0.2 < 15 ? wRect.height * 0.5 : wRect.height * 0.2;
@@ -107,23 +133,28 @@
             dropb.style.width = `${this.dropBottom.width}px`;
             dropb.style.height = `${this.dropBottom.height}px`;
           }
-        } else if (w === null) {
         }
+        const drop = document.getElementById("drop");
         if (this.dropTop && this.isPositionInRect(ev.pageX, ev.pageY, this.dropTop)) {
-          const drop = document.getElementById("drop");
           drop.style.display = "block";
           drop.style.top = `${this.dropTop.y}px`;
           drop.style.left = `${this.dropTop.x}px`;
           drop.style.width = `${this.dropTop.width}px`;
           drop.style.height = `${this.dropTop.height}px`;
         } else if (this.dropBottom && this.isPositionInRect(ev.pageX, ev.pageY, this.dropBottom)) {
-          const drop = document.getElementById("drop");
           drop.style.display = "block";
           drop.style.top = `${this.dropBottom.y}px`;
           drop.style.left = `${this.dropBottom.x}px`;
           drop.style.width = `${this.dropBottom.width}px`;
           drop.style.height = `${this.dropBottom.height}px`;
         } else {
+          drop.style.display = "none";
+        }
+      } else if (this.mouseMode === "none" /* None */ && this.internalDropWidgetId !== null) {
+        const dx = ev.clientX - this.internalDropStartX;
+        const dy = ev.clientY - this.internalDropStartY;
+        if (Math.sqrt(dx * dx + dy * dy) > 5) {
+          this.setMouseMode("int" /* InternalDrag */);
         }
       }
       if (w !== this.lastHoverWidget) {
@@ -133,6 +164,24 @@
           w.classList.add("gui-widget-hover");
         }
       }
+    }
+    /**
+     * User releases mouse: validate internal DnD
+     */
+    onMouseUp(ev) {
+      if (this.mouseMode === "int" /* InternalDrag */) {
+        const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
+        this.setMouseMode("none" /* None */);
+        if (position && (position.mouse === "top" || position.mouse === "bottom")) {
+          parent.postMessage({
+            type: "onDidDropWidget",
+            widgetId: this.internalDropWidgetId,
+            positionWidget: position.widget.dataset.widgetId,
+            position: position.mouse === "top" ? "before" : "after"
+          });
+        }
+      }
+      this.internalDropWidgetId = null;
     }
     onMouseClick(ev) {
       const topElement = document.elementFromPoint(ev.clientX, ev.clientY);

@@ -5,29 +5,41 @@ interface WidgetPosition {
   mouse: 'top' | 'bottom' | null;
 }
 
+enum MouseMode {
+  None = 'none',
+  ExternalDrag = 'ext',
+  InternalDrag = 'int'
+}
+
 export const IframeContent = new class {
   // Selection
   private lastHoverWidget: HTMLElement | null = null;
   private selectedWidget: HTMLElement | null = null;
 
   // Dropping
-  private isDropping: boolean = false;
+  private mouseMode: MouseMode = MouseMode.None;
   private dropTop: DOMRect | null = null;
   private dropBottom: DOMRect | null = null;
   private dragLast: number = Date.now();
+  // Internal drop
+  private internalDropStartX: number = 0;
+  private internalDropStartY: number = 0;
+  private internalDropWidgetId: string | null = null;
 
   // Debug
   private debug: boolean = false;
 
   public inject() {
     document.addEventListener('DOMContentLoaded', () => {
+      document.body.addEventListener('mousedown', this.onMouseDown.bind(this));
       document.body.addEventListener('mousemove', this.onMouseMove.bind(this));
+      document.body.addEventListener('mouseup', this.onMouseUp.bind(this));
       document.body.addEventListener('click', this.onMouseClick.bind(this));
       document.body.addEventListener('dragover', (e: DragEvent) => {
         e.preventDefault();
         this.dragLast = Date.now();
-        if (this.isDropping === false) {
-          this.setDrop(true);
+        if (this.mouseMode === MouseMode.None) {
+          this.setMouseMode(MouseMode.ExternalDrag);
         }
         this.onMouseMove(e);
       }, { capture: true });
@@ -35,7 +47,7 @@ export const IframeContent = new class {
         e.preventDefault();
         const wtype = `${e.dataTransfer?.getData('text/plain')}`;
         const position = this.getWidgetFromPosition(e.clientX, e.clientY);
-        this.setDrop(false);
+        this.setMouseMode(MouseMode.None);
         if (position && (position.mouse === 'top' || position.mouse === 'bottom')) {
           parent.postMessage({
             type: 'onDidDropWidget',
@@ -47,20 +59,20 @@ export const IframeContent = new class {
       }, { capture: true });
 
       setInterval(() => {
-        if (Date.now() - this.dragLast > 200) {
-          this.setDrop(false);
+        if (this.mouseMode === MouseMode.ExternalDrag && Date.now() - this.dragLast > 200) {
+          this.setMouseMode(MouseMode.None);
         }
       }, 50);
     });
   }
 
-  public setDrop(isDropping: boolean) {
-    if (this.isDropping === isDropping) {
+  public setMouseMode(mouseMode: MouseMode) {
+    if (this.mouseMode === mouseMode) {
       return;
     }
 
-    this.isDropping = isDropping;
-    if (this.isDropping) {
+    this.mouseMode = mouseMode;
+    if (this.mouseMode !== MouseMode.None) {
       document.body.insertAdjacentHTML('beforeend', `<div id="drop"></div>${this.debug ? '<div id="dropt"></div><div id="dropb"></div>' : ''}`);
     }
     else {
@@ -97,6 +109,29 @@ export const IframeContent = new class {
     };
   }
 
+  /**
+   * User pressed mouse: start _possible_ internal drag
+   */
+  private onMouseDown(ev: MouseEvent) {
+    if (this.mouseMode !== MouseMode.None) {
+      return;
+    }
+
+    const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
+    if (position === null) {
+      return;
+    }
+
+    this.internalDropStartX = ev.clientX;
+    this.internalDropStartY = ev.clientY;
+    this.internalDropWidgetId = position.widget.dataset.widgetId as string;
+  }
+
+  /**
+   * User moved the mouse:
+   * - Hover widget below cursor
+   * - DnD: Show drop indicators
+   */
   private onMouseMove(ev: MouseEvent) {
     const topElement: Element | null = document.elementFromPoint(ev.clientX, ev.clientY);
     if (topElement === null) {
@@ -104,9 +139,8 @@ export const IframeContent = new class {
     }
 
     const w: HTMLElement | null = topElement.closest('[data-widget-id]');
-    // Dropping
-    if (this.isDropping) {
-      // Recalculate edges
+    if (this.mouseMode !== MouseMode.None) {
+      // Dropping: recalculate edges
       if (w && w !== this.lastHoverWidget) {
         // hovered widget changed, calculate new top/bottom
         const wRect = w.getBoundingClientRect();
@@ -126,13 +160,10 @@ export const IframeContent = new class {
           dropb.style.height = `${this.dropBottom.height}px`;
         }
       }
-      else if (w === null) {
-
-      }
 
       // Check if mouse in edge
+      const drop = document.getElementById('drop') as HTMLElement;
       if (this.dropTop && this.isPositionInRect(ev.pageX, ev.pageY, this.dropTop)) {
-        const drop = document.getElementById('drop') as HTMLElement;
         drop.style.display = 'block';
         drop.style.top = `${this.dropTop.y}px`;
         drop.style.left = `${this.dropTop.x}px`;
@@ -140,7 +171,6 @@ export const IframeContent = new class {
         drop.style.height = `${this.dropTop.height}px`;
       }
       else if (this.dropBottom && this.isPositionInRect(ev.pageX, ev.pageY, this.dropBottom)) {
-        const drop = document.getElementById('drop') as HTMLElement;
         drop.style.display = 'block';
         drop.style.top = `${this.dropBottom.y}px`;
         drop.style.left = `${this.dropBottom.x}px`;
@@ -148,8 +178,15 @@ export const IframeContent = new class {
         drop.style.height = `${this.dropBottom.height}px`;
       }
       else {
-        //const drop = document.getElementById('drop') as HTMLElement;
-        //drop.style.display = 'none';
+        drop.style.display = 'none';
+      }
+    }
+    else if (this.mouseMode === MouseMode.None && this.internalDropWidgetId !== null) {
+      // internal dnd: start dragging if too far
+      const dx = ev.clientX - this.internalDropStartX;
+      const dy = ev.clientY - this.internalDropStartY;
+      if (Math.sqrt(dx * dx + dy * dy) > 5) {
+        this.setMouseMode(MouseMode.InternalDrag);
       }
     }
 
@@ -161,6 +198,25 @@ export const IframeContent = new class {
         w.classList.add('gui-widget-hover');
       }
     }
+  }
+
+  /**
+   * User releases mouse: validate internal DnD
+   */
+  private onMouseUp(ev: MouseEvent) {
+    if (this.mouseMode === MouseMode.InternalDrag) {
+      const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
+      this.setMouseMode(MouseMode.None);
+      if (position && (position.mouse === 'top' || position.mouse === 'bottom')) {
+        parent.postMessage({
+          type: 'onDidDropWidget',
+          widgetId: this.internalDropWidgetId,
+          positionWidget: position.widget.dataset.widgetId,
+          position: position.mouse === 'top' ? 'before' : 'after'
+        });
+      }
+    }
+    this.internalDropWidgetId = null;
   }
 
   private onMouseClick(ev: MouseEvent) {
