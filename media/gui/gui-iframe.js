@@ -2,29 +2,56 @@
 (() => {
   // src/webview/gui/gui-iframe.ts
   var IframeContent = new class {
+    // Selection
     lastHoverWidget = null;
     selectedWidget = null;
     // Dropping
     isDropping = false;
     dropTop = null;
     dropBottom = null;
+    dragLast = Date.now();
     // Debug
     debug = false;
     inject() {
       document.addEventListener("DOMContentLoaded", () => {
         document.body.addEventListener("mousemove", this.onMouseMove.bind(this));
         document.body.addEventListener("click", this.onMouseClick.bind(this));
+        document.body.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          this.dragLast = Date.now();
+          if (this.isDropping === false) {
+            this.setDrop(true);
+          }
+          this.onMouseMove(e);
+        }, { capture: true });
+        document.body.addEventListener("drop", (e) => {
+          e.preventDefault();
+          const wtype = `${e.dataTransfer?.getData("text/plain")}`;
+          parent.postMessage({ type: "onDidDropWidget", widgetType: wtype });
+          this.setDrop(false);
+        }, { capture: true });
+        document.addEventListener("mouseleave", (e) => {
+          console.log("mouseleave");
+          this.setDrop(false);
+        });
+        setInterval(() => {
+          if (Date.now() - this.dragLast > 200) {
+            this.setDrop(false);
+          }
+        }, 50);
       });
-      this.setDrop(true);
     }
     setDrop(isDropping) {
+      if (this.isDropping === isDropping) {
+        return;
+      }
       this.isDropping = isDropping;
       if (this.isDropping) {
         document.body.insertAdjacentHTML("beforeend", `<div id="drop"></div>${this.debug ? '<div id="dropt"></div><div id="dropb"></div>' : ""}`);
       } else {
-        document.getElementById("#drop")?.remove();
-        document.getElementById("#dropt")?.remove();
-        document.getElementById("#dropb")?.remove();
+        document.getElementById("drop")?.remove();
+        document.getElementById("dropt")?.remove();
+        document.getElementById("dropb")?.remove();
       }
     }
     isPositionInRect(x, y, rect) {

@@ -55,6 +55,13 @@ const UIEditor = new class {
         this.redrawWidget(widget.id);
       });
 
+      // Add d&d
+      document.querySelectorAll('[data-tab-content="add"] button').forEach((button) => {
+        (button as HTMLElement).addEventListener('dragstart', (e: DragEvent) => {
+          e.dataTransfer?.setData('text/plain', (e.target as HTMLElement).dataset.addWidget as string);
+        });
+      });
+
       // Iframe
       (document.getElementById('gui-preview') as HTMLElement).appendChild(iframe);
       iframe.addEventListener('load', () => {
@@ -132,6 +139,12 @@ const UIEditor = new class {
       else {
         WidgetPropertyEditor.setNoWidget();
       }
+      return;
+    }
+
+    if (msg.data.type === 'onDidDropWidget') {
+      console.log(msg);
+      console.log(JSON.stringify(msg.data.widgetType));
     }
   }
 
