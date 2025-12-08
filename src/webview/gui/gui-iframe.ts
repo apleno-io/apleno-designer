@@ -25,9 +25,7 @@ export const IframeContent = new class {
   private internalDropStartX: number = 0;
   private internalDropStartY: number = 0;
   private internalDropWidgetId: string | null = null;
-
-  // Debug
-  private debug: boolean = false;
+  private internalDropIndicator: HTMLElement | null = null;
 
   public inject() {
     document.addEventListener('DOMContentLoaded', () => {
@@ -73,12 +71,21 @@ export const IframeContent = new class {
 
     this.mouseMode = mouseMode;
     if (this.mouseMode !== MouseMode.None) {
-      document.body.insertAdjacentHTML('beforeend', `<div id="drop"></div>${this.debug ? '<div id="dropt"></div><div id="dropb"></div>' : ''}`);
+      document.body.classList.add('dragging');
+      document.body.insertAdjacentHTML('beforeend', `<div id="drop"></div>`);
+      if (this.mouseMode === MouseMode.InternalDrag) {
+        this.internalDropIndicator = document.createElement('div');
+        this.internalDropIndicator.id = 'drag-indicator';
+        document.body.appendChild(this.internalDropIndicator);
+      }
     }
     else {
+      document.body.classList.remove('dragging');
       document.getElementById('drop')?.remove();
-      document.getElementById('dropt')?.remove();
-      document.getElementById('dropb')?.remove();
+      if (this.internalDropIndicator) {
+        this.internalDropIndicator.remove();
+        this.internalDropIndicator = null;
+      }
     }
   }
 
@@ -99,7 +106,7 @@ export const IframeContent = new class {
       return null;
     }
     const wRect = w.getBoundingClientRect();
-    const zonesHeight = wRect.height * 0.2 < 15 ? wRect.height * 0.5 : wRect.height * 0.2;
+    const zonesHeight = wRect.height * 0.5; //wRect.height * 0.2 < 15 ? wRect.height * 0.5 : wRect.height * 0.2;
     const top = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY, wRect.width, zonesHeight);
     const bottom = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY + wRect.height - zonesHeight, wRect.width, zonesHeight);
     const isOnTop = this.isPositionInRect(x + window.scrollX, y + window.scrollY, top);
@@ -147,21 +154,9 @@ export const IframeContent = new class {
       if (w && w !== this.lastHoverWidget) {
         // hovered widget changed, calculate new top/bottom
         const wRect = w.getBoundingClientRect();
-        const boxesHeight = wRect.height * 0.2 < 15 ? wRect.height * 0.5 : wRect.height * 0.2;
+        const boxesHeight = wRect.height * 0.5; //wRect.height * 0.2 < 15 ? wRect.height * 0.5 : wRect.height * 0.2;
         this.dropTop = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY, wRect.width, boxesHeight);
         this.dropBottom = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY + wRect.height - boxesHeight, wRect.width, boxesHeight);
-        if (this.debug) {
-          const dropt = document.getElementById('dropt') as HTMLElement;
-          const dropb = document.getElementById('dropb') as HTMLElement;
-          dropt.style.top = `${this.dropTop.y}px`;
-          dropt.style.left = `${this.dropTop.x}px`;
-          dropt.style.width = `${this.dropTop.width}px`;
-          dropt.style.height = `${this.dropTop.height}px`;
-          dropb.style.top = `${this.dropBottom.y}px`;
-          dropb.style.left = `${this.dropBottom.x}px`;
-          dropb.style.width = `${this.dropBottom.width}px`;
-          dropb.style.height = `${this.dropBottom.height}px`;
-        }
       }
 
       // Check if mouse in edge
@@ -182,6 +177,12 @@ export const IframeContent = new class {
       }
       else {
         drop.style.display = 'none';
+      }
+
+      // Drag indicator
+      if (this.internalDropIndicator) {
+        this.internalDropIndicator.style.left = `${ev.clientX}px`;
+        this.internalDropIndicator.style.top = `${ev.clientY}px`;
       }
     }
     else if (this.mouseMode === MouseMode.None && this.internalDropWidgetId !== null) {

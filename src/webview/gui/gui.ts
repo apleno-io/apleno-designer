@@ -143,7 +143,6 @@ const UIEditor = new class {
     }
 
     if (msg.data.type === 'onDidDropWidget') {
-      console.log(msg.data);
       if (msg.data.widgetType) {
         this.createWidget(msg.data.widgetType, msg.data.positionWidget, msg.data.position);
       }
@@ -197,14 +196,18 @@ const UIEditor = new class {
   }
 
   private moveWidget(id: number, positionWidgetId: number, position: 'before' | 'after') {
-    // Check widget tries not to move in itself
+    // Check widget tries not to move in itself or on itself
     const widgetCheck = this.findWidget((w: GUIWidget) => w.id === id);
     if (widgetCheck === null) {
       console.error('Could not found widget id ' + positionWidgetId + ' to move.');
       return;
     }
+    if (id === positionWidgetId) {
+      console.warn('Cannot move widget in itself!');
+      return;
+    }
     if (widgetCheck.widgets && this.findWidget((w: GUIWidget) => w.id === id, widgetCheck.widgets) !== null) {
-      console.warn('Cannot insert widget in itself!');
+      console.warn('Cannot insert widget in its own container!');
       return;
     }
 
