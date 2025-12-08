@@ -1,5 +1,4 @@
-import { GUIWidget } from "../../common/gui";
-import { WidgetProperties, WidgetSubTypes } from "../../extension/gui/gui-utils";
+import { GUIWidget, WidgetProperties, WidgetSubTypes } from "../../common/gui";
 import { WidgetChoiceEditor } from "./gui-propeditor-choices";
 import { WidgetColumnEditor } from "./gui-propeditor-columns";
 import { WidgetTabEditor } from "./gui-propeditor-tabs";

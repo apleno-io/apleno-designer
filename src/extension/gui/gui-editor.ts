@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { normalizeGUI, normalizeWidget } from './gui-utils';
-import { GUIInterface } from '../../common/gui';
+import { GUIInterface, normalizeGUI } from '../../common/gui';
 
 /**
  * Define the type of edits used in pgui files.

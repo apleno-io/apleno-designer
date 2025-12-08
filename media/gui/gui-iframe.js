@@ -39,7 +39,7 @@
             parent.postMessage({
               type: "onDidDropWidget",
               widgetType: wtype,
-              positionWidget: position.widget.dataset.widgetId,
+              positionWidget: parseInt(position.widget.dataset.widgetId),
               position: position.mouse === "top" ? "before" : "after"
             });
           }
@@ -67,6 +67,9 @@
     isPositionInRect(x, y, rect) {
       return x > rect.x && x < rect.x + rect.width && y > rect.y && y < rect.y + rect.height;
     }
+    /**
+     * x/y are from clientX/Y (relative to viewport)
+     */
     getWidgetFromPosition(x, y) {
       const topElement = document.elementFromPoint(x, y);
       if (topElement === null) {
@@ -80,8 +83,8 @@
       const zonesHeight = wRect.height * 0.2 < 15 ? wRect.height * 0.5 : wRect.height * 0.2;
       const top = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY, wRect.width, zonesHeight);
       const bottom = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY + wRect.height - zonesHeight, wRect.width, zonesHeight);
-      const isOnTop = this.isPositionInRect(x, y, top);
-      const isOnBottom = this.isPositionInRect(x, y, bottom);
+      const isOnTop = this.isPositionInRect(x + window.scrollX, y + window.scrollY, top);
+      const isOnBottom = this.isPositionInRect(x + window.scrollX, y + window.scrollY, bottom);
       return {
         widget: w,
         topZone: top,
@@ -175,8 +178,8 @@
         if (position && (position.mouse === "top" || position.mouse === "bottom")) {
           parent.postMessage({
             type: "onDidDropWidget",
-            widgetId: this.internalDropWidgetId,
-            positionWidget: position.widget.dataset.widgetId,
+            widgetId: parseInt(this.internalDropWidgetId),
+            positionWidget: parseInt(position.widget.dataset.widgetId),
             position: position.mouse === "top" ? "before" : "after"
           });
         }

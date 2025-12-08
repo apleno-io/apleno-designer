@@ -1,4 +1,4 @@
-import { fixIds, GUIInterface, GUIWidget, isContainerWidget } from '../../common/gui';
+import { fixIds, getMaxId, GUIInterface, GUIWidget, isContainerWidget, normalizeWidget, WidgetProperties } from '../../common/gui';
 import { WidgetPropertyEditor } from './gui-propeditor';
 import { WidgetFactory } from './gui-widget-factory';
 import './gui.css';
@@ -106,9 +106,9 @@ const UIEditor = new class {
 
     const html = [];
     for (let i = 0; i < this.state?.widgets.length; ++i) {
-      html.push(`<div data-widget-id="${this.state.widgets[i].id}">${WidgetFactory.getWidgetHTML(this.state.widgets[i])}</div>`);
+      html.push(`<div data-widget-id="${this.state.widgets[i].id}">${WidgetFactory.getWidgetHTML(this.state.widgets[i], false)}</div>`);
     }
-    ((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.querySelector('.pgm-gui')?.insertAdjacentHTML('beforeend', html.join(''));
+    (((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.querySelector('.pgm-gui') as HTMLElement).innerHTML = html.join('');
   }
 
   public redrawWidget(id: number) {
@@ -144,6 +144,104 @@ const UIEditor = new class {
 
     if (msg.data.type === 'onDidDropWidget') {
       console.log(msg.data);
+      if (msg.data.widgetType) {
+        this.createWidget(msg.data.widgetType, msg.data.positionWidget, msg.data.position);
+      }
+      else if (msg.data.widgetId) {
+        this.moveWidget(msg.data.widgetId, msg.data.positionWidget, msg.data.position);
+      }
+    }
+  }
+
+  /**
+   * Create and insert a new widget. Pass null to positionWidgetId for main body.
+   */
+  private createWidget(type: string, positionWidgetId: number | null, position: 'before' | 'after') {
+    if (!(type in WidgetProperties) || this.state === null) {
+      return;
+    }
+
+    const widget = normalizeWidget({ uid: getMaxId(this.state.widgets) + 1, type });
+
+    // Insert in body
+    if (positionWidgetId === null) {
+      if (position === 'after') {
+        this.state?.widgets.push(widget);
+      }
+      else {
+        this.state?.widgets.unshift(widget);
+      }
+      return;
+    }
+
+    // Find widget
+    let found: boolean = false;
+    this.forEachContainers((widgets: GUIWidget[]) => {
+      for (let i = 0; i < widgets.length; ++i) {
+        if (widgets[i].id === positionWidgetId) {
+          widgets.splice(position === 'before' ? i : i + 1, 0, widget);
+          found = true;
+          return;
+        }
+      }
+    });
+
+    // Refresh
+    if (found) {
+      this.drawAll();
+      WidgetPropertyEditor.setNoWidget();
+    }
+    else {
+      console.error('Could not found widget id ' + positionWidgetId + ' to insert new widget.');
+    }
+  }
+
+  private moveWidget(id: number, positionWidgetId: number, position: 'before' | 'after') {
+    // Check widget tries not to move in itself
+    const widgetCheck = this.findWidget((w: GUIWidget) => w.id === id);
+    if (widgetCheck === null) {
+      console.error('Could not found widget id ' + positionWidgetId + ' to move.');
+      return;
+    }
+    if (widgetCheck.widgets && this.findWidget((w: GUIWidget) => w.id === id, widgetCheck.widgets) !== null) {
+      console.warn('Cannot insert widget in itself!');
+      return;
+    }
+
+    // Find widget to take out
+    let widget: GUIWidget | null = null;
+    this.forEachContainers((widgets: GUIWidget[]) => {
+      for (let i = 0; i < widgets.length; ++i) {
+        if (widgets[i].id === id) {
+          widget = widgets.splice(i, 1)[0];
+          return;
+        }
+      }
+    });
+    if (widget === null) {
+      console.error('Could not found widget id ' + positionWidgetId + ' to move.');
+      return;
+    }
+
+    // Insert to new place
+    let found: boolean = false;
+    this.forEachContainers((widgets: GUIWidget[]) => {
+      for (let i = 0; i < widgets.length; ++i) {
+        if (widgets[i].id === positionWidgetId) {
+          widgets.splice(position === 'before' ? i : i + 1, 0, widget as GUIWidget);
+          found = true;
+          return;
+        }
+      }
+    });
+
+    // Refresh
+    if (found) {
+      this.drawAll();
+      WidgetPropertyEditor.setNoWidget();
+    }
+    else {
+      console.error('Could not found widget id ' + positionWidgetId + ' to insert moved widget.');
     }
   }
 
