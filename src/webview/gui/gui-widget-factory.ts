@@ -227,6 +227,9 @@ export const WidgetFactory = new class {
       el.widgets.forEach((e: GUIWidget) => {
         subhtml += this.getWidgetHTML(e);
       });
+      if (el.widgets.length === 0) {
+        subhtml = '<div class="pgm-emptycontainer"></div>';
+      }
 
       const header: string = `<div class="pgm-widget-box-header${el.data.boxHeader && el.data.boxHeader.length === 0 ? ' pgm-widget-box-header-none' : ''}" data-pgm-box-header="${el.id}">${el.data.boxHeader}</div>`;
       const widgetHTML: string[] = [`<div data-pgm-box="${el.id}" class="pgm-widget-box pgm-widget-box-${el.data.boxDesign} `];

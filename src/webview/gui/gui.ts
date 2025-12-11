@@ -53,9 +53,18 @@ const UIEditor = new class {
           }
         });
         this.redrawWidget(widget.id);
+
+        // emit
+        this.guiChanged();
+      });
+      WidgetPropertyEditor.addEventListener('onDidDelete', (event: Event) => {
+        this.deleteWidget((event as CustomEvent).detail.widgetId);
       });
 
-      // Add d&d
+      // UI Settings hooks
+      (document.querySelector('[data-tab-content="ui"]') as HTMLElement).addEventListener('change', this.onSettingsChanged.bind(this));
+
+      // DnD "Add" buttons
       document.querySelectorAll('[data-tab-content="add"] button').forEach((button) => {
         (button as HTMLElement).addEventListener('dragstart', (e: DragEvent) => {
           e.dataTransfer?.setData('text/plain', (e.target as HTMLElement).dataset.addWidget as string);
@@ -67,22 +76,23 @@ const UIEditor = new class {
       iframe.addEventListener('load', () => {
         window.addEventListener('message', this.handleChildMessage.bind(this));
         this.iframeReady = true;
-        this.drawAll();
+        this.redrawAllWidgets();
       });
     }, 0);
   }
 
   public setState(state: GUIInterface): void {
     this.state = state;
+    this.setUISettings();
     fixIds(this.state.widgets);
-    this.drawAll();
+    this.redrawAllWidgets();
   }
 
   public getState(): any {
     return {};
   }
 
-  public setTab(tab: 'add' | 'tree' | 'props' | 'ui') {
+  private setTab(tab: 'add' | 'tree' | 'props' | 'ui'): void {
     document.querySelectorAll('#gui-sidebar-tabs [data-tab]').forEach((el: Element) => {
       if (!(el instanceof HTMLElement)) {
         return;
@@ -99,7 +109,12 @@ const UIEditor = new class {
     });
   }
 
-  public drawAll() {
+  private setUISettings(): void {
+    (document.getElementById('settings-language') as HTMLSelectElement).value = this.state?.language === 'r' ? 'r' : 'python';
+    (document.getElementById('settings-submit') as HTMLSelectElement).value = this.state?.displaySubmitButton ? 'visible' : 'hidden';
+  }
+
+  private redrawAllWidgets(): void {
     if (this.state === null || !this.iframeReady) {
       return;
     }
@@ -111,7 +126,7 @@ const UIEditor = new class {
     (((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.querySelector('.pgm-gui') as HTMLElement).innerHTML = html.join('');
   }
 
-  public redrawWidget(id: number) {
+  private redrawWidget(id: number): void {
     if (this.state === null || !this.iframeReady) {
       return;
     }
@@ -124,7 +139,7 @@ const UIEditor = new class {
     parent.innerHTML = WidgetFactory.getWidgetHTML(widget, false);
   }
 
-  private handleChildMessage(msg: MessageEvent) {
+  private handleChildMessage(msg: MessageEvent): void {
     if (msg.data.type === 'onDidClickWidget') {
       if (msg.data.widgetId === null) {
         WidgetPropertyEditor.setNoWidget();
@@ -155,7 +170,7 @@ const UIEditor = new class {
   /**
    * Create and insert a new widget. Pass null to positionWidgetId for main body.
    */
-  private createWidget(type: string, positionWidgetId: number | null, position: 'before' | 'after') {
+  private createWidget(type: string, positionWidgetId: number | null, position: 'before' | 'after'): void {
     if (!(type in WidgetProperties) || this.state === null) {
       return;
     }
@@ -187,15 +202,16 @@ const UIEditor = new class {
 
     // Refresh
     if (found) {
-      this.drawAll();
+      this.redrawAllWidgets();
       WidgetPropertyEditor.setNoWidget();
+      this.guiChanged();
     }
     else {
       console.error('Could not found widget id ' + positionWidgetId + ' to insert new widget.');
     }
   }
 
-  private moveWidget(id: number, positionWidgetId: number, position: 'before' | 'after') {
+  private moveWidget(id: number, positionWidgetId: number, position: 'before' | 'after'): void {
     // Check widget tries not to move in itself or on itself
     const widgetCheck = this.findWidget((w: GUIWidget) => w.id === id);
     if (widgetCheck === null) {
@@ -240,11 +256,34 @@ const UIEditor = new class {
 
     // Refresh
     if (found) {
-      this.drawAll();
+      this.redrawAllWidgets();
       WidgetPropertyEditor.setNoWidget();
+      this.guiChanged();
     }
     else {
       console.error('Could not found widget id ' + positionWidgetId + ' to insert moved widget.');
+    }
+  }
+
+  private deleteWidget(widgetId: number) {
+    let found: boolean = false;
+    this.forEachContainers((widgets: GUIWidget[]) => {
+      for (let i = 0; i < widgets.length; ++i) {
+        if (widgets[i].id === widgetId) {
+          widgets.splice(i, 1)[0];
+          found = true;
+          return;
+        }
+      }
+    });
+
+    if (found) {
+      this.redrawAllWidgets();
+      WidgetPropertyEditor.setNoWidget();
+      this.guiChanged();
+    }
+    else {
+      console.error('Could not found widget id ' + widgetId + ' to remove.');
     }
   }
 
@@ -302,6 +341,20 @@ const UIEditor = new class {
         this.forEachContainers(cb, widgets[i].widgets);
       }
     }
+  }
+
+  private onSettingsChanged() {
+    if (this.state === null) {
+      return;
+    }
+
+    this.state.language = (document.getElementById('settings-language') as HTMLSelectElement).value === 'r' ? 'r' : 'python';
+    this.state.displaySubmitButton = (document.getElementById('settings-language') as HTMLSelectElement).value === 'visible';
+    this.guiChanged();
+  }
+
+  private guiChanged() {
+    // todo: emit
   }
 };
 

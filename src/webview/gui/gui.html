@@ -32,10 +32,10 @@
         <button draggable="true" data-add-widget="text">Text</button>
         <h2>Actions</h2>
         <button draggable="true" data-add-widget="button">Button</button>
-        <button draggable="true" data-add-widget="repeater">Code Repeater</button>
+        <button draggable="true" data-add-widget="interval">Code Repeater</button>
         <h2>Layout</h2>
         <button draggable="true" data-add-widget="columns">Columns</button>
-        <button draggable="true" data-add-widget="list">List</button>
+        <button draggable="true" data-add-widget="box">List</button>
         <button draggable="true" data-add-widget="tabs">Tabs</button>
       </div>
       <div data-tab-content="tree">
@@ -52,13 +52,16 @@
         <div class="prop">
           <label for="settings-submit">Submit button</label>
           <select id="settings-submit">
-            <option value="visibile">Visible</option>
+            <option value="visible">Visible</option>
             <option value="hidden">Hidden</option>
           </select>
         </div>
       </div>
       <div data-tab-content="props" id="gui-propeditor">
         <div id="gui-propeditor-empty">Please select a widget to edit</div>
+        <div id="gui-propeditor-actions">
+          <button data-role="delete">Delete</button>
+        </div>
         <div data-property="customId" class="prop">
           <label for="prop-customId">ID</label>
           <input type="text" id="prop-customId" value="" />

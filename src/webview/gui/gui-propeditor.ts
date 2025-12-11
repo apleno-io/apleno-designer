@@ -44,6 +44,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
     this.editorChoices.addEventListener('onDidChange', this.onChange);
 
     // Don't hook on sub-widget editors
+    (document.getElementById('gui-propeditor-actions') as HTMLElement).addEventListener('click', this.onClick.bind(this));
     document.querySelectorAll('#gui-propeditor > .prop > input').forEach(el => (el as HTMLInputElement).addEventListener('input', this.onChange));
     document.querySelectorAll('#gui-propeditor > .prop > select').forEach(el => (el as HTMLInputElement).addEventListener('change', this.onChange));
   }
@@ -53,6 +54,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
    */
   public setNoWidget() {
     (document.getElementById('gui-propeditor-empty') as HTMLElement).style.display = 'block';
+    (document.getElementById('gui-propeditor-actions') as HTMLElement).style.display = 'none';
     document.querySelectorAll('[data-property]').forEach((setting: Element) => {
       (setting as HTMLElement).style.display = 'none';
     });
@@ -72,6 +74,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
       return;
     }
     (document.getElementById('gui-propeditor-empty') as HTMLElement).style.display = 'none';
+    (document.getElementById('gui-propeditor-actions') as HTMLElement).style.display = 'block';
 
     // Visibility
     document.querySelectorAll('#gui-propeditor [data-property]').forEach((setting: Element) => {
@@ -185,5 +188,17 @@ export const WidgetPropertyEditor = new class extends EventTarget {
     }
 
     this.dispatchEvent(new CustomEvent('onDidChange', { detail: { widget: this.currentWidget } }));
+  }
+
+  private onClick(ev: MouseEvent) {
+    const button = (ev.target as HTMLElement).closest('button[data-role]');
+    if (button === null) {
+      return;
+    }
+
+    const role = (button as HTMLElement).dataset.role;
+    if (role === 'delete' && this.currentWidget) {
+      this.dispatchEvent(new CustomEvent('onDidDelete', { detail: { widgetId: this.currentWidget.id } }));
+    }
   }
 };

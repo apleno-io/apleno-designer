@@ -34,6 +34,10 @@ body.dragging * {
   pointer-events: none;
 }
 
+.pgm-emptycontainer {
+  min-height: 200px;
+}
+
 .gui-widget-hover {
   background-color: rgba(0, 0, 0, 0.027);
   outline: 3px rgb(0, 110, 255) inset;
