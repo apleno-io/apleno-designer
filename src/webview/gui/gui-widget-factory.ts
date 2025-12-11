@@ -228,7 +228,7 @@ export const WidgetFactory = new class {
         subhtml += this.getWidgetHTML(e);
       });
       if (el.widgets.length === 0) {
-        subhtml = '<div class="pgm-emptycontainer"></div>';
+        subhtml = '<div class="pgm-emptycontainer" data-index="0"></div>';
       }
 
       const header: string = `<div class="pgm-widget-box-header${el.data.boxHeader && el.data.boxHeader.length === 0 ? ' pgm-widget-box-header-none' : ''}" data-pgm-box-header="${el.id}">${el.data.boxHeader}</div>`;
@@ -248,9 +248,12 @@ export const WidgetFactory = new class {
     else if (el.type === 'columns' && el.widgets) {
       const padding: string = ` style="padding-left: ${el.data.columnsPadding}px"`;
       const content: string[] = [];
-      for (let i = 0; i < el.widgets.length; ++i) {
+      for (let i = 0; i < (el.data.columnsWidths as number[]).length; ++i) {
         const width = el.data.columnsWidths && el.data.columnsWidths.length > i ? el.data.columnsWidths[i] : '1';
-        content.push(`<div class="pgm-widget-column pgm-widget-column-${width}"${i > 0 ? padding : ''} data-columns="${el.id}" data-column="${i}">${this.getWidgetHTML(el.widgets[i])}</div>`);
+        content.push(`
+          <div class="pgm-widget-column pgm-widget-column-${width}"${i > 0 ? padding : ''} data-columns="${el.id}" data-column="${i}">
+            ${i < el.widgets.length ? this.getWidgetHTML(el.widgets[i]) : `<div class="pgm-emptycontainer" data-index="${i}"></div>`}
+          </div>`);
       }
       html = `
         <div class="pgm-widget-columns ${css.hasStyle && css.type === WidgetCSSType.CLASS ? css.classContent : ''}" ${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''}>
@@ -268,7 +271,7 @@ export const WidgetFactory = new class {
         const label: string = i < el.data.tabsNames.length ? el.data.tabsNames[i] : `#${i}`;
         const isCurrent = i === currentTabIndex;
         tabs.push(`<div class="pgm-widget-tab${isCurrent ? ' pgm-widget-tab-selected' : ''}" data-tabs="${el.id}" data-tab="${i}">${label}</div>`);
-        content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? 'block' : 'none'}" data-tabs="${el.id}" data-tab="${i}">${i < el.widgets.length ? this.getWidgetHTML(el.widgets[i]) : ''}</div>`);
+        content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? 'block' : 'none'}" data-tabs="${el.id}" data-tab="${i}">${i < el.widgets.length ? this.getWidgetHTML(el.widgets[i]) : `<div class="pgm-emptycontainer" data-index="${i}"></div>`}</div>`);
       }
 
       html = `

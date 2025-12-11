@@ -7,8 +7,6 @@
     selectedWidget = null;
     // Dropping
     mouseMode = "none" /* None */;
-    dropTop = null;
-    dropBottom = null;
     dragLast = Date.now();
     // Internal drop
     internalDropStartX = 0;
@@ -34,12 +32,19 @@
           const wtype = `${e.dataTransfer?.getData("text/plain")}`;
           const position = this.getWidgetFromPosition(e.clientX, e.clientY);
           this.setMouseMode("none" /* None */);
-          if (position && (position.mouse === "top" || position.mouse === "bottom")) {
+          if (position && position.type === "widget" && (position.mouse === "top" || position.mouse === "bottom")) {
             parent.postMessage({
               type: "onDidDropWidget",
               widgetType: wtype,
               positionWidget: parseInt(position.widget.dataset.widgetId),
               position: position.mouse === "top" ? "before" : "after"
+            });
+          } else if (position && position.type === "placeholder") {
+            parent.postMessage({
+              type: "onDidDropWidget",
+              widgetType: wtype,
+              positionContainer: parseInt(position.widget.dataset.widgetId),
+              positionIndex: position.widgetContainerIndex
             });
           }
         }, { capture: true });
@@ -87,6 +92,16 @@
       if (w === null) {
         return null;
       }
+      const container = topElement.closest(".pgm-emptycontainer");
+      if (container) {
+        return {
+          type: "placeholder",
+          widget: w,
+          widgetZone: container.getBoundingClientRect(),
+          widgetContainerIndex: parseInt(container.dataset.index),
+          mouse: null
+        };
+      }
       const wRect = w.getBoundingClientRect();
       const zonesHeight = wRect.height * 0.5;
       const top = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY, wRect.width, zonesHeight);
@@ -94,9 +109,10 @@
       const isOnTop = this.isPositionInRect(x + window.scrollX, y + window.scrollY, top);
       const isOnBottom = this.isPositionInRect(x + window.scrollX, y + window.scrollY, bottom);
       return {
+        type: "widget",
         widget: w,
-        topZone: top,
-        bottomZone: bottom,
+        widgetTopZone: top,
+        widgetBottomZone: bottom,
         mouse: isOnTop ? "top" : isOnBottom ? "bottom" : null
       };
     }
@@ -108,7 +124,7 @@
         return;
       }
       const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
-      if (position === null) {
+      if (position === null || position.type !== "widget") {
         return;
       }
       this.internalDropStartX = ev.clientX;
@@ -121,31 +137,30 @@
      * - DnD: Show drop indicators
      */
     onMouseMove(ev) {
-      const topElement = document.elementFromPoint(ev.clientX, ev.clientY);
-      if (topElement === null) {
+      const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
+      if (position === null) {
         return;
       }
-      const w = topElement.closest("[data-widget-id]");
       if (this.mouseMode !== "none" /* None */) {
-        if (w && w !== this.lastHoverWidget) {
-          const wRect = w.getBoundingClientRect();
-          const boxesHeight = wRect.height * 0.5;
-          this.dropTop = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY, wRect.width, boxesHeight);
-          this.dropBottom = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY + wRect.height - boxesHeight, wRect.width, boxesHeight);
-        }
         const drop = document.getElementById("drop");
-        if (this.dropTop && this.isPositionInRect(ev.pageX, ev.pageY, this.dropTop)) {
+        if (position.type === "widget" && position.mouse === "top" && position.widgetTopZone) {
           drop.style.display = "block";
-          drop.style.top = `${this.dropTop.y}px`;
-          drop.style.left = `${this.dropTop.x}px`;
-          drop.style.width = `${this.dropTop.width}px`;
-          drop.style.height = `${this.dropTop.height}px`;
-        } else if (this.dropBottom && this.isPositionInRect(ev.pageX, ev.pageY, this.dropBottom)) {
+          drop.style.top = `${position.widgetTopZone.y}px`;
+          drop.style.left = `${position.widgetTopZone.x}px`;
+          drop.style.width = `${position.widgetTopZone.width}px`;
+          drop.style.height = `${position.widgetTopZone.height}px`;
+        } else if (position.type === "widget" && position.mouse === "bottom" && position.widgetBottomZone) {
           drop.style.display = "block";
-          drop.style.top = `${this.dropBottom.y}px`;
-          drop.style.left = `${this.dropBottom.x}px`;
-          drop.style.width = `${this.dropBottom.width}px`;
-          drop.style.height = `${this.dropBottom.height}px`;
+          drop.style.top = `${position.widgetBottomZone.y}px`;
+          drop.style.left = `${position.widgetBottomZone.x}px`;
+          drop.style.width = `${position.widgetBottomZone.width}px`;
+          drop.style.height = `${position.widgetBottomZone.height}px`;
+        } else if (position.type === "placeholder" && position.widgetZone) {
+          drop.style.display = "block";
+          drop.style.top = `${position.widgetZone.y}px`;
+          drop.style.left = `${position.widgetZone.x}px`;
+          drop.style.width = `${position.widgetZone.width}px`;
+          drop.style.height = `${position.widgetZone.height}px`;
         } else {
           drop.style.display = "none";
         }
@@ -160,11 +175,11 @@
           this.setMouseMode("int" /* InternalDrag */);
         }
       }
-      if (w !== this.lastHoverWidget) {
-        this.lastHoverWidget = w;
-        document.body.querySelectorAll("[data-widget-id]").forEach((w2) => w2.classList.remove("gui-widget-hover"));
-        if (w) {
-          w.classList.add("gui-widget-hover");
+      if (position.widget !== this.lastHoverWidget) {
+        this.lastHoverWidget = position.widget;
+        document.body.querySelectorAll("[data-widget-id]").forEach((w) => w.classList.remove("gui-widget-hover"));
+        if (position.widget) {
+          position.widget.classList.add("gui-widget-hover");
         }
       }
     }
@@ -175,12 +190,19 @@
       if (this.mouseMode === "int" /* InternalDrag */) {
         const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
         this.setMouseMode("none" /* None */);
-        if (position && (position.mouse === "top" || position.mouse === "bottom")) {
+        if (position && position.type === "widget" && (position.mouse === "top" || position.mouse === "bottom")) {
           parent.postMessage({
             type: "onDidDropWidget",
             widgetId: parseInt(this.internalDropWidgetId),
             positionWidget: parseInt(position.widget.dataset.widgetId),
             position: position.mouse === "top" ? "before" : "after"
+          });
+        } else if (position && position.type === "placeholder") {
+          parent.postMessage({
+            type: "onDidDropWidget",
+            widgetId: parseInt(this.internalDropWidgetId),
+            positionContainer: parseInt(position.widget.dataset.widgetId),
+            positionIndex: position.widgetContainerIndex
           });
         }
       }

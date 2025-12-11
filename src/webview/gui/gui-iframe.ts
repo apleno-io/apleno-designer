@@ -1,7 +1,10 @@
 interface WidgetPosition {
+  type: 'widget' | 'placeholder' | 'body';
   widget: HTMLElement;
-  topZone: DOMRect;
-  bottomZone: DOMRect;
+  widgetTopZone?: DOMRect;
+  widgetBottomZone?: DOMRect;
+  widgetZone?: DOMRect;
+  widgetContainerIndex?: number;
   mouse: 'top' | 'bottom' | null;
 }
 
@@ -18,8 +21,6 @@ export const IframeContent = new class {
 
   // Dropping
   private mouseMode: MouseMode = MouseMode.None;
-  private dropTop: DOMRect | null = null;
-  private dropBottom: DOMRect | null = null;
   private dragLast: number = Date.now();
   // Internal drop
   private internalDropStartX: number = 0;
@@ -46,12 +47,20 @@ export const IframeContent = new class {
         const wtype = `${e.dataTransfer?.getData('text/plain')}`;
         const position = this.getWidgetFromPosition(e.clientX, e.clientY);
         this.setMouseMode(MouseMode.None);
-        if (position && (position.mouse === 'top' || position.mouse === 'bottom')) {
+        if (position && position.type === 'widget' && (position.mouse === 'top' || position.mouse === 'bottom')) {
           parent.postMessage({
             type: 'onDidDropWidget',
             widgetType: wtype,
             positionWidget: parseInt(position.widget.dataset.widgetId as string),
             position: position.mouse === 'top' ? 'before' : 'after'
+          });
+        }
+        else if (position && position.type === 'placeholder') {
+          parent.postMessage({
+            type: 'onDidDropWidget',
+            widgetType: wtype,
+            positionContainer: parseInt(position.widget.dataset.widgetId as string),
+            positionIndex: position.widgetContainerIndex
           });
         }
       }, { capture: true });
@@ -105,6 +114,24 @@ export const IframeContent = new class {
     if (w === null) {
       return null;
     }
+
+    // Detect if on a placeholder for containers
+    const container = topElement.closest('.pgm-emptycontainer');
+    if (container) {
+      // Columns: detect column. Tab: detect tab. List: nothing
+      return {
+        type: 'placeholder',
+        widget: w,
+        widgetZone: container.getBoundingClientRect(),
+        widgetContainerIndex: parseInt((container as HTMLElement).dataset.index as string),
+        mouse: null
+      };
+    }
+
+    // todo: Detect if body (empty or bottom)
+
+
+    // Normal widget
     const wRect = w.getBoundingClientRect();
     const zonesHeight = wRect.height * 0.5; //wRect.height * 0.2 < 15 ? wRect.height * 0.5 : wRect.height * 0.2;
     const top = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY, wRect.width, zonesHeight);
@@ -112,9 +139,10 @@ export const IframeContent = new class {
     const isOnTop = this.isPositionInRect(x + window.scrollX, y + window.scrollY, top);
     const isOnBottom = this.isPositionInRect(x + window.scrollX, y + window.scrollY, bottom);
     return {
+      type: 'widget',
       widget: w,
-      topZone: top,
-      bottomZone: bottom,
+      widgetTopZone: top,
+      widgetBottomZone: bottom,
       mouse: isOnTop ? 'top' : (isOnBottom ? 'bottom' : null)
     };
   }
@@ -128,7 +156,7 @@ export const IframeContent = new class {
     }
 
     const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
-    if (position === null) {
+    if (position === null || position.type !== 'widget') {
       return;
     }
 
@@ -143,37 +171,34 @@ export const IframeContent = new class {
    * - DnD: Show drop indicators
    */
   private onMouseMove(ev: MouseEvent) {
-    const topElement: Element | null = document.elementFromPoint(ev.clientX, ev.clientY);
-    if (topElement === null) {
+    const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
+    if (position === null) {
       return;
     }
 
-    const w: HTMLElement | null = topElement.closest('[data-widget-id]');
     if (this.mouseMode !== MouseMode.None) {
-      // Dropping: recalculate edges
-      if (w && w !== this.lastHoverWidget) {
-        // hovered widget changed, calculate new top/bottom
-        const wRect = w.getBoundingClientRect();
-        const boxesHeight = wRect.height * 0.5; //wRect.height * 0.2 < 15 ? wRect.height * 0.5 : wRect.height * 0.2;
-        this.dropTop = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY, wRect.width, boxesHeight);
-        this.dropBottom = new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY + wRect.height - boxesHeight, wRect.width, boxesHeight);
-      }
-
       // Check if mouse in edge
       const drop = document.getElementById('drop') as HTMLElement;
-      if (this.dropTop && this.isPositionInRect(ev.pageX, ev.pageY, this.dropTop)) {
+      if (position.type === 'widget' && position.mouse === 'top' && position.widgetTopZone) {
         drop.style.display = 'block';
-        drop.style.top = `${this.dropTop.y}px`;
-        drop.style.left = `${this.dropTop.x}px`;
-        drop.style.width = `${this.dropTop.width}px`;
-        drop.style.height = `${this.dropTop.height}px`;
+        drop.style.top = `${position.widgetTopZone.y}px`;
+        drop.style.left = `${position.widgetTopZone.x}px`;
+        drop.style.width = `${position.widgetTopZone.width}px`;
+        drop.style.height = `${position.widgetTopZone.height}px`;
       }
-      else if (this.dropBottom && this.isPositionInRect(ev.pageX, ev.pageY, this.dropBottom)) {
+      else if (position.type === 'widget' && position.mouse === 'bottom' && position.widgetBottomZone) {
         drop.style.display = 'block';
-        drop.style.top = `${this.dropBottom.y}px`;
-        drop.style.left = `${this.dropBottom.x}px`;
-        drop.style.width = `${this.dropBottom.width}px`;
-        drop.style.height = `${this.dropBottom.height}px`;
+        drop.style.top = `${position.widgetBottomZone.y}px`;
+        drop.style.left = `${position.widgetBottomZone.x}px`;
+        drop.style.width = `${position.widgetBottomZone.width}px`;
+        drop.style.height = `${position.widgetBottomZone.height}px`;
+      }
+      else if (position.type === 'placeholder' && position.widgetZone) {
+        drop.style.display = 'block';
+        drop.style.top = `${position.widgetZone.y}px`;
+        drop.style.left = `${position.widgetZone.x}px`;
+        drop.style.width = `${position.widgetZone.width}px`;
+        drop.style.height = `${position.widgetZone.height}px`;
       }
       else {
         drop.style.display = 'none';
@@ -195,11 +220,11 @@ export const IframeContent = new class {
     }
 
     // Normal widget selection
-    if (w !== this.lastHoverWidget) {
-      this.lastHoverWidget = w;
+    if (position.widget !== this.lastHoverWidget) {
+      this.lastHoverWidget = position.widget;
       document.body.querySelectorAll('[data-widget-id]').forEach(w => w.classList.remove('gui-widget-hover'));
-      if (w) {
-        w.classList.add('gui-widget-hover');
+      if (position.widget) {
+        position.widget.classList.add('gui-widget-hover');
       }
     }
   }
@@ -211,12 +236,20 @@ export const IframeContent = new class {
     if (this.mouseMode === MouseMode.InternalDrag) {
       const position = this.getWidgetFromPosition(ev.clientX, ev.clientY);
       this.setMouseMode(MouseMode.None);
-      if (position && (position.mouse === 'top' || position.mouse === 'bottom')) {
+      if (position && position.type === 'widget' && (position.mouse === 'top' || position.mouse === 'bottom')) {
         parent.postMessage({
           type: 'onDidDropWidget',
           widgetId: parseInt(this.internalDropWidgetId as string),
           positionWidget: parseInt(position.widget.dataset.widgetId as string),
           position: position.mouse === 'top' ? 'before' : 'after'
+        });
+      }
+      else if (position && position.type === 'placeholder') {
+        parent.postMessage({
+          type: 'onDidDropWidget',
+          widgetId: parseInt(this.internalDropWidgetId as string),
+          positionContainer: parseInt(position.widget.dataset.widgetId as string),
+          positionIndex: position.widgetContainerIndex
         });
       }
     }

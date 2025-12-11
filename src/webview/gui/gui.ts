@@ -92,7 +92,7 @@ const UIEditor = new class {
     return {};
   }
 
-  private setTab(tab: 'add' | 'tree' | 'props' | 'ui'): void {
+  private setTab(tab: 'add' | 'props' | 'ui'): void {
     document.querySelectorAll('#gui-sidebar-tabs [data-tab]').forEach((el: Element) => {
       if (!(el instanceof HTMLElement)) {
         return;
@@ -158,19 +158,22 @@ const UIEditor = new class {
     }
 
     if (msg.data.type === 'onDidDropWidget') {
+      console.log(msg.data);
       if (msg.data.widgetType) {
-        this.createWidget(msg.data.widgetType, msg.data.positionWidget, msg.data.position);
+        this.createWidget(msg.data.widgetType, msg.data.positionWidget ? msg.data.positionWidget : msg.data.positionContainer, msg.data.position ? msg.data.position : msg.data.positionIndex);
       }
       else if (msg.data.widgetId) {
-        this.moveWidget(msg.data.widgetId, msg.data.positionWidget, msg.data.position);
+        this.moveWidget(msg.data.widgetId, msg.data.positionWidget ? msg.data.positionWidget : msg.data.positionContainer, msg.data.position ? msg.data.position : msg.data.positionIndex);
       }
     }
   }
 
   /**
    * Create and insert a new widget. Pass null to positionWidgetId for main body.
+   * - If position is before or after, positionWidgetId is the sibling
+   * - If position is a number, positionWidgetId is the parent and position is ignored
    */
-  private createWidget(type: string, positionWidgetId: number | null, position: 'before' | 'after'): void {
+  private createWidget(type: string, positionWidgetId: number | null, position: 'before' | 'after' | number): void {
     if (!(type in WidgetProperties) || this.state === null) {
       return;
     }
@@ -190,15 +193,27 @@ const UIEditor = new class {
 
     // Find widget
     let found: boolean = false;
-    this.forEachContainers((widgets: GUIWidget[]) => {
-      for (let i = 0; i < widgets.length; ++i) {
-        if (widgets[i].id === positionWidgetId) {
-          widgets.splice(position === 'before' ? i : i + 1, 0, widget);
-          found = true;
-          return;
+    if (position === 'after' || position === 'before') {
+      // relative to sibling
+      this.forEachContainers((widgets: GUIWidget[]) => {
+        for (let i = 0; i < widgets.length; ++i) {
+          if (widgets[i].id === positionWidgetId) {
+            widgets.splice(position === 'before' ? i : i + 1, 0, widget);
+            found = true;
+            return;
+          }
         }
-      }
-    });
+      });
+    }
+    else if (typeof position === 'number') {
+      // parent container
+      this.forEachWidget((iWidget: GUIWidget) => {
+        if (iWidget.id === positionWidgetId && isContainerWidget(iWidget.type) && iWidget.widgets) {
+          iWidget.widgets.push(widget);
+          found = true;
+        }
+      });
+    }
 
     // Refresh
     if (found) {
@@ -211,7 +226,7 @@ const UIEditor = new class {
     }
   }
 
-  private moveWidget(id: number, positionWidgetId: number, position: 'before' | 'after'): void {
+  private moveWidget(id: number, positionWidgetId: number, position: 'before' | 'after' | number): void {
     // Check widget tries not to move in itself or on itself
     const widgetCheck = this.findWidget((w: GUIWidget) => w.id === id);
     if (widgetCheck === null) {
@@ -244,15 +259,26 @@ const UIEditor = new class {
 
     // Insert to new place
     let found: boolean = false;
-    this.forEachContainers((widgets: GUIWidget[]) => {
-      for (let i = 0; i < widgets.length; ++i) {
-        if (widgets[i].id === positionWidgetId) {
-          widgets.splice(position === 'before' ? i : i + 1, 0, widget as GUIWidget);
-          found = true;
-          return;
+    if (position === 'after' || position === 'before') {
+      this.forEachContainers((widgets: GUIWidget[]) => {
+        for (let i = 0; i < widgets.length; ++i) {
+          if (widgets[i].id === positionWidgetId) {
+            widgets.splice(position === 'before' ? i : i + 1, 0, widget as GUIWidget);
+            found = true;
+            return;
+          }
         }
-      }
-    });
+      });
+    }
+    else if (typeof position === 'number') {
+      // parent container
+      this.forEachWidget((iWidget: GUIWidget) => {
+        if (iWidget.id === positionWidgetId && isContainerWidget(iWidget.type) && iWidget.widgets) {
+          iWidget.widgets.push(widget as GUIWidget);
+          found = true;
+        }
+      });
+    }
 
     // Refresh
     if (found) {
