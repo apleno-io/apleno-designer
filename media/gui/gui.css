@@ -164,11 +164,12 @@ textarea::placeholder {
   width: 300px;
   left: 0;
   bottom: 0px;
-  overflow: hidden auto;
+  overflow: hidden visible;
   padding: 0 10px 10px;
 }
 #gui-sidebar-tabs {
   display: flex;
+  margin-bottom: 5px;
 }
 #gui-sidebar-tabs button {
   flex: 1 1 auto;
@@ -176,10 +177,21 @@ textarea::placeholder {
   border-width: 0 0 1px 0;
   background-color: transparent;
   border-radius: 2px 2px 0 0;
+  outline: none;
 }
 #gui-sidebar-tabs button.selected,
 #gui-sidebar-tabs button:hover {
   background: var(--vscode-button-background);
+}
+[data-tab-content=add] button {
+  display: block;
+  margin: 3px 0;
+  width: 100%;
+  color: var(--vscode-button-secondaryForeground);
+  background-color: var(--vscode-button-secondaryBackground);
+}
+[data-tab-content=add] button:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
 }
 #gui-propeditor label {
   margin: 10px 0 2px;
