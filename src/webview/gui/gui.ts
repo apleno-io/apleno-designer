@@ -29,7 +29,7 @@ const UIEditor = new class {
     </html>`.trim();
     setTimeout(() => {
       // Tabs
-      this.setTab('props');
+      this.setTab('add');
       document.getElementById('gui-sidebar-tabs')?.addEventListener('click', (event: MouseEvent) => {
         const button = (event.target as HTMLElement).closest('[data-tab]');
         if (button === null) {

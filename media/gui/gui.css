@@ -164,24 +164,43 @@ textarea::placeholder {
   width: 300px;
   left: 0;
   bottom: 0px;
-  overflow: hidden visible;
-  padding: 0 10px 10px;
+  overflow: hidden;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+#gui-sidebar-content {
+  flex: 1 1 auto;
+  overflow: hidden auto;
 }
 #gui-sidebar-tabs {
+  flex: 0 0 auto;
   display: flex;
+  gap: 3px;
   margin-bottom: 5px;
+  border: 1px solid var(--vscode-button-background);
+  border-width: 0 0 1px 0;
 }
 #gui-sidebar-tabs button {
   flex: 1 1 auto;
-  border: 1px solid var(--vscode-button-background);
-  border-width: 0 0 1px 0;
   background-color: transparent;
-  border-radius: 2px 2px 0 0;
+  border-radius: 4px 4px 0 0;
   outline: none;
+  color: var(--vscode-button-secondaryForeground);
+  background-color: var(--vscode-button-secondaryBackground);
 }
-#gui-sidebar-tabs button.selected,
-#gui-sidebar-tabs button:hover {
+#gui-sidebar-tabs button.selected {
   background: var(--vscode-button-background);
+}
+#gui-sidebar-tabs button:hover:not(.selected) {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+h2:not(:first-child) {
+  margin: 20px 0 0;
+}
+h2 {
+  margin: 0;
+  font-size: 15px;
 }
 [data-tab-content=add] button {
   display: block;
@@ -189,9 +208,18 @@ textarea::placeholder {
   width: 100%;
   color: var(--vscode-button-secondaryForeground);
   background-color: var(--vscode-button-secondaryBackground);
+  cursor: grab;
 }
 [data-tab-content=add] button:hover {
   background-color: var(--vscode-button-secondaryHoverBackground);
+}
+[data-tab-content=ui] label {
+  margin: 10px 0 2px;
+  user-select: none;
+}
+#gui-propeditor-empty {
+  margin-top: 30px;
+  text-align: center;
 }
 #gui-propeditor label {
   margin: 10px 0 2px;
