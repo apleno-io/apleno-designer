@@ -91,6 +91,16 @@ button.secondary {
 button.secondary:hover {
   background: var(--vscode-button-secondaryHoverBackground);
 }
+button.outline-danger {
+  border: 1px solid var(--vscode-editorError-foreground);
+  color: var(--vscode-editorError-foreground);
+  background: transparent;
+}
+button.outline-danger:hover {
+  border: 1px solid var(--vscode-editorError-foreground);
+  background: var(--vscode-editorError-foreground);
+  color: var(--vscode-foreground);
+}
 .btn-large {
   width: 100%;
 }
@@ -220,6 +230,9 @@ h2 {
 #gui-propeditor-empty {
   margin-top: 30px;
   text-align: center;
+}
+#gui-propeditor-actions {
+  text-align: right;
 }
 #gui-propeditor label {
   margin: 10px 0 2px;

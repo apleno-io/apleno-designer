@@ -102,6 +102,10 @@ h2 {
   text-align: center;
 }
 
+#gui-propeditor-actions {
+  text-align: right;
+}
+
 #gui-propeditor label {
   margin: 10px 0 2px;
   user-select: none;

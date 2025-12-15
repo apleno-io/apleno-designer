@@ -8,6 +8,7 @@
     // Dropping
     mouseMode = "none" /* None */;
     dragLast = Date.now();
+    mouseMoveDebouncer = null;
     // Internal drop
     internalDropStartX = 0;
     internalDropStartY = 0;

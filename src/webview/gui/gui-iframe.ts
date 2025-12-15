@@ -22,6 +22,7 @@ export const IframeContent = new class {
   // Dropping
   private mouseMode: MouseMode = MouseMode.None;
   private dragLast: number = Date.now();
+  private mouseMoveDebouncer: number | null = null;
   // Internal drop
   private internalDropStartX: number = 0;
   private internalDropStartY: number = 0;
