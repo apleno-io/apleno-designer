@@ -1,4 +1,5 @@
 import { ProjectFile, ProjectFileChangelog } from '../../common/project';
+import { deepEqual } from '../../common/utils/deep-equal';
 import { Sanitizer } from '../../common/utils/sanitize';
 import './project.css';
 
@@ -277,7 +278,11 @@ class PProEditor extends EventTarget {
     document.body.querySelectorAll('input, select, textarea').forEach(el => el.addEventListener('change', this.onChange));
   }
 
-  public setState(state: ProjectFile): void {
+  public setState(state: ProjectFile | null): void {
+    if (state === null) {
+      return;
+    }
+
     this.setFormValue('#project-name', state.name);
     this.setFormValue('#project-author', state.company);
     this.setFormValue('#project-description', state.description);
@@ -371,11 +376,18 @@ class PProEditor extends EventTarget {
 }
 
 (function () {
+  let initialState: ProjectFile | null = null;
+  let lastState: ProjectFile | null = null;
+
   // @ts-ignore
   const vscode = acquireVsCodeApi();
   const editor = new PProEditor();
   editor.addEventListener('change', () => {
-    vscode.postMessage({ type: 'edit', edit: { state: editor.getState() } });
+    const newState = editor.getState();
+    if (!deepEqual(lastState, newState)) {
+      lastState = structuredClone(newState);
+      vscode.postMessage({ type: 'edit', edit: { state: editor.getState() } });
+    }
   });
   editor.addEventListener('select-icon', () => {
     vscode.postMessage({ type: 'select-icon' });
@@ -390,13 +402,17 @@ class PProEditor extends EventTarget {
   window.addEventListener('message', async e => {
     const { type, body, requestId } = e.data;
     if (type === 'init') {
-      editor.setState(body.untitled ? {} : body.value);
+      initialState = structuredClone(body.untitled ? null : body.value);
+      lastState = structuredClone(initialState);
+      editor.setState(initialState);
     }
     else if (type === 'update') {
       if (body.edits.length > 0) {
         editor.setState(body.edits[body.edits.length - 1].state);
       }
-      return;
+      else {
+        editor.setState(initialState);
+      }
     }
     else if (type === 'getFileData') {
       vscode.postMessage({ type: 'response', requestId, body: editor.getState() });
