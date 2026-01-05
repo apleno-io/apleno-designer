@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { ProjectFile, ProjectFileUtils } from './project-utils';
+import { ProjectFileUtils } from './project-utils';
+import { ProjectFile } from '../../common/project';
 
 /**
  * Define the type of edits used in ppro files.
@@ -349,10 +350,8 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 	 * Get the static HTML used for in our editor's webviews.
 	 */
 	private getHtmlForWebview(webview: vscode.Webview): string {
-		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'ppro.js'));
-		const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'reset.css'));
-		const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'vscode.css'));
-		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'ppro.css'));
+		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/project/project.min.js'));
+		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/project/project.min.css'));
 		const nonce = getNonce(); // Use a nonce to whitelist scripts
 
 		return `
@@ -369,8 +368,6 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-				<link href="${styleResetUri}" rel="stylesheet" />
-				<link href="${styleVSCodeUri}" rel="stylesheet" />
 				<link href="${styleMainUri}" rel="stylesheet" />
 
 				<title>P</title>

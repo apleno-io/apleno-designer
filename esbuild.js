@@ -47,9 +47,10 @@ async function main() {
 	});
 	const ctxMedia = await esbuild.context({
 		entryPoints: [
-			'src/webview/sequence/sequence.ts',
-			'src/webview/gui/gui.ts',
-			'src/webview/gui/gui-iframe.ts'
+			{ out: 'gui/gui.min', in: 'src/webview/gui/gui.ts' },
+			{ out: 'gui-iframe/gui-iframe.min', in: 'src/webview/gui-iframe/gui-iframe.ts' },
+			{ out: 'sequence/sequence.min', in: 'src/webview/sequence/sequence.ts' },
+			{ out: 'project/project.min', in: 'src/webview/project/project.ts' }
 		],
 		bundle: true,
 		format: 'iife',
@@ -76,6 +77,8 @@ async function main() {
 	} else {
 		await ctx.rebuild();
 		await ctx.dispose();
+		await ctxMedia.rebuild();
+		await ctxMedia.dispose();
 	}
 }
 

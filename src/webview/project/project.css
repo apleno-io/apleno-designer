@@ -1,3 +1,6 @@
+@import '../../common/css/reset.css';
+@import '../../common/css/vscode.css';
+
 html,
 body {
   height: 100%;

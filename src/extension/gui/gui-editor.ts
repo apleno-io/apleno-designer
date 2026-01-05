@@ -369,16 +369,16 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
    * Get the static HTML used for in our editor's webviews.
    */
   private async getHtmlForWebview(webview: vscode.Webview): Promise<string> {
-    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui.js'));
-    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui.css'));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui.min.js'));
+    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui.min.css'));
     const nonce = getNonce(); // Use a nonce to whitelist scripts
 
     // Get content of JS for iframe
     let iframeJS = '';
     let iframeCSS = '';
     try {
-      iframeJS = Buffer.from(await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/gui-iframe.js'))).toString('utf8');
-      iframeCSS = Buffer.from(await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui/pgm-client.min.css'))).toString('utf8');
+      iframeJS = Buffer.from(await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui-iframe/gui-iframe.min.js'))).toString('utf8');
+      iframeCSS = Buffer.from(await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'media/gui-iframe/gui-iframe.min.css'))).toString('utf8');
     } catch (e) { }
 
     return `

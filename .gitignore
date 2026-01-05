@@ -1,2 +1,5 @@
 dist/
 node_modules/
+media/*/**.js
+media/*/**.css
+media/*/**.map

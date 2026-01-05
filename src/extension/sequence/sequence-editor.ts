@@ -371,10 +371,8 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
    * Get the static HTML used for in our editor's webviews.
    */
   private getHtmlForWebview(webview: vscode.Webview): string {
-    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/sequence/sequence.js'));
-    const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'reset.css'));
-    const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'vscode.css'));
-    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/pseq.css'));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/sequence/sequence.min.js'));
+    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/sequence/sequence.min.css'));
     const nonce = getNonce(); // Use a nonce to whitelist scripts
 
     return `
@@ -391,8 +389,6 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <link href="${styleResetUri}" rel="stylesheet" />
-        <link href="${styleVSCodeUri}" rel="stylesheet" />
         <link href="${styleMainUri}" rel="stylesheet" />
 
         <title>P</title>

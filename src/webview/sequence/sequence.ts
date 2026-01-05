@@ -17,6 +17,7 @@ import { deepEqual } from "../../common/utils/deep-equal";
 import SequenceChecker, { SequenceError } from "./sequence-check";
 import SequenceDetails from "./sequence-details";
 import SequenceErrorBox from "./sequence-errorbox";
+import './sequence.css';
 
 type StepType = 'start' | 'gui' | 'script' | 'condition' | 'sequence' | 'end';
 type StepHandle = 'top' | 'right' | 'bottom';

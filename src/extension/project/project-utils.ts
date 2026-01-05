@@ -3,32 +3,7 @@
  * also converting from RPGM2 / RPGM3 format if necessary.
  * It always returns a correct project object.
  */
-export interface ProjectFileChangelog {
-  date: string;
-  author: string;
-  version: string;
-  message: string;
-}
-
-export interface ProjectFile {
-  name: string;
-  company: string;
-  description: string;
-  changelog: ProjectFileChangelog[];
-  icon: string;
-  sequenceStart: string;
-  defaultWorkingDirectory: 'app' | 'output';
-  outputFolderName: string;
-  sidebarLogo: string;
-  customCSSLightCode: string;
-  customCSSDarkCode: string;
-  customCSSLightFile: string;
-  customCSSDarkFile: string;
-  customFiles: string[];
-  stepListType: 'hidden' | 'shown';
-  consoleAccess: 'enabled' | 'disabled';
-  dateCreated: number;
-}
+import { ProjectFile, ProjectFileChangelog } from '../../common/project';
 
 function checkChangelogEntry(entry: any): entry is ProjectFileChangelog {
   return typeof entry === 'object' &&

@@ -1,3 +1,5 @@
+import './gui-iframe.css';
+
 interface WidgetPosition {
   type: 'widget' | 'placeholder' | 'body';
   widget: HTMLElement;

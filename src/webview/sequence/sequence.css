@@ -1,3 +1,6 @@
+@import '../../common/css/reset.css';
+@import '../../common/css/vscode.css';
+
 .pseq-bottomspace {
   margin-bottom: 1rem;
 }
