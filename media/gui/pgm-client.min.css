@@ -19,8 +19,14 @@ body.dragging * {
   cursor: grabbing;
 }
 
-body.dragging [data-widget-id] {
-  background-color: rgba(0, 0, 0, 0.15);
+body.dragging [data-widget-id]:not(.gui-widget-hover):not(.gui-widget-selected) {
+  outline: 2px dashed rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.05);
+  /*background: repeating-linear-gradient(-45deg,
+      rgba(0, 0, 0, 0.05),
+      rgba(0, 0, 0, 0.05) 10px,
+      rgba(0, 0, 0, 0.1) 10px,
+      rgba(0, 0, 0, 0.1) 20px);*/
 }
 
 #drop {
@@ -39,7 +45,7 @@ body.dragging [data-widget-id] {
 }
 
 .pgm-emptycontainer {
-  min-height: 200px;
+  min-height: 75px;
 }
 
 .gui-widget-hover {
