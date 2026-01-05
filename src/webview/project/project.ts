@@ -229,7 +229,7 @@ class CustomFilesEditor extends EventTarget {
   }
 
   private onClick(ev: MouseEvent): void {
-    if (!(ev.target instanceof HTMLElement)) {
+    if (!(ev.target instanceof Element)) {
       return;
     }
 
@@ -347,7 +347,7 @@ class PProEditor extends EventTarget {
   }
 
   private onClick(ev: MouseEvent): void {
-    if (!(ev.target instanceof HTMLElement)) {
+    if (!(ev.target instanceof Element)) {
       return;
     }
 
