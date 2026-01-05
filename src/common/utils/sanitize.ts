@@ -11,9 +11,9 @@ export const Sanitizer = new class {
 
   public xssAttribute(input: string, quote: string = '"'): string {
     input = `${input}`;
-    if (quote == '"') {
+    if (quote === '"') {
       return input.replace(/"/g, "&quot;");
     }
     return input.replace(/'/g, "&#x27;");
   }
-}
+};
