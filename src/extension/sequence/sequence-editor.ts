@@ -400,7 +400,6 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
         <div id="pseq-topbar">
           <div>Utils:</div>
           <button data-role="center">Center on start</button>
-          <button data-role="help">Help</button>
           <div>Add:</div>
           <button data-role="add" data-step="script">Script</button>
           <button data-role="add" data-step="gui">UI</button>
