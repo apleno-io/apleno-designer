@@ -19,7 +19,7 @@
   line-height: 30px;
   z-index: 100;
   overflow: hidden auto;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: var(--vscode-sideBar-background);
   padding: 10px;
   border-radius: 2px;
   user-select: none;
@@ -37,7 +37,7 @@
 }
 
 .pseq-panel {
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: var(--vscode-sideBar-background);
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 2px;
@@ -77,6 +77,8 @@
   background-color: var(--vscode-editor-background);
   padding: 0;
   margin: 0;
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 2px;
 }
 
 .pseq-step-setting-help {
