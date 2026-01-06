@@ -53,6 +53,25 @@
       {
         "command": "pgm.pgui.new",
         "title": "Create new PGM Interface file"
+      },
+      {
+        "command": "pgm.run",
+        "title": "Run PGM preview"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "pgm",
+        "label": "RPGM",
+        "program": "./dist/extension.js",
+        "initialConfigurations": [
+          {
+            "type": "pgm",
+            "request": "launch",
+            "name": "RPGM preview"
+          }
+        ],
+        "languages": []
       }
     ],
     "languages": [
