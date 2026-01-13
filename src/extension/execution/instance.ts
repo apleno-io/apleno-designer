@@ -4,7 +4,9 @@ import os from 'os';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { Logger } from './logger';
 import { GetFreePort } from './free-port';
-import { Conda } from './finder-conda';
+import { ConfigManager } from './config';
+import vscode from 'vscode';
+import { RuntimeManager } from './runtime';
 
 interface PythonPrefix {
   type: 'venv' | 'conda';
@@ -15,12 +17,7 @@ export class RPGMApp {
   private _currentProcess: ChildProcessWithoutNullStreams | null = null;
   private _isRunning: boolean = false;
 
-  private currentPort: number = 0;
-  private appFolder: string | null = null;
-
-  private getRunnerServerFolder(): string {
-    return 8;
-  }
+  private currentPort: number | null = null;
 
   /**
    * Return a sanitized path for using in a raw command line argument
@@ -39,21 +36,10 @@ export class RPGMApp {
     }
   }
 
-  private async getPythonPath(overridePython: string | null = null) {
-    const pythonPath = overridePython || await PythonFinder.getPath();
-
-    // Check path
-    if (typeof pythonPath !== 'string' || pythonPath.length === 0 || (!(await this.doesFileExist(pythonPath)) && pythonPath.includes('WindowsApps'))) {
-      return null;
-    }
-
-    return pythonPath;
-  }
-
   /**
    * @returns object|null {type: 'conda'|'venv'|null, prefix?: string}
    */
-  private async getPythonEnvPrefix(pythonPath: string): Promise<PythonPrefix | null> {
+  private async getPythonEnvPrefix(pythonPath: string, pathConda: string | null): Promise<PythonPrefix | null> {
     // Detect if the python.exe is within a python environnement
     const pythonFolder = path.dirname(pythonPath);
     if (await this.doesFileExist(path.join(pythonFolder, 'activate'))) {
@@ -66,59 +52,67 @@ export class RPGMApp {
     }
 
     // Detect if the python.exe is within a Conda environnement
-    const condaPath = await Conda.getCondaPath();
-    if (condaPath && await this.doesFileExist(path.join(pythonFolder, 'conda-meta'))) {
-      const condaActivateScript = path.join(path.dirname(condaPath), process.platform === 'win32' ? 'activate.bat' : 'activate');
+    if (pathConda && await this.doesFileExist(path.join(pythonFolder, 'conda-meta'))) {
+      const condaActivateScript = path.join(path.dirname(pathConda), process.platform === 'win32' ? 'activate.bat' : 'activate');
       return { type: 'conda', prefix: `${this.getSanitizedCommandPath(condaActivateScript)} ${this.getSanitizedCommandPath(path.normalize(pythonFolder))} && ` };
     }
 
     return null;
   }
 
-  public async load(appPath: string): Promise<number> {
+  /**
+   * Please note that here, the app directory and the output directory are both the project folder.
+   */
+  public async load(appPath: string): Promise<number | null> {
+    // Dispose previous running app
     this.dispose();
 
-    // Read .rcode file for overwriting values
-    const rcodeContent: any = await Listing.getRCodeFile(appPath);
+    // Log
+    Logger.info('Launching the app');
+
+    // Runtime
+    if (!(await RuntimeManager.isRuntimeInstalled())) {
+      Logger.info('Runtime not installed, downloading');
+      await RuntimeManager.downloadRuntime();
+      if (!(await RuntimeManager.isRuntimeInstalled())) {
+        Logger.error('Could not download or install runtime');
+        return null;
+      }
+    }
+
+    // Check if update available
+    if (await RuntimeManager.checkUpdateAvailable()) {
+      // TODO: notification with choices and stuff
+    }
+
+    // Get project folder
+    const workspace = vscode.workspace.workspaceFolders?.[0];
+    if (workspace === undefined) {
+      Logger.error('Could not find the workspace folder.');
+      return null;
+    }
+    const projectFolder = workspace.uri.fsPath;
 
     // Port
-    this.currentPort = await GetFreePort();
+    Logger.info('Getting instance port');
+    const port = await GetFreePort();
+    if (port === null) {
+      return null;
+    }
+    this.currentPort = port;
 
-    // Temp folder
-    let tempDir: string = Store.get('settings')['runner:tempDir'];
-    if (typeof tempDir !== 'string' || tempDir.trim().length === 0) {
-      tempDir = os.tmpdir();
+    // Get R / Python / Conda
+    Logger.info('Getting paths');
+    let pathR = await ConfigManager.getExecutablePath('r');
+    if (pathR && process.platform === 'win32' && pathR.endsWith('\\bin\\R.exe')) {
+      pathR = pathR.substring(0, pathR.length - 10);
     }
-    else {
-      tempDir = path.normalize(tempDir);
-    }
+    Logger.info(`Using R path: ${pathR}`);
 
-    try {
-      this.appFolder = await fs.promises.mkdtemp(path.join(tempDir, 'rpgm-'));
-    }
-    catch (err) {
-      Logger.error(`Could not create temporary directory in ${tempDir}!`);
-      Logger.error(`Details > ${err}`);
-      throw new Error(`CouldNotCreateTempDir`);
-    }
-
-    // R Path
-    let rPath: string = path.normalize(Store.get('settings')['r:path']);
-    if (process.platform === 'win32' && rPath.endsWith('\\bin\\R.exe')) {
-      rPath = rPath.substring(0, rPath.length - 10);
-    }
-    Logger.info(`Using R path: ${rPath}`);
-
-    // Python Path
-    let pythonPath = await this.getPythonPath();
-    if (rcodeContent && 'pythonPath' in rcodeContent && rcodeContent.pythonPath.length > 0) {
-      Logger.info('Python overriding .rcode setting for Python path detected.');
-      pythonPath = rcodeContent.pythonPath;
-    }
-    Logger.info(`Using python path: ${pythonPath}`);
-
-    // Python env
-    const pythonPrefix = pythonPath ? await this.getPythonEnvPrefix(pythonPath) : null;
+    const pathPython = await ConfigManager.getExecutablePath('python');
+    Logger.info(`Using python path: ${pathPython}`);
+    const pathConda = await ConfigManager.getExecutablePath('conda');
+    const pythonPrefix = pathPython ? await this.getPythonEnvPrefix(pathPython, pathConda) : null;
     Logger.info(`Using python prefix: ${pythonPrefix ? pythonPrefix.prefix : 'null'}`);
 
     const pgmRunnerConfig: any = {
@@ -129,22 +123,22 @@ export class RPGMApp {
       /** A comma separated of stuff to debug: 'app', 'rcom', 'packets', 'ws', 'sequence', 'all' */
       debugMode: '',
       /** Folder where the app is unzipped */
-      folderApp: this.appFolder,
+      folderApp: projectFolder,
       /** Folder where output files and temps files of the instance will go, a sub-folder will be created */
-      folderOutput: Store.get('settings').outputFolder,
+      folderOutput: projectFolder,
       /** On server, will prepend all folder/file widget with this value */
       folderUser: '',
       /** Port of the Web Socket server */
       port: this.currentPort,
       /** Path to python binary & env */
-      pythonPath: pythonPath,
+      pythonPath: pathPython,
       pythonPrefix: pythonPrefix ? pythonPrefix.prefix : null,
       /** Path to the pycom script */
-      pythonComPath: path.join(this.getRunnerServerFolder(), 'resources/pycom/pycom.py'),
+      pythonComPath: path.join(RuntimeManager.getRuntimeFolder(), 'resources/pycom/pycom.py'),
       /** Path to the RCom binary */
-      rComPath: path.join(this.getRunnerServerFolder(), 'resources'),
+      rComPath: path.join(RuntimeManager.getRuntimeFolder(), 'resources'),
       /** Path to R */
-      rPath: rPath,
+      rPath: pathR,
       /** '32' or '64' bits */
       rVersion: '64',
       /** 'client' or 'server' */
@@ -172,16 +166,17 @@ export class RPGMApp {
       /** Name of the user executing the instance */
       userName: '',
       /** Path to the XLSX tool binary */
-      xlsxPath: path.join(this.getRunnerServerFolder(), 'resources/xlsx/rpgm-xlsx.exe')
+      xlsxPath: path.join(RuntimeManager.getRuntimeFolder(), 'resources/xlsx/rpgm-xlsx.exe')
     };
 
     // Write config file
+    Logger.info('Creating instance config file');
     const configFilepath: string = path.join(os.tmpdir(), 'rpgmboot.json');
     await fs.promises.writeFile(configFilepath, JSON.stringify(pgmRunnerConfig), 'utf8');
 
-    Logger.info('Starting instance...');
+    Logger.info('Starting instance');
     this._isRunning = true;
-    this._currentProcess = spawn(path.join(this.getRunnerServerFolder(), 'runner-win-x64.exe'), [configFilepath]);
+    this._currentProcess = spawn(path.join(RuntimeManager.getRuntimeFolder(), 'runner-win-x64.exe'), [configFilepath]);
     this._currentProcess.stdout.on('data', (data: any) => {
       Logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
     });
@@ -194,16 +189,6 @@ export class RPGMApp {
     });
     this._currentProcess.on('exit', async () => {
       this._isRunning = false;
-      if (this.appFolder) {
-        try {
-          await fs.promises.rm(this.appFolder, { force: true, recursive: true });
-        }
-        catch (err) {
-          Logger.error(`Could not delete temporary directory ${this.appFolder}!`);
-          Logger.error((err as Error).message);
-        }
-        this.appFolder = null;
-      }
       Logger.info('event: exit');
     });
 

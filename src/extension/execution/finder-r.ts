@@ -23,7 +23,7 @@ export interface RFinderInstance {
 /**
  * This class searchs all R installations on Windows, Mac and Linux
  */
-export const RFinder = new class {
+export const FinderR = new class {
   /**
    * Finds R installs from the Windows registry
    * @returns 
