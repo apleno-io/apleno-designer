@@ -125,6 +125,7 @@
     "@types/adm-zip": "^0.5.7",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/semver": "^7.7.1",
     "@types/vscode": "^1.97.0",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
     "@typescript-eslint/parser": "^8.22.0",
@@ -136,6 +137,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16"
+    "adm-zip": "^0.5.16",
+    "semver": "^7.7.3"
   }
 }
