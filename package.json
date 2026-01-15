@@ -127,6 +127,7 @@
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
+    "@types/micromatch": "^4.0.10",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
     "@types/semver": "^7.7.1",
@@ -142,6 +143,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
+    "micromatch": "^4.0.8",
     "semver": "^7.7.3"
   }
 }
