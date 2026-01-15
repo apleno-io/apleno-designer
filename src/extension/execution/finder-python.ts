@@ -76,7 +76,7 @@ export const FinderPython = new class {
     }
 
     // Add conda environment
-    const condaEnvs: PythonInstall[] = (await Conda.getCondaEnvs()).map(e => { return { type: 'conda', path: path.join(e, process.platform === 'win32' ? 'python.exe' : 'python') }; });
+    const condaEnvs: PythonInstall[] = (await Conda.getAllCondaPaths()).map(e => { return { type: 'conda', path: path.join(e, process.platform === 'win32' ? 'python.exe' : 'python') }; });
     foundPaths.push(...condaEnvs);
 
     return foundPaths;
