@@ -71,10 +71,10 @@ export class RPGMApp {
     Logger.info('Launching the app');
 
     // Runtime
-    if (!(await RuntimeManager.isRuntimeInstalled())) {
+    if ((await RuntimeManager.getRuntimeVersion()) === null) {
       Logger.info('Runtime not installed, downloading');
       await RuntimeManager.downloadRuntime();
-      if (!(await RuntimeManager.isRuntimeInstalled())) {
+      if ((await RuntimeManager.getRuntimeVersion()) === null) {
         Logger.error('Could not download or install runtime');
         return null;
       }
