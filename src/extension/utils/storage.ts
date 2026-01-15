@@ -12,7 +12,7 @@ export const Storage = new class {
   public async initialize(context: ExtensionContext): Promise<boolean> {
     // Create folder
     try {
-      await fs.promises.mkdir(context.globalStorageUri.fsPath);
+      await fs.promises.mkdir(context.globalStorageUri.fsPath, { recursive: true });
     }
     catch {
       return false;
