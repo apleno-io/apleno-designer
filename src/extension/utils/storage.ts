@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { ExtensionContext } from 'vscode';
+import vscode from 'vscode';
 
 export interface StorageConfig {
   lastExportFolder?: string;
@@ -9,12 +9,13 @@ export interface StorageConfig {
 export const Storage = new class {
   private _configPath: string | null = null;
 
-  public async initialize(context: ExtensionContext): Promise<boolean> {
+  public async initialize(context: vscode.ExtensionContext): Promise<boolean> {
     // Create folder
     try {
       await fs.promises.mkdir(context.globalStorageUri.fsPath, { recursive: true });
     }
-    catch {
+    catch (err) {
+      vscode.window.showErrorMessage(`Could not initialize configuration: ${err}`);
       return false;
     }
 
@@ -30,7 +31,8 @@ export const Storage = new class {
     try {
       return JSON.parse((await fs.promises.readFile(this._configPath, 'utf8')));
     }
-    catch {
+    catch (err) {
+      vscode.window.showErrorMessage(`Could not read configuration: ${err}`);
       return {};
     }
   }
@@ -43,7 +45,8 @@ export const Storage = new class {
     try {
       await fs.promises.writeFile(this._configPath, JSON.stringify(content, null, '\t'), 'utf8');
     }
-    catch {
+    catch (err) {
+      vscode.window.showErrorMessage(`Could not save configuration: ${err}`);
       return false;
     }
     return true;
