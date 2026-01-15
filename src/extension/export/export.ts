@@ -19,7 +19,7 @@ export class Exporter {
     const config = await Storage.getConfig();
     const uri = await vscode.window.showSaveDialog({
       filters: {
-        'PGM': ['.pgm']
+        'PGM': ['pgm']
       },
       defaultUri: config.lastExportFolder ? vscode.Uri.file(config.lastExportFolder) : undefined,
       title: 'Export PGM app'
