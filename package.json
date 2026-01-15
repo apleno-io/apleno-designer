@@ -43,6 +43,10 @@
     ],
     "commands": [
       {
+        "command": "pgm.export",
+        "title": "Export PGM app"
+      },
+      {
         "command": "pgm.ppro.new",
         "title": "Create new PGM Project file"
       },
