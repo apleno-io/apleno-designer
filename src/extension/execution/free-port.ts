@@ -1,5 +1,5 @@
 import net from 'net';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 
 export function GetFreePort(): Promise<number | null> {
   return new Promise(resolve => {

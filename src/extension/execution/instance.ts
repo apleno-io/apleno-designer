@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 import { GetFreePort } from './free-port';
 import { ConfigManager } from './config';
 import vscode from 'vscode';
