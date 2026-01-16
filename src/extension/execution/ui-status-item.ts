@@ -1,4 +1,4 @@
-import vscode from 'vscode';
+import vscode, { ThemeColor } from 'vscode';
 
 export class ExecutionStatusItemManager {
   private static _statusItem: vscode.StatusBarItem | null = null;
@@ -6,15 +6,17 @@ export class ExecutionStatusItemManager {
   /**
    * Create the status bar item.
    */
-  public static register(): vscode.Disposable {
-    this._statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-    return this._statusItem;
+  public static initialize(context: vscode.ExtensionContext): void {
+    this._statusItem = vscode.window.createStatusBarItem('pgm', vscode.StatusBarAlignment.Left, 1);
+    this._statusItem.tooltip = 'Show PGM logs';
+    this._statusItem.command = 'pgm.logs';
+    context.subscriptions.push(this._statusItem);
   }
 
   /**
    * Change status bar text. If null, hide the item.
    */
-  public static setText(text: string | null) {
+  public static setText(text: string | null, color: 'red' | null = null) {
     if (this._statusItem === null) {
       return;
     }
@@ -24,6 +26,12 @@ export class ExecutionStatusItemManager {
     }
     else {
       this._statusItem.text = text;
+      if (color === 'red') {
+        this._statusItem.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
+      }
+      else {
+        this._statusItem.backgroundColor = undefined;
+      }
       this._statusItem.show();
     }
   }

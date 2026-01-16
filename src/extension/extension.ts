@@ -20,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Run / Debug
 	context.subscriptions.push(Exporter.registerCommand(context));
-	context.subscriptions.push(ExecutionStatusItemManager.register());
+	ExecutionStatusItemManager.initialize(context);
 	context.subscriptions.push(PGMRunner.registerCommand(context));
 	context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('pgm', new PGMDebug()));
 }
