@@ -2,8 +2,11 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
+import { RuntimeManager } from './runtime';
+import { Services } from '../services';
+import { ExecutionStatusItemManager } from './ui-status-item';
 
-function startRunner(folder: string) {
+async function startRunner(folder: string) {
   // Default launch.json
   const launchPath = path.join(folder, '.vscode', 'launch.json');
   if (!fs.existsSync(launchPath)) {
@@ -21,7 +24,44 @@ function startRunner(folder: string) {
     fs.writeFileSync(launchPath, JSON.stringify(config, null, 2));
   }
 
-  vscode.window.showInformationMessage(`Lancement du projet custom ${folder}`);
+  // Logging
+  Services.Logger.info('Starting PGM instance...');
+  ExecutionStatusItemManager.setText('Starting PGM instance...');
+
+  // Runtime installation management
+  const version = await RuntimeManager.getRuntimeVersion();
+  if (version === null) {
+    // no runtime, offer to download in modal
+    Services.Logger.info('No runtime installed.');
+    const wantInstall = await vscode.window.showInformationMessage('To execute a PGM app, you need the PGM runtime installed on your computer. Do you want to install it now?', { modal: true }, ...['Download', 'Cancel']);
+    if (wantInstall === 'Cancel') {
+      return;
+    }
+
+    // download
+    const success = await RuntimeManager.downloadRuntime(); // manage error messages in RuntimeManager
+    if (!success) {
+      return;
+    }
+  }
+  else {
+    // check update
+    const update = await RuntimeManager.checkUpdateAvailable();
+    if (update) {
+      // non-modal: offer to update in notification
+      const wantInstall = await vscode.window.showInformationMessage(`A PGM runtime update is available (installed: ${version}, available: ${update}). Do you want to download and install the update?`, ...['Download', 'Cancel']);
+      if (wantInstall === 'Download') {
+        // download
+        const success = await RuntimeManager.downloadRuntime(); // manage error messages in RuntimeManager
+        if (!success) {
+          return;
+        }
+      }
+    }
+  }
+
+  // TODO: Launch instance
+
 
   // Chemin de l’exécutable
   /*const exePath = 'C:/MonExecutable/custom.exe';
