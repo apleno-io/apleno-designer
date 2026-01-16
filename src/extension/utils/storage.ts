@@ -15,7 +15,7 @@ export const Storage = new class {
       await fs.promises.mkdir(context.globalStorageUri.fsPath, { recursive: true });
     }
     catch (err) {
-      vscode.window.showErrorMessage(`Could not initialize configuration: ${err}`);
+      vscode.window.showErrorMessage(`PGM: Could not initialize configuration: ${err}`);
       return false;
     }
 
@@ -32,7 +32,7 @@ export const Storage = new class {
       return JSON.parse((await fs.promises.readFile(this._configPath, 'utf8')));
     }
     catch (err) {
-      vscode.window.showErrorMessage(`Could not read configuration: ${err}`);
+      vscode.window.showErrorMessage(`PGM: Could not read configuration: ${err}`);
       return {};
     }
   }
@@ -46,7 +46,7 @@ export const Storage = new class {
       await fs.promises.writeFile(this._configPath, JSON.stringify(content, null, '\t'), 'utf8');
     }
     catch (err) {
-      vscode.window.showErrorMessage(`Could not save configuration: ${err}`);
+      vscode.window.showErrorMessage(`PGM: Could not save configuration: ${err}`);
       return false;
     }
     return true;
