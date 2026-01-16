@@ -6,11 +6,11 @@ import { PGMDebug, PGMRunner } from './execution/run';
 import { Storage } from './utils/storage';
 import { Exporter } from './export/export';
 import { ExecutionStatusItemManager } from './execution/ui-status-item';
-import { Logger } from './utils/logger';
+import { Services } from './services';
 
 export function activate(context: vscode.ExtensionContext) {
 	// Utils
-	Logger.initialize();
+	Services.Logger.initialize(context);
 	Storage.initialize(context);
 
 	// Editors

@@ -2,11 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { Logger } from '../utils/logger';
 import { GetFreePort } from './free-port';
 import { ConfigManager } from './config';
 import vscode from 'vscode';
 import { RuntimeManager } from './runtime';
+import { Services } from '../services';
 
 interface PythonPrefix {
   type: 'venv' | 'conda';
@@ -68,14 +68,15 @@ export class RPGMApp {
     this.dispose();
 
     // Log
-    Logger.info('Launching the app');
+    const logger = Services.Logger;
+    logger.info('Launching the app');
 
     // Runtime
     if ((await RuntimeManager.getRuntimeVersion()) === null) {
-      Logger.info('Runtime not installed, downloading');
+      logger.info('Runtime not installed, downloading');
       await RuntimeManager.downloadRuntime();
       if ((await RuntimeManager.getRuntimeVersion()) === null) {
-        Logger.error('Could not download or install runtime');
+        logger.error('Could not download or install runtime');
         return null;
       }
     }
@@ -88,13 +89,13 @@ export class RPGMApp {
     // Get project folder
     const workspace = vscode.workspace.workspaceFolders?.[0];
     if (workspace === undefined) {
-      Logger.error('Could not find the workspace folder.');
+      logger.error('Could not find the workspace folder.');
       return null;
     }
     const projectFolder = workspace.uri.fsPath;
 
     // Port
-    Logger.info('Getting instance port');
+    logger.info('Getting instance port');
     const port = await GetFreePort();
     if (port === null) {
       return null;
@@ -102,18 +103,18 @@ export class RPGMApp {
     this.currentPort = port;
 
     // Get R / Python / Conda
-    Logger.info('Getting paths');
+    logger.info('Getting paths');
     let pathR = await ConfigManager.getExecutablePath('r');
     if (pathR && process.platform === 'win32' && pathR.endsWith('\\bin\\R.exe')) {
       pathR = pathR.substring(0, pathR.length - 10);
     }
-    Logger.info(`Using R path: ${pathR}`);
+    logger.info(`Using R path: ${pathR}`);
 
     const pathPython = await ConfigManager.getExecutablePath('python');
-    Logger.info(`Using python path: ${pathPython}`);
+    logger.info(`Using python path: ${pathPython}`);
     const pathConda = await ConfigManager.getExecutablePath('conda');
     const pythonPrefix = pathPython ? await this.getPythonEnvPrefix(pathPython, pathConda) : null;
-    Logger.info(`Using python prefix: ${pythonPrefix ? pythonPrefix.prefix : 'null'}`);
+    logger.info(`Using python prefix: ${pythonPrefix ? pythonPrefix.prefix : 'null'}`);
 
     const pgmRunnerConfig: any = {
       /** The path to the pgm file */
@@ -170,26 +171,26 @@ export class RPGMApp {
     };
 
     // Write config file
-    Logger.info('Creating instance config file');
+    logger.info('Creating instance config file');
     const configFilepath: string = path.join(os.tmpdir(), 'rpgmboot.json');
     await fs.promises.writeFile(configFilepath, JSON.stringify(pgmRunnerConfig), 'utf8');
 
-    Logger.info('Starting instance');
+    logger.info('Starting instance');
     this._isRunning = true;
     this._currentProcess = spawn(path.join(RuntimeManager.getRuntimeFolder(), 'runner-win-x64.exe'), [configFilepath]);
     this._currentProcess.stdout.on('data', (data: any) => {
-      Logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
+      logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
     });
     this._currentProcess.stderr.on('data', (data: any) => {
-      Logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
+      logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
     });
     this._currentProcess.on('close', () => {
       this._isRunning = false;
-      Logger.info('event: close');
+      logger.info('event: close');
     });
     this._currentProcess.on('exit', async () => {
       this._isRunning = false;
-      Logger.info('event: exit');
+      logger.info('event: exit');
     });
 
     return this.currentPort;

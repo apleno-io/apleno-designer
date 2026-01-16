@@ -61,6 +61,10 @@
       {
         "command": "pgm.run",
         "title": "Run PGM preview"
+      },
+      {
+        "command": "pgm.logs",
+        "title": "Show PGM logs"
       }
     ],
     "debuggers": [

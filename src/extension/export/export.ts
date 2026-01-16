@@ -77,12 +77,11 @@ export class Exporter {
         await fs.promises.writeFile(destination, zip.toBuffer());
       }
       catch (err) {
-        vscode.window.showErrorMessage(`Could not export project.`);
-        Logger.error(`Could not export project: ${err}`);
+        vscode.window.showErrorMessage(`PGM: Could not export project: ${err}`);
         resolve(false);
         return;
       }
-      vscode.window.showInformationMessage(`Project correctly exported.`);
+      vscode.window.showInformationMessage(`PGM: Project correctly exported.`);
       resolve(true);
     });
   }

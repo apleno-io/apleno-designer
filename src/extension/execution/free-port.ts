@@ -1,5 +1,5 @@
 import net from 'net';
-import { Logger } from '../utils/logger';
+import { Services } from '../services';
 
 export function GetFreePort(): Promise<number | null> {
   return new Promise(resolve => {
@@ -10,7 +10,7 @@ export function GetFreePort(): Promise<number | null> {
       server.close();
       if (!calledFn) {
         calledFn = true;
-        Logger.error(`Could not find a port for PGM runtime: ${err}`);
+        Services.Logger.error(`Could not find a port for PGM runtime: ${err}`);
         resolve(null);
       }
     });
