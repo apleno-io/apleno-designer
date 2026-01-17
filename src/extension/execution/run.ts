@@ -33,7 +33,7 @@ async function startRunner(folder: string) {
   if (version === null) {
     // no runtime, offer to download in modal
     Services.Logger.info('No runtime installed.');
-    const wantInstall = await vscode.window.showInformationMessage('To execute a PGM app, you need the PGM runtime installed on your computer. Do you want to install it now?', { modal: true }, ...['Download', 'Cancel']);
+    const wantInstall = await vscode.window.showInformationMessage('To execute a PGM app, you need the PGM runtime installed on your computer. Do you want to install it now?', { modal: true }, ...['Download']);
     if (wantInstall === 'Cancel') {
       return;
     }
@@ -49,7 +49,7 @@ async function startRunner(folder: string) {
     const update = await RuntimeManager.checkUpdateAvailable();
     if (update) {
       // non-modal: offer to update in notification
-      const wantInstall = await vscode.window.showInformationMessage(`A PGM runtime update is available (installed: ${version}, available: ${update}). Do you want to download and install the update?`, ...['Download', 'Cancel']);
+      const wantInstall = await vscode.window.showInformationMessage(`A PGM runtime update is available (installed: ${version}, available: ${update}). Do you want to download and install the update?`, ...['Download']);
       if (wantInstall === 'Download') {
         // download
         const success = await RuntimeManager.downloadRuntime(); // manage error messages in RuntimeManager

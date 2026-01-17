@@ -118,7 +118,7 @@ export class RPGMApp {
 
     const pgmRunnerConfig: any = {
       /** The path to the pgm file */
-      appPath,
+      appPath: null,
       /** Auth token */
       authToken: '0000',
       /** A comma separated of stuff to debug: 'app', 'rcom', 'packets', 'ws', 'sequence', 'all' */
@@ -127,6 +127,8 @@ export class RPGMApp {
       folderApp: projectFolder,
       /** Folder where output files and temps files of the instance will go, a sub-folder will be created */
       folderOutput: projectFolder,
+      /** If true, no sub folder will be created in the output folder */
+      folderOutputRoot: true,
       /** On server, will prepend all folder/file widget with this value */
       folderUser: '',
       /** Port of the Web Socket server */
