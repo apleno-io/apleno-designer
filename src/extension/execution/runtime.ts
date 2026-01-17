@@ -80,38 +80,48 @@ export const RuntimeManager = new class {
         return;
       }
 
-      // Download & unzip
-      try {
-        const file = path.join(this.getRuntimeFolder(), 'latest.zip');
-        Services.Logger.info(`Downloading latest runtime in ${this.getRuntimeFolder()}...`);
-        let platform = 'unix';
-        if (process.platform === 'win32') {
-          platform = 'win';
+      vscode.window.withProgress({
+        title: "Installing PGM Runtime...",
+        location: vscode.ProgressLocation.Notification,
+      }, async (progress) => {
+        // Download & unzip
+        try {
+          const file = path.join(this.getRuntimeFolder(), 'latest.zip');
+          Services.Logger.info(`Downloading latest runtime in ${this.getRuntimeFolder()}...`);
+          let platform = 'unix';
+          if (process.platform === 'win32') {
+            platform = 'win';
+          }
+          else if (process.platform === 'darwin') {
+            platform = 'mac';
+          }
+          const runtimeURL = `https://files.pgm-solutions.com/runtime/runtime-${platform}-latest.zip`;
+          const res = await fetch(runtimeURL);
+          if (res.ok) {
+            Services.Logger.info('Extracting runtime...');
+            await fs.promises.writeFile(file, Buffer.from(await res.arrayBuffer()));
+            const zip = new AdmZip(file);
+            zip.extractAllToAsync(this.getRuntimeFolder(), true, false, async (err: Error | undefined) => {
+              await fs.promises.rm(file, { force: true });
+              Services.Logger.info('Runtime correctly installed...');
+              resolve(true);
+              return;
+            });
+          }
+          else {
+            Services.Logger.error(`PGM: Could not download or install runtime ${runtimeURL}. Status: ${res.status}`, true);
+            resolve(false);
+            return;
+          }
         }
-        else if (process.platform === 'darwin') {
-          platform = 'mac';
-        }
-        const runtimeURL = `https://files.pgm-solutions.com/runtime/runtime-${platform}-latest.zip`;
-        const res = await fetch(runtimeURL);
-        if (res.ok) {
-          Services.Logger.info('Extracting runtime...');
-          await fs.promises.writeFile(file, Buffer.from(await res.arrayBuffer()));
-          const zip = new AdmZip(file);
-          zip.extractAllToAsync(this.getRuntimeFolder(), true, false, async (err: Error | undefined) => {
-            await fs.promises.rm(file, { force: true });
-            Services.Logger.info('Runtime correctly installed...');
-            resolve(true);
-          });
-        }
-        else {
-          Services.Logger.error(`PGM: Could not download or install runtime ${runtimeURL}. Status: ${res.status}`, true);
+        catch (err) {
+          Services.Logger.error(`PGM: Could not download or install runtime: ${err}`, true);
           resolve(false);
+          return;
         }
+        return;
       }
-      catch (err) {
-        Services.Logger.error(`PGM: Could not download or install runtime: ${err}`, true);
-        resolve(false);
-      }
+      );
     });
   }
 };
