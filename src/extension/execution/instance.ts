@@ -121,6 +121,8 @@ export class RPGMApp {
       folderOutputRoot: true,
       /** On server, will prepend all folder/file widget with this value */
       folderUser: '',
+      http: true,
+      httpResourcesFolder: path.join(RuntimeManager.getRuntimeFolder(), 'client'),
       /** Port of the Web Socket server */
       port: this.currentPort,
       /** Path to python binary & env */

@@ -49,7 +49,7 @@ async function startRunner(folder: string) {
     const update = await RuntimeManager.checkUpdateAvailable();
     if (update) {
       // non-modal: offer to update in notification
-      const wantInstall = await vscode.window.showInformationMessage(`A PGM runtime update is available (installed: ${version}, available: ${update}). Do you want to download and install the update?`, ...['Download']);
+      const wantInstall = await vscode.window.showInformationMessage(`A PGM runtime update is available (installed: ${version}, available: ${update}). Do you want to download and install the update?`, { modal: true }, ...['Download']);
       if (wantInstall === 'Download') {
         // download
         const success = await RuntimeManager.downloadRuntime(); // manage error messages in RuntimeManager
