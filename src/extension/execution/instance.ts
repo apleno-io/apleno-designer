@@ -69,23 +69,23 @@ export class RPGMApp {
 
     // Log
     const logger = Services.Logger;
-    logger.info('Launching the app');
+    logger.info('[instance] Launching the app');
 
     // Runtime
     if ((await RuntimeManager.getRuntimeVersion()) === null) {
-      logger.error('No runtime found.');
+      logger.error('[instance] No runtime found.');
     }
 
     // Get project folder
     const workspace = vscode.workspace.workspaceFolders?.[0];
     if (workspace === undefined) {
-      logger.error('Could not find the workspace folder.');
+      logger.error('[instance] Could not find the workspace folder.');
       return null;
     }
     const projectFolder = workspace.uri.fsPath;
 
     // Port
-    logger.info('Getting instance port');
+    logger.info('[instance] Getting instance port...');
     const port = await GetFreePort();
     if (port === null) {
       return null;
@@ -93,18 +93,18 @@ export class RPGMApp {
     this.currentPort = port;
 
     // Get R / Python / Conda
-    logger.info('Getting paths');
+    logger.info('[instance] Getting paths...');
     let pathR = await ConfigManager.getExecutablePath('r');
     if (pathR && process.platform === 'win32' && pathR.endsWith('\\bin\\R.exe')) {
       pathR = pathR.substring(0, pathR.length - 10);
     }
-    logger.info(`Using R path: ${pathR}`);
+    logger.info(`[instance] Using R path: ${pathR}`);
 
     const pathPython = await ConfigManager.getExecutablePath('python');
-    logger.info(`Using python path: ${pathPython}`);
+    logger.info(`[instance] Using python path: ${pathPython}`);
     const pathConda = await ConfigManager.getExecutablePath('conda');
     const pythonPrefix = pathPython ? await this.getPythonEnvPrefix(pathPython, pathConda) : null;
-    logger.info(`Using python prefix: ${pythonPrefix ? pythonPrefix.prefix : 'null'}`);
+    logger.info(`[instance] Using python prefix: ${pythonPrefix ? pythonPrefix.prefix : 'null'}`);
 
     const pgmRunnerConfig: any = {
       /** The path to the pgm file */
@@ -127,9 +127,9 @@ export class RPGMApp {
       pythonPath: pathPython,
       pythonPrefix: pythonPrefix ? pythonPrefix.prefix : null,
       /** Path to the pycom script */
-      pythonComPath: path.join(RuntimeManager.getRuntimeFolder(), 'resources/pycom/pycom.py'),
+      pythonComPath: path.join(RuntimeManager.getRuntimeFolder(), 'server/resources/pycom/pycom.py'),
       /** Path to the RCom binary */
-      rComPath: path.join(RuntimeManager.getRuntimeFolder(), 'resources'),
+      rComPath: path.join(RuntimeManager.getRuntimeFolder(), 'server/resources'),
       /** Path to R */
       rPath: pathR,
       /** '32' or '64' bits */
@@ -159,30 +159,34 @@ export class RPGMApp {
       /** Name of the user executing the instance */
       userName: '',
       /** Path to the XLSX tool binary */
-      xlsxPath: path.join(RuntimeManager.getRuntimeFolder(), 'resources/xlsx/rpgm-xlsx.exe')
+      xlsxPath: path.join(RuntimeManager.getRuntimeFolder(), 'server/resources/xlsx/rpgm-xlsx.exe')
     };
 
     // Write config file
-    logger.info('Creating instance config file');
+    logger.info('[instance] Creating instance config file...');
     const configFilepath: string = path.join(os.tmpdir(), 'rpgmboot.json');
     await fs.promises.writeFile(configFilepath, JSON.stringify(pgmRunnerConfig), 'utf8');
 
-    logger.info('Starting instance');
+    logger.info(`[instance] Starting on port ${this.currentPort}...`);
     this._isRunning = true;
-    this._currentProcess = spawn(path.join(RuntimeManager.getRuntimeFolder(), 'runner-win-x64.exe'), [configFilepath]);
+    this._currentProcess = spawn(path.join(RuntimeManager.getRuntimeFolder(), 'server/runner-win-x64.exe'), [configFilepath]);
     this._currentProcess.stdout.on('data', (data: any) => {
       logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
     });
     this._currentProcess.stderr.on('data', (data: any) => {
       logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
     });
-    this._currentProcess.on('close', () => {
+    this._currentProcess.on('error', async (err: Error) => {
       this._isRunning = false;
-      logger.info('event: close');
+      logger.error(`[instance] ${err}`);
+    });
+    this._currentProcess.on('close', (code: number) => {
+      this._isRunning = false;
+      logger.info(`[instance] Instance closed (${code})`);
     });
     this._currentProcess.on('exit', async () => {
       this._isRunning = false;
-      logger.info('event: exit');
+      logger.info('[instance] Instance exited');
     });
 
     return this.currentPort;

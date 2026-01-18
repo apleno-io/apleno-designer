@@ -8,7 +8,7 @@ import { Conda } from './finder-conda';
 export const ConfigManager = new class {
   private getConfigPath(): string | null {
     const ws = vscode.workspace.workspaceFolders;
-    return ws && ws.length > 0 ? path.join(ws[0].uri.toString(), '.vscode', 'pgm.json') : null;
+    return ws && ws.length > 0 ? path.join(ws[0].uri.fsPath, '.vscode', 'pgm.json') : null;
   }
 
   /**
