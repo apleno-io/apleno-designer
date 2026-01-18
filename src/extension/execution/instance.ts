@@ -63,7 +63,7 @@ export class RPGMApp {
   /**
    * Please note that here, the app directory and the output directory are both the project folder.
    */
-  public async load(appPath: string): Promise<number | null> {
+  public async load(): Promise<number | null> {
     // Dispose previous running app
     this.dispose();
 
@@ -73,17 +73,7 @@ export class RPGMApp {
 
     // Runtime
     if ((await RuntimeManager.getRuntimeVersion()) === null) {
-      logger.info('Runtime not installed, downloading');
-      await RuntimeManager.downloadRuntime();
-      if ((await RuntimeManager.getRuntimeVersion()) === null) {
-        logger.error('Could not download or install runtime');
-        return null;
-      }
-    }
-
-    // Check if update available
-    if (await RuntimeManager.checkUpdateAvailable()) {
-      // TODO: notification with choices and stuff
+      logger.error('No runtime found.');
     }
 
     // Get project folder

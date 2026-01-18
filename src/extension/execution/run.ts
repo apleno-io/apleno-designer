@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { spawn } from 'child_process';
 import { RuntimeManager } from './runtime';
 import { Services } from '../services';
 import { ExecutionStatusItemManager } from './ui-status-item';
+import { ConfigManager } from './config';
 
 async function startRunner(folder: string) {
   // Default launch.json
@@ -60,26 +60,8 @@ async function startRunner(folder: string) {
     }
   }
 
-  // TODO: Launch instance
-
-
-  // Chemin de l’exécutable
-  /*const exePath = 'C:/MonExecutable/custom.exe';
-  const args: string[] = []; // à personnaliser si nécessaire
-
-  // Lance le processus
-  const proc = spawn(exePath, args, { cwd: folder.uri.fsPath });
-
-  proc.stdout.on('data', data => console.log(`[stdout] ${data}`));
-  proc.stderr.on('data', data => console.error(`[stderr] ${data}`));
-
-  proc.on('close', code => {
-    vscode.window.showInformationMessage(`Exécutable terminé avec code ${code}`);
-  });
-
-  proc.on('error', err => {
-    vscode.window.showErrorMessage(`Erreur lors du lancement : ${err.message}`);
-  });*/
+  // Launch instance
+  Services.App.load();
 }
 
 export class PGMRunner {
