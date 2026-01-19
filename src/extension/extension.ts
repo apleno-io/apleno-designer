@@ -19,6 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(PGMInterfaceFileEditorProvider.register(context));
 
 	// Run / Debug
+	Services.LanguageChooser.initialize(context);
 	context.subscriptions.push(Exporter.registerCommand(context));
 	ExecutionStatusItemManager.initialize(context);
 	context.subscriptions.push(PGMRunner.registerCommand(context));

@@ -47,6 +47,18 @@
         "title": "Export PGM app"
       },
       {
+        "command": "pgm.language.choose.r",
+        "title": "PGM: Choose R path for preview"
+      },
+      {
+        "command": "pgm.language.choose.python",
+        "title": "PGM: Choose Python path for preview"
+      },
+      {
+        "command": "pgm.language.choose.conda",
+        "title": "PGM: Choose Conda path for preview"
+      },
+      {
         "command": "pgm.ppro.new",
         "title": "Create new PGM Project file"
       },
