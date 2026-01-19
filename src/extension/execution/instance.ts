@@ -4,7 +4,7 @@ import os from 'os';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { GetFreePort } from './free-port';
 import { ConfigManager } from './config';
-import vscode from 'vscode';
+import vscode, { Uri } from 'vscode';
 import { RuntimeManager } from './runtime';
 import { Services } from '../services';
 
@@ -173,6 +173,9 @@ export class RPGMApp {
     this._isRunning = true;
     this._currentProcess = spawn(path.join(RuntimeManager.getRuntimeFolder(), 'server/runner-win-x64.exe'), [configFilepath]);
     this._currentProcess.stdout.on('data', (data: any) => {
+      if (`${data}`.includes('first sequence')) {
+        vscode.env.openExternal(Uri.parse(`http://localhost:${this.currentPort}`));
+      }
       logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
     });
     this._currentProcess.stderr.on('data', (data: any) => {
@@ -196,6 +199,7 @@ export class RPGMApp {
 
   public async dispose(): Promise<void> {
     if (this._currentProcess) {
+      Services.Logger.info('[instance] Killing previous instance...');
       this._currentProcess.kill();
       this._currentProcess = null;
     }
