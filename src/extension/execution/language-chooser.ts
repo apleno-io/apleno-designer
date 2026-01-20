@@ -39,6 +39,12 @@ export class LanguageChooser {
       installPaths = (await Conda.getAllCondaPaths());
     }
 
+    // Stop if none or only one
+    if (installPaths.length === 0) {
+      vscode.window.showInformationMessage(`No intallation found for ${this.languageFullName(lang)}.`);
+      return;
+    }
+
     // Choose
     const res = await vscode.window.showQuickPick(installPaths, {
       title: 'Choose ' + lang.toUpperCase() + ' path',
@@ -52,5 +58,17 @@ export class LanguageChooser {
     const config = await ConfigManager.getConfig();
     config[lang].path = res;
     await ConfigManager.saveConfig(config);
+  }
+
+  private languageFullName(lang: 'r' | 'python' | 'conda') {
+    if (lang === 'r') {
+      return 'R';
+    }
+    else if (lang === 'python') {
+      return 'Python';
+    }
+    else if (lang === 'conda') {
+      return 'Conda';
+    }
   }
 }
