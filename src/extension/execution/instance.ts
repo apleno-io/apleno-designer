@@ -110,7 +110,7 @@ export class RPGMApp {
       /** The path to the pgm file */
       appPath: null,
       /** Auth token */
-      authToken: '',
+      authToken: '0000',
       /** A comma separated of stuff to debug: 'app', 'rcom', 'packets', 'ws', 'sequence', 'all' */
       debugMode: '',
       /** Folder where the app is unzipped */
