@@ -44,7 +44,7 @@
     "commands": [
       {
         "command": "pgm.export",
-        "title": "Export PGM app"
+        "title": "PGM: Export app"
       },
       {
         "command": "pgm.language.choose.r",
@@ -60,23 +60,23 @@
       },
       {
         "command": "pgm.ppro.new",
-        "title": "Create new PGM Project file"
+        "title": "PGM: Create new Project file"
       },
       {
         "command": "pgm.pseq.new",
-        "title": "Create new PGM Sequence file"
+        "title": "PGM: Create new Sequence file"
       },
       {
         "command": "pgm.pgui.new",
-        "title": "Create new PGM Interface file"
+        "title": "PGM: Create new Interface file"
       },
       {
         "command": "pgm.run",
-        "title": "Run PGM preview"
+        "title": "PGM: Run preview"
       },
       {
         "command": "pgm.logs",
-        "title": "Show PGM logs"
+        "title": "PGM: Show logs"
       }
     ],
     "debuggers": [
