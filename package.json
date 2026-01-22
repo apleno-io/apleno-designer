@@ -47,6 +47,10 @@
         "title": "PGM: Export app"
       },
       {
+        "command": "pgm.initialize",
+        "title": "PGM: Create new project"
+      },
+      {
         "command": "pgm.language.choose.r",
         "title": "PGM: Choose R path for preview"
       },

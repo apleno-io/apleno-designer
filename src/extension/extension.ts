@@ -9,6 +9,9 @@ import { ExecutionStatusItemManager } from './execution/ui-status-item';
 import { Services } from './services';
 
 export function activate(context: vscode.ExtensionContext) {
+	// Project creator
+	Services.ProjectCreator.initialize(context);
+
 	// Utils
 	Services.Logger.initialize(context);
 	Storage.initialize(context);
