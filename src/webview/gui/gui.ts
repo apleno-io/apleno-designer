@@ -1,4 +1,4 @@
-import { fixIds, getMaxId, GUIInterface, GUIWidget, isContainerWidget, normalizeWidget, WidgetProperties } from '../../common/gui';
+import { fixIds, getMaxId, GUIInterface, GUIWidget, isContainerWidget, normalizeGUI, normalizeWidget, WidgetProperties } from '../../common/gui';
 import { WidgetPropertyEditor } from './gui-propeditor';
 import { WidgetFactory } from './gui-widget-factory';
 import './gui.css';
@@ -82,7 +82,7 @@ const UIEditor = new class {
   }
 
   public setState(state: GUIInterface): void {
-    this.state = state;
+    this.state = normalizeGUI(state);
     this.setUISettings();
     fixIds(this.state.widgets);
     this.redrawAllWidgets();

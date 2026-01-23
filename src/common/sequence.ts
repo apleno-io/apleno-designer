@@ -32,6 +32,22 @@ function findInfoByID(infos: any, customId: string): any {
 }
 
 export class SequenceFileUtils {
+  public static getDefaultFile(): SequenceFile {
+    return {
+      _version: 4,
+      cameraX: 0,
+      cameraY: 0,
+      cameraZoom: 1,
+      steps: [{
+        id: 0,
+        type: 'start',
+        x: 0,
+        y: 0,
+        parameters: {}
+      }]
+    };
+  }
+
   public static sanitize(manifest: any): SequenceFile | null {
     // Is an object
     if (typeof manifest !== 'object' || manifest === null) {
@@ -232,6 +248,17 @@ export class SequenceFileUtils {
 
     // Second pass to remove null values
     info.steps = info.steps.filter((s: any) => typeof s === 'object' && s !== null);
+
+    // if no step: default start step
+    if (info.steps.length === 0) {
+      info.steps.push({
+        id: 0,
+        type: 'start',
+        x: 0,
+        y: 0,
+        parameters: {}
+      });
+    }
 
     return info as SequenceFile;
   }

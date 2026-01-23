@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { SequenceFile, SequenceFileUtils } from './sequence-utils';
+import { SequenceFile, SequenceFileUtils } from '../../common/sequence';
 
 /**
  * Define the type of edits used in pseq files.
@@ -26,13 +26,7 @@ class PGMSequenceDocument extends Disposable implements vscode.CustomDocument {
   }
 
   private static async readFile(uri: vscode.Uri): Promise<SequenceFile> {
-    const defaultFile = {
-      _version: 4,
-      cameraX: 0,
-      cameraY: 0,
-      cameraZoom: 1,
-      steps: []
-    };
+    const defaultFile = SequenceFileUtils.getDefaultFile();
 
     if (uri.scheme === 'untitled') {
       return defaultFile;

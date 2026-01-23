@@ -224,9 +224,7 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
         return;
       }
 
-      const uri = vscode.Uri.joinPath(workspaceFolders[0].uri, `new-${PGMInterfaceFileEditorProvider.newFileId++}.pgui`)
-        .with({ scheme: 'untitled' });
-
+      const uri = vscode.Uri.joinPath(workspaceFolders[0].uri, `new-${PGMInterfaceFileEditorProvider.newFileId++}.pgui`).with({ scheme: 'untitled' });
       vscode.commands.executeCommand('vscode.openWith', uri, PGMInterfaceFileEditorProvider.viewType);
     });
 
