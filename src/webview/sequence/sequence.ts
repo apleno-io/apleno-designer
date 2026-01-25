@@ -252,6 +252,13 @@ class SequenceEditor extends EventTarget {
       this.canvas.addEventListener('drop', this.onDrop.bind(this));
       this.canvas.addEventListener('dragover', this.onDragOver.bind(this));
 
+      // DnD "Add" buttons
+      document.querySelectorAll('[data-tab-content="view"] button').forEach((button) => {
+        (button as HTMLElement).addEventListener('dragstart', (e: DragEvent) => {
+          e.dataTransfer?.setData('text/plain', `create:${(e.target as HTMLElement).dataset.step}`);
+        });
+      });
+
       // Get colors
       this.colorSteps = {
         //start: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
@@ -841,19 +848,53 @@ class SequenceEditor extends EventTarget {
     }
     this.dropWorldCoordinate = this.screenToWorld({ x: e.offsetX, y: e.offsetY });
     const filepath = e.dataTransfer.getData('text/plain');
-    this.dispatchEvent(new CustomEvent('GetFileRelative', { detail: filepath }));
-    /*const allDropVariations = JSON.stringify({
-      'dataTransfer.types': Array.from(ev.dataTransfer.types),
-      'dataTransfer.getData(text/uri-list)': ev.dataTransfer.getData('text/uri-list'),
-      'dataTransfer.getData(text/plain)': ev.dataTransfer.getData('text/plain'),
-      'dataTransfer.files.0.name': ev.dataTransfer.files.item(0)?.name,
-    }, null, 2);
-    console.log(allDropVariations);*/
+    if (filepath.startsWith('create:')) {
+      // Create new widget
+      this.dropCreate(filepath.substring(7));
+    }
+    else {
+      // Dropping file
+      this.dispatchEvent(new CustomEvent('GetFileRelative', { detail: filepath }));
+      /*const allDropVariations = JSON.stringify({
+        'dataTransfer.types': Array.from(ev.dataTransfer.types),
+        'dataTransfer.getData(text/uri-list)': ev.dataTransfer.getData('text/uri-list'),
+        'dataTransfer.getData(text/plain)': ev.dataTransfer.getData('text/plain'),
+        'dataTransfer.files.0.name': ev.dataTransfer.files.item(0)?.name,
+      }, null, 2);
+      console.log(allDropVariations);*/
+    }
     e.preventDefault();
   }
 
   private onDragOver(e: DragEvent) {
     e.preventDefault();
+  }
+
+  /**
+   * Last phase when drag and dropping a file into editor. Will create the step.
+   */
+  public dropCreate(type: string) {
+    // Sanitize input
+    if (typeof type !== 'string' || !['script', 'gui', 'condition', 'sequence', 'end'].includes(type)) {
+      return;
+    }
+
+    // Find highest id
+    let highestId = 0;
+    for (let i = 0; i < this.steps.length; ++i) {
+      if (highestId < this.steps[i].id) {
+        highestId = this.steps[i].id;
+      }
+    }
+
+    // Add step
+    const newStep = new CanvasStep(++highestId, this.dropWorldCoordinate || { x: 0, y: 0 }, type as StepType, '', '', {});
+    this.steps.push(newStep);
+    this.selectedStep = newStep;
+    SequenceDetails.showStep(this.selectedStep);
+    this.setTab('props');
+    this.dataChanged();
+    this.draw();
   }
 
   /**
