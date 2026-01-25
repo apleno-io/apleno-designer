@@ -236,6 +236,9 @@ class SequenceEditor extends EventTarget {
           this.draw();
         }
       });
+      SequenceDetails.addEventListener('delete', () => {
+        this.deleteCurrentStep();
+      });
 
       // Events
       window.addEventListener('keydown', this.onKeyDown.bind(this));
