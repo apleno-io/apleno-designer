@@ -222,6 +222,7 @@ class SequenceEditor extends EventTarget {
         if (step) {
           this.selectedStep = step;
           SequenceDetails.showStep(step);
+          this.setTab('props');
           this.setCameraZoom(5);
           this.setCameraPosition(step.rectangle.center);
           this.draw();
@@ -837,6 +838,7 @@ class SequenceEditor extends EventTarget {
       this.steps.push(newStep);
       this.selectedStep = newStep;
       SequenceDetails.showStep(this.selectedStep);
+      this.setTab('props');
       this.dataChanged();
       this.draw();
     }
@@ -939,6 +941,7 @@ class SequenceEditor extends EventTarget {
     this.steps.push(newStep);
     this.selectedStep = newStep;
     SequenceDetails.showStep(this.selectedStep);
+    this.setTab('props');
     this.dataChanged();
     this.draw();
   }
