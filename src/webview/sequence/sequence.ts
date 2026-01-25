@@ -918,7 +918,7 @@ class SequenceEditor extends EventTarget {
    */
   private deleteCurrentStep() {
     // Check
-    if (this.selectedStep === null) {
+    if (this.selectedStep === null || this.selectedStep.type === 'start') {
       return;
     }
 

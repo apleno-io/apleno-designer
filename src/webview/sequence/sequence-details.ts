@@ -48,7 +48,7 @@ const SequenceDetails = new class extends EventTarget {
     (document.getElementById('step-editor-condition') as HTMLElement).style.display = step.type === 'condition' ? 'block' : 'none';
     (document.getElementById('step-editor-empty') as HTMLElement).style.display = 'none';
     (document.getElementById('step-editor-nosetting') as HTMLElement).style.display = ['start', 'end'].includes(step.type) ? 'block' : 'none';
-    (document.getElementById('step-actions') as HTMLElement).style.display = 'block';
+    (document.getElementById('step-actions') as HTMLElement).style.display = step.type !== 'start' ? 'block' : 'none';
   }
 
   /**
