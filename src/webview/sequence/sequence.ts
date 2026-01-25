@@ -20,6 +20,8 @@ import SequenceDetails from "./sequence-details";
 import SequenceErrorBox from "./sequence-errorbox";
 import './sequence.css';
 
+import templateSequence from './sequence.html';
+
 type StepType = 'start' | 'gui' | 'script' | 'condition' | 'sequence' | 'end';
 type StepHandle = 'top' | 'right' | 'bottom';
 
@@ -167,9 +169,9 @@ class SequenceEditor extends EventTarget {
   private steps: CanvasStep[] = [];
 
   // DOM pointers
-  private parent: HTMLElement;
-  private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
+  private parent: HTMLElement | null = null;
+  private canvas: HTMLCanvasElement | null = null;
+  private ctx: CanvasRenderingContext2D | null = null;
 
   // Camera
   private cameraZoom: number = 5;
@@ -196,60 +198,76 @@ class SequenceEditor extends EventTarget {
 
   public constructor() {
     super();
+    document.body.insertAdjacentHTML('afterbegin', templateSequence);
+    setTimeout(() => {
+      // Pointers
+      this.parent = document.getElementById("sequence") as HTMLElement;
+      this.canvas = document.getElementById("sequence-canvas") as HTMLCanvasElement;
+      this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 
-    // Pointers
-    this.parent = document.getElementById("pseq-editor") as HTMLElement;
-    this.canvas = document.getElementById("pseq-canvas") as HTMLCanvasElement;
-    this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+      // Tabs
+      this.setTab('view');
+      document.getElementById('sequence-sidebar-tabs')?.addEventListener('click', (event: MouseEvent) => {
+        const button = (event.target as HTMLElement).closest('[data-tab]');
+        if (button === null) {
+          return;
+        }
+        this.setTab((button as HTMLElement).dataset.tab as any);
+      });
 
-    // Events
-    window.addEventListener('keydown', this.onKeyDown.bind(this));
-    document.getElementById('pseq-topbar')?.addEventListener('click', this.onClickControls.bind(this));
-    this.canvas.addEventListener('wheel', this.onMouseWheel.bind(this));
-    this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-    this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
-    this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this));
-    window.addEventListener('resize', this.resize.bind(this));
-    this.canvas.addEventListener('drop', this.onDrop.bind(this));
-    this.canvas.addEventListener('dragover', this.onDragOver.bind(this));
-    SequenceErrorBox.addEventListener('showStep', (e: CustomEventInit<number>) => {
-      const step = this.steps.find(s => s.id === e.detail);
-      if (step) {
-        this.selectedStep = step;
-        SequenceDetails.showStep(step);
-        this.setCameraZoom(5);
-        this.setCameraPosition(step.rectangle.center);
-        this.draw();
-      }
-    });
-    SequenceDetails.addEventListener('change', (e: CustomEventInit<CanvasStep>) => {
-      const step = this.steps.findIndex(s => s.id === e.detail?.id);
-      if (e.detail && step >= 0) {
-        this.steps[step] = e.detail;
-        this.dataChanged();
-        this.draw();
-      }
-    });
+      // Sub
+      SequenceErrorBox.inject(document.querySelector('[data-tab-content="checks"]') as HTMLElement);
+      SequenceErrorBox.addEventListener('showStep', (e: CustomEventInit<number>) => {
+        const step = this.steps.find(s => s.id === e.detail);
+        if (step) {
+          this.selectedStep = step;
+          SequenceDetails.showStep(step);
+          this.setCameraZoom(5);
+          this.setCameraPosition(step.rectangle.center);
+          this.draw();
+        }
+      });
+      SequenceDetails.inject(document.querySelector('[data-tab-content="props"]') as HTMLElement);
+      SequenceDetails.addEventListener('change', (e: CustomEventInit<CanvasStep>) => {
+        const step = this.steps.findIndex(s => s.id === e.detail?.id);
+        if (e.detail && step >= 0) {
+          this.steps[step] = e.detail;
+          this.dataChanged();
+          this.draw();
+        }
+      });
 
-    // Get colors
-    this.colorSteps = {
-      //start: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
-      //script: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-green'),
-      //gui: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-blue'),
-      //condition: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-yellow'),
-      //sequence: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-orange'),
-      //end: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
-      start: '#942d21ff',
-      script: '#1f6d2dff',
-      gui: '#20577cff',
-      condition: '#661c66ff',
-      sequence: '#9c3707ff',
-      end: '#942d21ff'
-    };
+      // Events
+      window.addEventListener('keydown', this.onKeyDown.bind(this));
+      window.addEventListener('resize', this.resize.bind(this));
+      document.getElementById('sequence-sidebar')?.addEventListener('click', this.onClickControls.bind(this));
+      this.canvas.addEventListener('wheel', this.onMouseWheel.bind(this));
+      this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
+      this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
+      this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+      this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this));
+      this.canvas.addEventListener('drop', this.onDrop.bind(this));
+      this.canvas.addEventListener('dragover', this.onDragOver.bind(this));
 
-    // Draw
-    this.resize();
+      // Get colors
+      this.colorSteps = {
+        //start: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
+        //script: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-green'),
+        //gui: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-blue'),
+        //condition: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-yellow'),
+        //sequence: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-orange'),
+        //end: window.getComputedStyle(document.body).getPropertyValue('--vscode-charts-red'),
+        start: '#942d21ff',
+        script: '#1f6d2dff',
+        gui: '#20577cff',
+        condition: '#661c66ff',
+        sequence: '#9c3707ff',
+        end: '#942d21ff'
+      };
+
+      // Draw
+      this.resize();
+    }, 1);
   }
 
   public setState(state: any) {
@@ -299,11 +317,32 @@ class SequenceEditor extends EventTarget {
     };
   }
 
+  private setTab(tab: 'view' | 'props' | 'checks'): void {
+    document.querySelectorAll('#sequence-sidebar-tabs [data-tab]').forEach((el: Element) => {
+      if (!(el instanceof HTMLElement)) {
+        return;
+      }
+
+      if (el.dataset.tab === tab) {
+        el.classList.add('selected');
+        (document.querySelector(`[data-tab-content="${el.dataset.tab}"]`) as HTMLElement).style.display = 'block';
+      }
+      else {
+        el.classList.remove('selected');
+        (document.querySelector(`[data-tab-content="${el.dataset.tab}"]`) as HTMLElement).style.display = 'none';
+      }
+    });
+  }
+
   /**
    * Redraw the canvas when view was resized.
    */
   private resize(): void {
-    this.canvas.width = this.parent.clientWidth;
+    if (this.canvas === null || this.parent === null) {
+      return;
+    }
+
+    this.canvas.width = this.parent.clientWidth - 300;
     this.canvas.height = this.parent.clientHeight;
     this.draw();
   }
@@ -312,6 +351,9 @@ class SequenceEditor extends EventTarget {
    * Transform x/y from world to screen position.
    */
   private worldToScreen(point: Point): Point {
+    if (this.canvas === null) {
+      return { x: 0, y: 0 };
+    }
     return {
       x: (point.x - (((-1 * (this.canvas.width * 0.5)) / this.cameraZoomFactor) + this.cameraX)) * this.cameraZoomFactor,
       y: (point.y - (((-1 * (this.canvas.height * 0.5)) / this.cameraZoomFactor) + this.cameraY)) * this.cameraZoomFactor
@@ -322,6 +364,9 @@ class SequenceEditor extends EventTarget {
    * Transform x/y from screen to world position.
    */
   private screenToWorld(point: Point): Point {
+    if (this.canvas === null) {
+      return { x: 0, y: 0 };
+    }
     return {
       x: (((-1 * (this.canvas.width * 0.5)) / this.cameraZoomFactor) + this.cameraX) + (point.x / this.cameraZoomFactor),
       y: (((-1 * (this.canvas.height * 0.5)) / this.cameraZoomFactor) + this.cameraY) + (point.y / this.cameraZoomFactor)
@@ -358,6 +403,10 @@ class SequenceEditor extends EventTarget {
    * Completly draw the sequence.
    */
   private draw(): void {
+    if (this.ctx === null || this.canvas === null) {
+      return;
+    }
+
     // Debug
     /*
     const center = this.screenToWorld(this.canvas.width * 0.5, this.canvas.height * 0.5);
@@ -392,6 +441,10 @@ class SequenceEditor extends EventTarget {
    * Draw the grid of the sequence
    */
   private drawGrid(color: string, width: number, spacing: number): void {
+    if (this.canvas === null || this.ctx === null) {
+      return;
+    }
+
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = width;
     this.ctx.beginPath();
@@ -428,6 +481,10 @@ class SequenceEditor extends EventTarget {
    * Draw a single step.
    */
   private drawStep(step: CanvasStep): void {
+    if (this.ctx === null) {
+      return;
+    }
+
     const coordCenter = this.worldToScreen(step.rectangle.center);
     const coordStart = this.worldToScreen(step.rectangle.p1);
     const coordEnd = this.worldToScreen(step.rectangle.p2);
@@ -515,6 +572,10 @@ class SequenceEditor extends EventTarget {
    * Draw step handles for connections.
    */
   private drawHandle(screenPoint: Point, type: 'start' | 'end'): void {
+    if (this.ctx === null) {
+      return;
+    }
+
     this.ctx.strokeStyle = '#1abc9c';
     this.ctx.lineWidth = 3;
     this.ctx.fillStyle = type === 'start' ? this.fontColor : '#1abc9c';
@@ -553,6 +614,10 @@ class SequenceEditor extends EventTarget {
    * Draw a single connection.
    */
   private drawConnection(coordStartScreen: Point, coordEndScreen: Point, mode: 'selection' | 'state' = 'state'): void {
+    if (this.ctx === null) {
+      return;
+    }
+
     this.ctx.strokeStyle = mode === 'state' ? this.fontColor : '#1abc9c';
     this.ctx.lineWidth = mode === 'state' ? 3 : 4;
     this.ctx.beginPath();
@@ -636,6 +701,7 @@ class SequenceEditor extends EventTarget {
       this.mouseStartX = e.offsetX;
       this.mouseStartY = e.offsetY;
       SequenceDetails.showStep(element.step);
+      this.setTab('props');
       this.draw();
     }
     else if (element && element.type === 'handle' && element.handle !== 'top') {

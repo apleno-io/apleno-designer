@@ -388,60 +388,6 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
         <title>P</title>
       </head>
       <body>
-        <div id="pseq-editor">
-          <canvas id="pseq-canvas"></canvas>
-        </div>
-        <div id="pseq-topbar">
-          <div>Utils:</div>
-          <button data-role="center">Center on start</button>
-          <div>Add:</div>
-          <button data-role="add" data-step="script">Script</button>
-          <button data-role="add" data-step="gui">UI</button>
-          <button data-role="add" data-step="condition">Cond.</button>
-          <button data-role="add" data-step="sequence">Seq.</button>
-          <button data-role="add" data-step="end">End</button>
-        </div>
-        <div id="pseq-leftbar">
-          <div id="pseq-errors" class="pseq-panel"></div>
-          <div id="step-editor" class="pseq-panel">
-            <div id="step-editor-empty">Select a step to edit.</div>
-            <div id="step-editor-nosetting">No setting for this step.</div>
-            <div id="step-editor-id" style="display: none">
-              <div class="pseq-step-setting">
-                <label class="pseq-header" for="step-customid">Id</label>
-                <div class="pseq-step-setting-help">Custom id to use during runtime.</div>
-                <input type="text" id="step-customid" value="" />
-              </div>
-              <div class="pseq-step-setting pseq-topspace">
-                <label class="pseq-header" for="step-name">Name</label>
-                <div class="pseq-step-setting-help">Name of the step to show in sidebar.</div>
-                <input type="text" id="step-name" value="" />
-              </div>
-            </div>
-            <div id="step-editor-file" style="display: none">
-              <div class="pseq-step-setting pseq-topspace">
-                <label class="pseq-header" for="step-file">File</label>
-                <div class="pseq-step-setting-help">Filename of the step relative to the root folder.</div>
-                <input type="text" id="step-file" value="" />
-              </div>
-            </div>
-            <div id="step-editor-condition" style="display: none">
-              <div class="pseq-step-setting pseq-topspace">
-                <label class="pseq-header" for="step-language">Condition language</label>
-                <div class="pseq-step-setting-help">Language used for the condition.</div>
-                <select id="step-language">
-                  <option value="r">R</option>
-                  <option value="python">Python</option>
-                </select>
-              </div>
-              <div class="pseq-step-setting pseq-topspace">
-                <label class="pseq-header" for="step-code">Condition code</label>
-                <div class="pseq-step-setting-help">Expression returning a true or false value.</div>
-                <input type="text" id="step-code" value="" />
-              </div>
-            </div>
-          </div>
-				</div>
         <script nonce="${nonce}" src="${scriptUri}"></script>
       </body>
       </html>`;

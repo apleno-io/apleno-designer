@@ -1,0 +1,65 @@
+<div id="sequence">
+  <canvas id="sequence-canvas"></canvas>
+  <div id="sequence-drop"></div>
+  <div id="sequence-sidebar">
+    <div id="sequence-sidebar-tabs">
+      <button data-tab="view">View</button>
+      <button data-tab="props">Properties</button>
+      <button data-tab="checks">Error</button>
+    </div>
+    <div id="gui-sidebar-content">
+      <div data-tab-content="view">
+        <h2>Display</h2>
+        <button data-role="center">Center on start</button>
+        <h2>Add steps</h2>
+        <button draggable="true" data-role="add" data-step="script">Script</button>
+        <button draggable="true" data-role="add" data-step="gui">UI</button>
+        <button draggable="true" data-role="add" data-step="condition">Cond.</button>
+        <button draggable="true" data-role="add" data-step="sequence">Seq.</button>
+        <button draggable="true" data-role="add" data-step="end">End</button>
+      </div>
+      <div data-tab-content="props">
+        <div id="step-editor-empty">Select a step to edit.</div>
+        <div id="step-editor-nosetting">No setting for this step.</div>
+        <div id="step-editor-id" style="display: none">
+          <div>
+            <label for="step-customid">Id</label>
+            <input type="text" id="step-customid" value="" />
+            <div class="step-setting-help">Custom id to use during runtime.</div>
+          </div>
+          <div>
+            <label for="step-name">Name</label>
+            <input type="text" id="step-name" value="" />
+            <div class="step-setting-help">Name of the step to show in sidebar.</div>
+          </div>
+        </div>
+        <div id="step-editor-file" style="display: none">
+          <div>
+            <label for="step-file">File</label>
+            <input type="text" id="step-file" value="" />
+            <div class="step-setting-help">Filename of the step relative to the root folder.</div>
+          </div>
+        </div>
+        <div id="step-editor-condition" style="display: none">
+          <div>
+            <label for="step-language">Condition language</label>
+            <select id="step-language">
+              <option value="r">R</option>
+              <option value="python">Python</option>
+            </select>
+            <div class="step-setting-help">Language used for the condition.</div>
+          </div>
+          <div>
+            <label for="step-code">Condition code</label>
+            <input type="text" id="step-code" value="" />
+            <div class="step-setting-help">Expression returning a true or false value.</div>
+          </div>
+        </div>
+        <div id="step-actions">
+          <button class="outline-danger" data-role="delete">Delete step</button>
+        </div>
+      </div>
+      <div data-tab-content="checks"></div>
+    </div>
+  </div>
+</div>

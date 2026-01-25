@@ -1,14 +1,26 @@
 import { SequenceError } from "./sequence-check";
 
+/**
+ * Part showing sequence errors.
+ */
 const SequenceErrorBox = new class extends EventTarget {
-  private domContainer: HTMLElement = document.getElementById('pseq-errors') as HTMLElement;
+  private container: HTMLElement | null = null;
 
   constructor() {
     super();
-    this.domContainer.addEventListener('click', this.onClick.bind(this));
-    this.domContainer.style.display = 'none';
   }
 
+  /**
+   * Inject the DOM of this widget.
+   */
+  public inject(parent: HTMLElement): void {
+    this.container = parent;
+    this.container.addEventListener('click', this.onClick.bind(this));
+  }
+
+  /**
+   * Format an error from machine code to human sentence.
+   */
   private formatError(error: SequenceError): string {
     if (error.error === 'SequenceNoStart') {
       return `There is no start step.`;
@@ -31,20 +43,35 @@ const SequenceErrorBox = new class extends EventTarget {
     return 'Unknow error.';
   }
 
-  public showErrors(errors: SequenceError[]) {
+  /**
+   * Show a list of errors.
+   */
+  public showErrors(errors: SequenceError[]): void {
+    if (this.container === null) {
+      return;
+    }
+
     const output: string[] = [];
     for (let i = 0; i < errors.length; ++i) {
       output.push(`<div class="pseq-error" data-step="${errors[i].stepId ? errors[i].stepId : ''}">${this.formatError(errors[i])}</div>`);
     }
-    this.domContainer.innerHTML = output.join('');
-    this.domContainer.style.display = errors.length > 0 ? 'block' : 'none';
+    this.container.innerHTML = output.join('');
   }
 
-  public clear() {
-    this.domContainer.innerHTML = '';
-    this.domContainer.style.display = 'none';
+  /**
+   * Clear all shown errors.
+   */
+  public clear(): void {
+    if (this.container === null) {
+      return;
+    }
+
+    this.container.innerHTML = '';
   }
 
+  /**
+   * User clicked somewhere in the widget.
+   */
   private onClick(e: MouseEvent) {
     const error = (e.target as HTMLElement).closest('[data-step]') as HTMLElement;
     if (error && error.dataset.step && error.dataset.step.length > 0) {
