@@ -71,6 +71,18 @@
   background-color: var(--vscode-button-secondaryHoverBackground);
 }
 
+.badge {
+  padding: 3px 5px;
+  font-size: 0.9rem;
+  background-color: var(--vscode-breadcrumb-background);
+  border-radius: 3px;
+}
+
+.badge-red {
+  color: var(--vscode-activityWarningBadge-foreground);
+  background-color: var(--vscode-activityErrorBadge-background);
+}
+
 /* ADD */
 h2:not(:first-child) {
   margin: 20px 0 0;
@@ -126,6 +138,11 @@ select {
 }
 
 /* ERRORS */
+#pseq-error-empty {
+  margin-top: 30px;
+  text-align: center;
+}
+
 .pseq-error {
   padding: 3px;
   color: var(--vscode-errorForeground);

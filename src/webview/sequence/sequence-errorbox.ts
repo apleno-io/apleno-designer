@@ -51,11 +51,23 @@ const SequenceErrorBox = new class extends EventTarget {
       return;
     }
 
-    const output: string[] = [];
-    for (let i = 0; i < errors.length; ++i) {
-      output.push(`<div class="pseq-error" data-step="${errors[i].stepId ? errors[i].stepId : ''}">${this.formatError(errors[i])}</div>`);
+    // Update list
+    if (errors.length > 0) {
+      const output: string[] = [];
+      for (let i = 0; i < errors.length; ++i) {
+        output.push(`<div class="pseq-error" data-step="${errors[i].stepId ? errors[i].stepId : ''}">${this.formatError(errors[i])}</div>`);
+      }
+      this.container.innerHTML = output.join('');
     }
-    this.container.innerHTML = output.join('');
+    else {
+      this.container.innerHTML = '<div id="pseq-error-empty">No error detected.</div>';
+    }
+
+    // Update badge
+    const tab = document.querySelector('#sequence-sidebar-tabs [data-tab="checks"]');
+    if (tab) {
+      tab.innerHTML = errors.length === 0 ? `Errors <span class="badge">0</span>` : `Errors <span class="badge badge-red">${errors.length}</span>`;
+    }
   }
 
   /**
