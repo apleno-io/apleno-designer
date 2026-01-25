@@ -158,7 +158,6 @@ const UIEditor = new class {
     }
 
     if (msg.data.type === 'onDidDropWidget') {
-      console.log(msg.data);
       if (msg.data.widgetType) {
         this.createWidget(msg.data.widgetType, msg.data.positionWidget ? msg.data.positionWidget : msg.data.positionContainer, msg.data.position ? msg.data.position : msg.data.positionIndex);
       }
