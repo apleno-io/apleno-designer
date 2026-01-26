@@ -1,5 +1,6 @@
 import { GUIWidget } from "../../common/gui";
 import { Sanitizer } from "../../common/utils/sanitize";
+import { StateExtras } from "./gui";
 
 enum WidgetCSSType {
   STYLE,
@@ -14,8 +15,14 @@ interface WidgetCSS {
   type: WidgetCSSType;
 }
 
+export interface WidgetRenderOptions {
+  /** true if not defined */
+  includeParentHTML?: boolean;
+  stateExtras?: StateExtras;
+}
+
 export const WidgetFactory = new class {
-  public getWidgetHTML(widget: GUIWidget, includeParentHTML: boolean = true): string {
+  public getWidgetHTML(widget: GUIWidget, options: WidgetRenderOptions = {}): string {
     // Content
     const widgetContent = this.getContent(widget);
 
@@ -71,7 +78,8 @@ export const WidgetFactory = new class {
       }
     }
 
-    return includeParentHTML ? `<div data-widget-id="${widget.id}">${result}</div>` : result;
+    const selected = options.stateExtras?.selectedWidget && options.stateExtras?.selectedWidget === widget.id ? ` class="gui-widget-selected"` : '';
+    return options && 'includeParentHTML' in options && options.includeParentHTML === false ? result : `<div data-widget-id="${widget.id}"${selected}>${result}</div>`;
   }
 
   private getWidgetCSS(widgetCSS: string): WidgetCSS {
@@ -97,9 +105,15 @@ export const WidgetFactory = new class {
     return result;
   }
 
-  private getContent(el: GUIWidget) {
+  private getContent(el: GUIWidget, options: WidgetRenderOptions = {}) {
     let html = '';
     let val = Sanitizer.xssContent(el.data.value);
+
+    // child options
+    const childOptions: WidgetRenderOptions = {
+      includeParentHTML: true,
+      stateExtras: options.stateExtras ? options.stateExtras : {}
+    };
 
     // CSS
     const css = this.getWidgetCSS(el.data?.css || '');
@@ -225,7 +239,7 @@ export const WidgetFactory = new class {
     else if (el.type === 'box' && el.widgets) {
       let subhtml = '';
       el.widgets.forEach((e: GUIWidget) => {
-        subhtml += this.getWidgetHTML(e);
+        subhtml += this.getWidgetHTML(e, childOptions);
       });
       if (el.widgets.length === 0) {
         subhtml = '<div class="pgm-emptycontainer" data-index="0"></div>';
@@ -252,7 +266,7 @@ export const WidgetFactory = new class {
         const width = el.data.columnsWidths && el.data.columnsWidths.length > i ? el.data.columnsWidths[i] : '1';
         content.push(`
           <div class="pgm-widget-column pgm-widget-column-${width}"${i > 0 ? padding : ''} data-columns="${el.id}" data-column="${i}">
-            ${i < el.widgets.length ? this.getWidgetHTML(el.widgets[i]) : `<div class="pgm-emptycontainer" data-index="${i}"></div>`}
+            ${i < el.widgets.length ? this.getWidgetHTML(el.widgets[i], childOptions) : `<div class="pgm-emptycontainer" data-index="${i}"></div>`}
           </div>`);
       }
       html = `
@@ -261,9 +275,13 @@ export const WidgetFactory = new class {
         </div>`;
     }
     else if (el.type === 'tabs' && el.widgets) {
+      const editorSelectedTab = options.stateExtras?.selectedTabs && `${el.id}` in options.stateExtras?.selectedTabs ? options.stateExtras.selectedTabs[`${el.id}`] : null;
       const tabs: string[] = [];
       const content: string[] = [];
       let currentTabIndex = parseInt(`${el.data.tabsSelected}`) || 0;
+      if (editorSelectedTab !== null) {
+        currentTabIndex = parseInt(`${editorSelectedTab}`) || 0;
+      }
       currentTabIndex = isNaN(currentTabIndex) || currentTabIndex >= el.widgets.length ? 0 : currentTabIndex;
 
       const max = Math.max(el.widgets.length, el.data.tabsNames.length);
@@ -271,7 +289,7 @@ export const WidgetFactory = new class {
         const label: string = i < el.data.tabsNames.length ? el.data.tabsNames[i] : `#${i}`;
         const isCurrent = i === currentTabIndex;
         tabs.push(`<div class="pgm-widget-tab${isCurrent ? ' pgm-widget-tab-selected' : ''}" data-tabs="${el.id}" data-tab="${i}">${label}</div>`);
-        content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? 'block' : 'none'}" data-tabs="${el.id}" data-tab="${i}">${i < el.widgets.length ? this.getWidgetHTML(el.widgets[i]) : `<div class="pgm-emptycontainer" data-index="${i}"></div>`}</div>`);
+        content.push(`<div class="pgm-widget-tab-content" style="display: ${isCurrent ? 'block' : 'none'}" data-tabs="${el.id}" data-tab="${i}">${i < el.widgets.length ? this.getWidgetHTML(el.widgets[i], childOptions) : `<div class="pgm-emptycontainer" data-index="${i}"></div>`}</div>`);
       }
 
       html = `

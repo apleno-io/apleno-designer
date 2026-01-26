@@ -1,13 +1,29 @@
 import { fixIds, getMaxId, GUIInterface, GUIWidget, isContainerWidget, normalizeGUI, normalizeWidget, WidgetProperties } from '../../common/gui';
+import { deepEqual } from '../../common/utils/deep-equal';
 import { WidgetPropertyEditor } from './gui-propeditor';
 import { WidgetFactory } from './gui-widget-factory';
 import './gui.css';
 
 import templateUI from './gui.html';
 
-const UIEditor = new class {
+export interface StateExtras {
+  selectedWidget?: number | null;
+  selectedTabs?: { [key: string]: string };
+}
+
+class UIEditor extends EventTarget {
   private iframeReady: boolean = false;
   private state: GUIInterface | null = null;
+
+  /**
+   * Record editor-only UI state, like which tab the user is seeing compared
+   * to the actual first tab in the app.
+   */
+  private stateExtras: StateExtras = {};
+
+  constructor() {
+    super();
+  }
 
   public inject(): void {
     document.body.insertAdjacentHTML('afterbegin', templateUI);
@@ -86,10 +102,19 @@ const UIEditor = new class {
     this.setUISettings();
     fixIds(this.state.widgets);
     this.redrawAllWidgets();
+    if (this.stateExtras.selectedWidget) {
+      const widget = this.findWidget(w => w.id === this.stateExtras.selectedWidget);
+      if (widget) {
+        WidgetPropertyEditor.setWidget(widget);
+      }
+      else {
+        this.stateExtras.selectedWidget = null;
+      }
+    }
   }
 
   public getState(): any {
-    return {};
+    return this.state;
   }
 
   private setTab(tab: 'add' | 'props' | 'ui'): void {
@@ -118,10 +143,12 @@ const UIEditor = new class {
     if (this.state === null || !this.iframeReady) {
       return;
     }
+    console.log('redraw');
+    console.log(structuredClone(this.stateExtras));
 
     const html = [];
     for (let i = 0; i < this.state?.widgets.length; ++i) {
-      html.push(`<div data-widget-id="${this.state.widgets[i].id}">${WidgetFactory.getWidgetHTML(this.state.widgets[i], false)}</div>`);
+      html.push(`<div data-widget-id="${this.state.widgets[i].id}">${WidgetFactory.getWidgetHTML(this.state.widgets[i], { includeParentHTML: false, stateExtras: this.stateExtras })}</div>`);
     }
     (((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.querySelector('.pgm-gui') as HTMLElement).innerHTML = html.join('');
   }
@@ -136,22 +163,25 @@ const UIEditor = new class {
     if (widget === null || parent === null) {
       return;
     }
-    parent.innerHTML = WidgetFactory.getWidgetHTML(widget, false);
+    parent.innerHTML = WidgetFactory.getWidgetHTML(widget, { includeParentHTML: false, stateExtras: this.stateExtras });
   }
 
   private handleChildMessage(msg: MessageEvent): void {
     if (msg.data.type === 'onDidClickWidget') {
       if (msg.data.widgetId === null) {
+        this.stateExtras.selectedWidget = null;
         WidgetPropertyEditor.setNoWidget();
         return;
       }
 
       const widget = this.findWidget((widget: GUIWidget) => { return widget.id === msg.data.widgetId; });
       if (widget) {
+        this.stateExtras.selectedWidget = widget.id;
         WidgetPropertyEditor.setWidget(widget);
         this.setTab('props');
       }
       else {
+        this.stateExtras.selectedWidget = null;
         WidgetPropertyEditor.setNoWidget();
       }
       return;
@@ -164,6 +194,15 @@ const UIEditor = new class {
       else if (msg.data.widgetId) {
         this.moveWidget(msg.data.widgetId, msg.data.positionWidget ? msg.data.positionWidget : msg.data.positionContainer, msg.data.position ? msg.data.position : msg.data.positionIndex);
       }
+      return;
+    }
+
+    if (msg.data.type === 'onDidChangeSelectedTab') {
+      if (!('selectedTabs' in this.stateExtras)) {
+        this.stateExtras.selectedTabs = {};
+      }
+      // @ts-ignore
+      this.stateExtras.selectedTabs[msg.data.tabWidgetId] = msg.data.tabWidgetIndex;
     }
   }
 
@@ -217,11 +256,12 @@ const UIEditor = new class {
     // Refresh
     if (found) {
       this.redrawAllWidgets();
-      WidgetPropertyEditor.setNoWidget();
+      this.stateExtras.selectedWidget = widget.id;
+      WidgetPropertyEditor.setWidget(widget);
       this.guiChanged();
     }
     else {
-      console.error('Could not found widget id ' + positionWidgetId + ' to insert new widget.');
+      console.error(`Could not found widget id ${positionWidgetId} to insert new widget.`);
     }
   }
 
@@ -229,7 +269,7 @@ const UIEditor = new class {
     // Check widget tries not to move in itself or on itself
     const widgetCheck = this.findWidget((w: GUIWidget) => w.id === id);
     if (widgetCheck === null) {
-      console.error('Could not found widget id ' + positionWidgetId + ' to move.');
+      console.error(`Could not found widget id ${positionWidgetId} to move.`);
       return;
     }
     if (id === positionWidgetId) {
@@ -282,11 +322,12 @@ const UIEditor = new class {
     // Refresh
     if (found) {
       this.redrawAllWidgets();
-      WidgetPropertyEditor.setNoWidget();
+      this.stateExtras.selectedWidget = widgetCheck.id;
+      WidgetPropertyEditor.setWidget(widgetCheck);
       this.guiChanged();
     }
     else {
-      console.error('Could not found widget id ' + positionWidgetId + ' to insert moved widget.');
+      console.error(`Could not found widget id ${positionWidgetId} to insert moved widget.`);
     }
   }
 
@@ -304,6 +345,7 @@ const UIEditor = new class {
 
     if (found) {
       this.redrawAllWidgets();
+      this.stateExtras.selectedWidget = null;
       WidgetPropertyEditor.setNoWidget();
       this.guiChanged();
     }
@@ -379,35 +421,42 @@ const UIEditor = new class {
   }
 
   private guiChanged() {
-    // todo: emit
+    this.dispatchEvent(new CustomEvent('onDidChange'));
   }
 };
 
 (function () {
-  UIEditor.inject();
+  // @ts-ignore
+  const vscode = acquireVsCodeApi();
 
   let initialState = {};
   let lastState = {};
-
-  // @ts-ignore
-  const vscode = acquireVsCodeApi();
+  const editor = new UIEditor();
+  editor.addEventListener('onDidChange', (e: CustomEventInit<void>) => {
+    const newState = editor.getState();
+    if (!deepEqual(lastState, newState)) {
+      lastState = structuredClone(newState);
+      vscode.postMessage({ type: 'OnDidChange', edit: { state: editor.getState() } });
+    }
+  });
+  editor.inject();
   window.addEventListener('message', async e => {
     const { type, body, requestId } = e.data;
     if (type === 'init') {
       initialState = structuredClone(body.untitled ? {} : body.value);
       lastState = structuredClone(initialState);
-      UIEditor.setState(initialState as GUIInterface);
+      editor.setState(initialState as GUIInterface);
     }
     else if (type === 'update') {
       if (body.edits.length > 0) {
-        UIEditor.setState(body.edits[body.edits.length - 1].state);
+        editor.setState(body.edits[body.edits.length - 1].state);
       }
       else {
-        UIEditor.setState(initialState as GUIInterface);
+        editor.setState(initialState as GUIInterface);
       }
     }
     else if (type === 'getFileData') {
-      vscode.postMessage({ type: 'response', requestId, body: UIEditor.getState() });
+      vscode.postMessage({ type: 'response', requestId, body: editor.getState() });
     }
   });
 

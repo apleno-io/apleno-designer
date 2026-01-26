@@ -265,6 +265,24 @@ export const IframeContent = new class {
       return;
     }
 
+    // tab: change
+    const tab: HTMLElement | null = topElement.closest('.pgm-widget-tab');
+    if (tab) {
+      const id = tab.dataset.tabs;
+      const selected = tab.dataset.tab;
+      document.querySelectorAll<HTMLElement>(`.pgm-widget-tab[data-tabs="${id}"]`).forEach((t: HTMLElement) => {
+        if (t.dataset.tab === selected) {
+          t.classList.add('pgm-widget-tab-selected');
+        }
+        else {
+          t.classList.remove('pgm-widget-tab-selected');
+        }
+      });
+      document.querySelectorAll<HTMLElement>(`.pgm-widget-tab-content[data-tabs="${id}"]`).forEach((t: HTMLElement) => t.style.display = t.dataset.tab === selected ? 'block' : 'none');
+      parent.postMessage({ type: 'onDidChangeSelectedTab', tabWidgetId: id, tabWidgetIndex: selected });
+    }
+
+    // Select widget
     const w: HTMLElement | null = topElement.closest('[data-widget-id]');
     if (w !== this.selectedWidget) {
       this.selectedWidget = w;
