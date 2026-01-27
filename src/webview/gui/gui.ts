@@ -143,12 +143,10 @@ class UIEditor extends EventTarget {
     if (this.state === null || !this.iframeReady) {
       return;
     }
-    console.log('redraw');
-    console.log(structuredClone(this.stateExtras));
 
     const html = [];
     for (let i = 0; i < this.state?.widgets.length; ++i) {
-      html.push(`<div data-widget-id="${this.state.widgets[i].id}">${WidgetFactory.getWidgetHTML(this.state.widgets[i], { includeParentHTML: false, stateExtras: this.stateExtras })}</div>`);
+      html.push(WidgetFactory.getWidgetHTML(this.state.widgets[i], { stateExtras: this.stateExtras }));
     }
     (((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.querySelector('.pgm-gui') as HTMLElement).innerHTML = html.join('');
   }
@@ -202,7 +200,7 @@ class UIEditor extends EventTarget {
         this.stateExtras.selectedTabs = {};
       }
       // @ts-ignore
-      this.stateExtras.selectedTabs[msg.data.tabWidgetId] = msg.data.tabWidgetIndex;
+      this.stateExtras.selectedTabs[parseInt(msg.data.tabWidgetId)] = parseInt(msg.data.tabWidgetIndex);
     }
   }
 
@@ -255,8 +253,8 @@ class UIEditor extends EventTarget {
 
     // Refresh
     if (found) {
-      this.redrawAllWidgets();
       this.stateExtras.selectedWidget = widget.id;
+      this.redrawAllWidgets();
       WidgetPropertyEditor.setWidget(widget);
       this.guiChanged();
     }
@@ -321,8 +319,8 @@ class UIEditor extends EventTarget {
 
     // Refresh
     if (found) {
-      this.redrawAllWidgets();
       this.stateExtras.selectedWidget = widgetCheck.id;
+      this.redrawAllWidgets();
       WidgetPropertyEditor.setWidget(widgetCheck);
       this.guiChanged();
     }
@@ -344,8 +342,8 @@ class UIEditor extends EventTarget {
     });
 
     if (found) {
-      this.redrawAllWidgets();
       this.stateExtras.selectedWidget = null;
+      this.redrawAllWidgets();
       WidgetPropertyEditor.setNoWidget();
       this.guiChanged();
     }

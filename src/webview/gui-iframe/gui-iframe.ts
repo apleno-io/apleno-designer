@@ -255,6 +255,7 @@ export const IframeContent = new class {
           positionIndex: position.widgetContainerIndex
         });
       }
+      ev.preventDefault();
     }
     this.internalDropWidgetId = null;
   }

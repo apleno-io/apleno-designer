@@ -24,7 +24,7 @@ export interface WidgetRenderOptions {
 export const WidgetFactory = new class {
   public getWidgetHTML(widget: GUIWidget, options: WidgetRenderOptions = {}): string {
     // Content
-    const widgetContent = this.getContent(widget);
+    const widgetContent = this.getContent(widget, options);
 
     // Labels & help text
     const marginTopStyleTag: string = ` style="margin-top: ${widget.data.marginTop}px"`;

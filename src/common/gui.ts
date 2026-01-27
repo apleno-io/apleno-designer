@@ -273,6 +273,81 @@ export function fixIds(widgets: GUIWidget[], nextId: number | null = null): numb
   return nextId;
 }
 
+/**
+ * Fixed containers. Tabs and columns will have a number of child lists depending
+ * on the number of columns or tabs. Direct non-lists widget will be put in list.
+ * If too much children, excessive children will be put as it in last valid children.
+ * At least one column or tab will exist.
+ * @param {number} nextCreateId an object for passing as a reference the nextId for creating a new widget
+ */
+export function fixContainers(widgets: GUIWidget[], nextCreateId: { value: number }) {
+  for (let i = 0; i < widgets.length; ++i) {
+    const w = widgets[i];
+    if (w.type === 'tabs' || w.type === 'columns') {
+      // 1. Check at least ONE tab or column is defined
+      if (w.type === 'tabs' && w.data.tabsNames.length === 0) {
+        w.data.tabsNames = ['Unnamed'];
+        w.data.tabsSelected = 0;
+      }
+      else if (w.type === 'columns' && (!Array.isArray(w.data.columnsWidths) || w.data.columnsWidths?.length === 0)) {
+        w.data.columnsWidths = [12];
+      }
+
+      // 2. Check children: create list if non-list
+      if (!Array.isArray(w.widgets)) {
+        w.widgets = [];
+      }
+      for (let j = 0; j < widgets[i].widgets!.length; ++j) {
+        if ((widgets[i].widgets as GUIWidget[])[j].type !== 'box') {
+          // move child in a new box
+          const newList: GUIWidget = {
+            id: nextCreateId.value++,
+            customId: '',
+            type: 'box',
+            data: {
+              boxDesign: 'none',
+              boxHeader: ''
+            },
+            widgets: [structuredClone((widgets[i].widgets as GUIWidget[])[j])]
+          };
+          (widgets[i].widgets as GUIWidget[])[j] = newList;
+        }
+      }
+
+      // 3. Check children: create if not enough children
+      const missing = w.data[w.type === 'tabs' ? 'tabsNames' : 'columnsWidths'] - w.widgets.length;
+      if (missing > 0) {
+        for (let j = 0; j < missing; ++j) {
+          w.widgets.push({
+            id: nextCreateId.value++,
+            customId: '',
+            type: 'box',
+            data: {
+              boxDesign: 'none',
+              boxHeader: ''
+            },
+            widgets: []
+          });
+        }
+      }
+
+      // 4. Check if too much children: move extra lists to end of last valid list
+      if (missing < 0) {
+        const lastIndex = w.widgets.length - 1;
+        for (let j = missing; j < 0; ++j) {
+          const list = w.widgets.pop();
+          (w.widgets[lastIndex].widgets as GUIWidget[]).push(list as GUIWidget);
+        }
+      }
+    }
+
+    // Continue
+    if (Array.isArray(widgets[i].widgets) && (widgets[i].widgets as any).length > 0) {
+      fixContainers(widgets[i].widgets as any, nextCreateId);
+    }
+  }
+}
+
 export function normalizeWidget(infos: any): GUIWidget {
   const isOld: boolean = 'position' in infos;
 
