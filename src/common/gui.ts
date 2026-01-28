@@ -315,7 +315,7 @@ export function fixContainers(widgets: GUIWidget[], nextCreateId: { value: numbe
       }
 
       // 3. Check children: create if not enough children
-      const missing = w.data[w.type === 'tabs' ? 'tabsNames' : 'columnsWidths'] - w.widgets.length;
+      const missing = w.data[w.type === 'tabs' ? 'tabsNames' : 'columnsWidths'].length - w.widgets.length;
       if (missing > 0) {
         for (let j = 0; j < missing; ++j) {
           w.widgets.push({
@@ -333,7 +333,7 @@ export function fixContainers(widgets: GUIWidget[], nextCreateId: { value: numbe
 
       // 4. Check if too much children: move extra lists to end of last valid list
       if (missing < 0) {
-        const lastIndex = w.widgets.length - 1;
+        const lastIndex = w.data[w.type === 'tabs' ? 'tabsNames' : 'columnsWidths'].length - 1;
         for (let j = missing; j < 0; ++j) {
           const list = w.widgets.pop();
           (w.widgets[lastIndex].widgets as GUIWidget[]).push(list as GUIWidget);

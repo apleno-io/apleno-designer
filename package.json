@@ -143,7 +143,8 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "test:unit": "vitest"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
@@ -159,7 +160,8 @@
     "esbuild": "^0.24.2",
     "eslint": "^9.19.0",
     "npm-run-all": "^4.1.5",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
