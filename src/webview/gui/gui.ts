@@ -21,6 +21,11 @@ class UIEditor extends EventTarget {
    */
   private stateExtras: StateExtras = {};
 
+  /**
+   * Debounce timer for guiChanged events
+   */
+  private debounceTimer: NodeJS.Timeout | null = null;
+
   constructor() {
     super();
   }
@@ -418,8 +423,17 @@ class UIEditor extends EventTarget {
     this.guiChanged();
   }
 
+  /**
+   * Emit event when GUI was modified.
+   */
   private guiChanged() {
-    this.dispatchEvent(new CustomEvent('onDidChange'));
+    if (this.debounceTimer !== null) {
+      clearTimeout(this.debounceTimer);
+    }
+    this.debounceTimer = setTimeout(() => {
+      this.dispatchEvent(new CustomEvent('onDidChange'));
+      this.debounceTimer = null;
+    }, 500);
   }
 };
 
