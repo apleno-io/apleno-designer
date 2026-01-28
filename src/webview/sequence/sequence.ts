@@ -729,6 +729,32 @@ class SequenceEditor extends EventTarget {
         element.step.parameters.targetOnFalse = undefined;
       }
     }
+    else if (element && element.type === 'handle' && element.handle === 'top') {
+      // Get the origin element (first only)
+      const originElement = this.steps.find(el => el.parameters.target === element.step.id || el.parameters.targetOnFalse === element.step.id);
+      if (originElement === undefined) {
+        return;
+      }
+
+      // Remove current
+      const handle: StepHandle = originElement.parameters.target === element.step.id ? 'bottom' : 'right';
+      if (handle === 'bottom') {
+        originElement.parameters.target = undefined;
+      }
+      else {
+        originElement.parameters.targetOnFalse = undefined;
+      }
+
+      // Fake select
+      this.selectedHandle = {
+        handle: handle,
+        step: originElement,
+        type: 'handle'
+      };
+      this.mouseState = 'handleClick';
+      this.mouseStartX = e.offsetX;
+      this.mouseStartY = e.offsetY;
+    }
     else if (element === null) {
       this.mouseState = 'cameraMove';
       //this.selectedStep = null;
