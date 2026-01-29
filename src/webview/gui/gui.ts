@@ -1,4 +1,4 @@
-import { fixIds, getMaxId, GUIInterface, GUIWidget, isContainerWidget, normalizeGUI, normalizeWidget, WidgetProperties } from '../../common/gui';
+import { fixContainers, fixIds, getMaxId, GUIInterface, GUIWidget, isContainerWidget, normalizeGUI, normalizeWidget, WidgetProperties } from '../../common/gui';
 import { deepEqual } from '../../common/utils/deep-equal';
 import { WidgetPropertyEditor } from './gui-propeditor';
 import { WidgetFactory } from './gui-widget-factory';
@@ -63,8 +63,16 @@ class UIEditor extends EventTarget {
       WidgetPropertyEditor.inject();
       WidgetPropertyEditor.setNoWidget();
       WidgetPropertyEditor.addEventListener('onDidChange', (event: Event) => {
-        // replace widget in state & redraw
-        const widget: GUIWidget = JSON.parse(JSON.stringify((event as CustomEvent).detail.widget));
+        // replace widget in state
+        const widget: GUIWidget = structuredClone((event as CustomEvent).detail.widget);
+
+        // fix containers if modifier widget is tabs or columns
+        if (this.state && widget.widgets && ['tabs', 'columns'].includes(widget.type)) {
+          fixContainers(widget.widgets, { value: getMaxId(this.state.widgets) + 1 });
+          WidgetPropertyEditor.setChildren(widget.widgets);
+        }
+
+        // replace & redraw
         this.forEachContainers((widgets: GUIWidget[]) => {
           for (let i = 0; i < widgets.length; ++i) {
             if (widgets[i].id === widget.id) {
@@ -106,6 +114,7 @@ class UIEditor extends EventTarget {
     this.state = normalizeGUI(state);
     this.setUISettings();
     fixIds(this.state.widgets);
+    fixContainers(this.state.widgets, { value: getMaxId(this.state.widgets) + 1 });
     this.redrawAllWidgets();
     if (this.stateExtras.selectedWidget) {
       const widget = this.findWidget(w => w.id === this.stateExtras.selectedWidget);
@@ -259,6 +268,7 @@ class UIEditor extends EventTarget {
     // Refresh
     if (found) {
       this.stateExtras.selectedWidget = widget.id;
+      fixContainers(this.state.widgets, { value: getMaxId(this.state.widgets) + 1 });
       this.redrawAllWidgets();
       WidgetPropertyEditor.setWidget(widget);
       this.guiChanged();
@@ -269,6 +279,10 @@ class UIEditor extends EventTarget {
   }
 
   private moveWidget(id: number, positionWidgetId: number, position: 'before' | 'after' | number): void {
+    if (this.state === null) {
+      return;
+    }
+
     // Check widget tries not to move in itself or on itself
     const widgetCheck = this.findWidget((w: GUIWidget) => w.id === id);
     if (widgetCheck === null) {
@@ -325,6 +339,7 @@ class UIEditor extends EventTarget {
     // Refresh
     if (found) {
       this.stateExtras.selectedWidget = widgetCheck.id;
+      fixContainers(this.state.widgets, { value: getMaxId(this.state.widgets) + 1 });
       this.redrawAllWidgets();
       WidgetPropertyEditor.setWidget(widgetCheck);
       this.guiChanged();
@@ -335,6 +350,10 @@ class UIEditor extends EventTarget {
   }
 
   private deleteWidget(widgetId: number) {
+    if (this.state === null) {
+      return;
+    }
+
     let found: boolean = false;
     this.forEachContainers((widgets: GUIWidget[]) => {
       for (let i = 0; i < widgets.length; ++i) {
@@ -348,6 +367,7 @@ class UIEditor extends EventTarget {
 
     if (found) {
       this.stateExtras.selectedWidget = null;
+      fixContainers(this.state.widgets, { value: getMaxId(this.state.widgets) + 1 });
       this.redrawAllWidgets();
       WidgetPropertyEditor.setNoWidget();
       this.guiChanged();

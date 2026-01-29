@@ -1,4 +1,4 @@
-import { GUIWidget, WidgetProperties, WidgetSubTypes } from "../../common/gui";
+import { fixContainers, GUIWidget, WidgetProperties, WidgetSubTypes } from "../../common/gui";
 import { WidgetChoiceEditor } from "./gui-propeditor-choices";
 import { WidgetColumnEditor } from "./gui-propeditor-columns";
 import { WidgetTabEditor } from "./gui-propeditor-tabs";
@@ -107,6 +107,15 @@ export const WidgetPropertyEditor = new class extends EventTarget {
         this.editorChoices.setValues(widget.data.choicesEntries || []);
       }
     }, 0);
+  }
+
+  /**
+   * Used to update children from a fixContainers call
+   */
+  public setChildren(widgets: GUIWidget[]) {
+    if (this.currentWidget && Array.isArray(this.currentWidget)) {
+      this.currentWidget.widgets = structuredClone(widgets);
+    }
   }
 
   /**

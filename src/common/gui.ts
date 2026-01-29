@@ -74,6 +74,7 @@ export interface GUIWidget {
 }
 
 export interface GUIInterface {
+  version?: number;
   widgets: GUIWidget[];
   displaySubmitButton: boolean;
   language: 'r' | 'python';
@@ -244,10 +245,16 @@ export const WidgetSubTypes: { [key: string]: string[] } = {
   progress: ['progressbar', 'progresscircle']
 };
 
+/**
+ * Return true if the widget is a container.
+ */
 export function isContainerWidget(type: string) {
   return ['box', 'columns', 'tabs'].includes(type);
 }
 
+/**
+ * Get the highest ID from all widgets.
+ */
 export function getMaxId(widgets: GUIWidget[]): number {
   let maxId = 0;
   for (let i = 0; i < widgets.length; ++i) {
@@ -260,6 +267,9 @@ export function getMaxId(widgets: GUIWidget[]): number {
   return maxId;
 }
 
+/**
+ * Go through all widgets and checks all widgets have an ID and it is valid.
+ */
 export function fixIds(widgets: GUIWidget[], nextId: number | null = null): number {
   nextId = nextId === null ? getMaxId(widgets) + 1 : nextId;
   for (let i = 0; i < widgets.length; ++i) {
@@ -300,16 +310,19 @@ export function fixContainers(widgets: GUIWidget[], nextCreateId: { value: numbe
       for (let j = 0; j < widgets[i].widgets!.length; ++j) {
         if ((widgets[i].widgets as GUIWidget[])[j].type !== 'box') {
           // move child in a new box
-          const newList: GUIWidget = {
+          const newList: GUIWidget = normalizeWidget({
             id: nextCreateId.value++,
             customId: '',
             type: 'box',
             data: {
+              labelPosition: 'hidden',
+              marginTop: 0,
               boxDesign: 'none',
               boxHeader: ''
             },
             widgets: [structuredClone((widgets[i].widgets as GUIWidget[])[j])]
-          };
+          } as GUIWidget);
+          console.log(structuredClone(newList));
           (widgets[i].widgets as GUIWidget[])[j] = newList;
         }
       }
@@ -318,16 +331,18 @@ export function fixContainers(widgets: GUIWidget[], nextCreateId: { value: numbe
       const missing = w.data[w.type === 'tabs' ? 'tabsNames' : 'columnsWidths'].length - w.widgets.length;
       if (missing > 0) {
         for (let j = 0; j < missing; ++j) {
-          w.widgets.push({
+          w.widgets.push(normalizeWidget({
             id: nextCreateId.value++,
             customId: '',
             type: 'box',
             data: {
+              labelPosition: 'hidden',
               boxDesign: 'none',
-              boxHeader: ''
+              boxHeader: '',
+              marginTop: 0
             },
             widgets: []
-          });
+          } as GUIWidget));
         }
       }
 
@@ -352,8 +367,8 @@ export function normalizeWidget(infos: any): GUIWidget {
   const isOld: boolean = 'position' in infos;
 
   infos = {
-    id: infos.uid ? infos.uid : null,
-    customId: infos.id ? infos.id : '',
+    id: infos.uid ? infos.uid : (infos.id || null),
+    customId: infos.uid ? (infos.id || '') : (infos.customId || ''),
     type: infos.type ? infos.type : 'text',
     data: infos.data ? infos.data : {},
     widgets: infos.widgets ? infos.widgets : infos.elements ? infos.elements : []
@@ -530,5 +545,7 @@ export function normalizeGUI(infos: any): GUIInterface {
 
   // Don't normalize widgets because it will be per-widget during creation (because of end users functions like gui.add)
   result.widgets = result.widgets.map(w => normalizeWidget(w));
+
+  result.version = 50000;
   return result;
 }
