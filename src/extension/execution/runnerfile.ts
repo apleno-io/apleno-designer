@@ -1,32 +1,31 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import vscode from 'vscode';
+import { Services } from '../services';
+import { RuntimeManager } from './runtime-manager';
 import { GetFreePort } from './free-port';
 import { ConfigManager } from './config';
-import vscode, { Uri } from 'vscode';
-import { RuntimeManager } from './runtime';
-import { Services } from '../services';
+
+export interface PreviewConfigGeneratorResult {
+  executable: string;
+  configFile: string;
+}
 
 interface PythonPrefix {
   type: 'venv' | 'conda';
   prefix: string;
 }
 
-export class RPGMApp {
-  private _currentProcess: ChildProcessWithoutNullStreams | null = null;
-  private _isRunning: boolean = false;
-
-  private currentPort: number | null = null;
-
+export class PreviewConfigGenerator {
   /**
    * Return a sanitized path for using in a raw command line argument
    */
-  private getSanitizedCommandPath(cmd: string): string {
+  private static getSanitizedCommandPath(cmd: string): string {
     return cmd.includes(' ') ? `"${cmd.replace(/\\/g, '\\\\')}"` : cmd;
   }
 
-  private async doesFileExist(path: string): Promise<boolean> {
+  private static async doesFileExist(path: string): Promise<boolean> {
     try {
       await fs.promises.access(path);
       return true;
@@ -39,7 +38,7 @@ export class RPGMApp {
   /**
    * @returns object|null {type: 'conda'|'venv'|null, prefix?: string}
    */
-  private async getPythonEnvPrefix(pythonPath: string, pathConda: string | null): Promise<PythonPrefix | null> {
+  private static async getPythonEnvPrefix(pythonPath: string, pathConda: string | null): Promise<PythonPrefix | null> {
     // Detect if the python.exe is within a python environnement
     const pythonFolder = path.dirname(pythonPath);
     if (await this.doesFileExist(path.join(pythonFolder, 'activate'))) {
@@ -63,10 +62,7 @@ export class RPGMApp {
   /**
    * Please note that here, the app directory and the output directory are both the project folder.
    */
-  public async load(): Promise<number | null> {
-    // Dispose previous running app
-    this.dispose();
-
+  public static async load(): Promise<PreviewConfigGeneratorResult | null> {
     // Log
     const logger = Services.Logger;
     logger.info('[instance] Launching the app');
@@ -90,7 +86,6 @@ export class RPGMApp {
     if (port === null) {
       return null;
     }
-    this.currentPort = port;
 
     // Get R / Python / Conda
     logger.info('[instance] Getting paths...');
@@ -124,7 +119,7 @@ export class RPGMApp {
       http: true,
       httpResourcesFolder: path.join(RuntimeManager.getRuntimeFolder(), 'client'),
       /** Port of the Web Socket server */
-      port: this.currentPort,
+      port: port,
       /** Path to python binary & env */
       pythonPath: pathPython,
       pythonPrefix: pythonPrefix ? pythonPrefix.prefix : null,
@@ -169,43 +164,6 @@ export class RPGMApp {
     const configFilepath: string = path.join(os.tmpdir(), 'rpgmboot.json');
     await fs.promises.writeFile(configFilepath, JSON.stringify(pgmRunnerConfig), 'utf8');
 
-    logger.info(`[instance] Starting on port ${this.currentPort}...`);
-    this._isRunning = true;
-    this._currentProcess = spawn(path.join(RuntimeManager.getRuntimeFolder(), 'server/runner-win-x64.exe'), [configFilepath]);
-    this._currentProcess.stdout.on('data', (data: any) => {
-      if (`${data}`.includes('first sequence')) {
-        vscode.env.openExternal(Uri.parse(`http://localhost:${this.currentPort}`));
-      }
-      logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
-    });
-    this._currentProcess.stderr.on('data', (data: any) => {
-      logger.info(`${data}`.replace(/[\s\r\n]*$/, ''));
-    });
-    this._currentProcess.on('error', async (err: Error) => {
-      this._isRunning = false;
-      logger.error(`[instance] ${err}`);
-    });
-    this._currentProcess.on('close', (code: number) => {
-      this._isRunning = false;
-      logger.info(`[instance] Instance closed (${code})`);
-    });
-    this._currentProcess.on('exit', async () => {
-      this._isRunning = false;
-      logger.info('[instance] Instance exited');
-    });
-
-    return this.currentPort;
-  }
-
-  public async dispose(): Promise<void> {
-    if (this._currentProcess) {
-      Services.Logger.info('[instance] Killing previous instance...');
-      this._currentProcess.kill();
-      this._currentProcess = null;
-    }
-  }
-
-  public isRunning(): boolean {
-    return this._isRunning;
+    return { executable: path.join(RuntimeManager.getRuntimeFolder(), 'server/runner-win-x64.exe'), configFile: configFilepath };
   }
 }

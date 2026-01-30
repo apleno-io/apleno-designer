@@ -9,7 +9,9 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onDebugResolve:pgm"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "customEditors": [
@@ -87,15 +89,40 @@
       {
         "type": "pgm",
         "label": "RPGM",
-        "program": "./dist/extension.js",
+        "languages": [],
+        "program": "./dist/debug-adapter.js",
+        "runtime": "node",
+        "configurationAttributes": {
+          "launch": {
+            "required": [],
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "request": {
+                "type": "string"
+              },
+              "debugExePath": {
+                "type": "string",
+                "description": "Absolute path to debugger"
+              },
+              "debugConfigPath": {
+                "type": "string",
+                "description": "Absolute path to debugger config"
+              }
+            }
+          }
+        },
         "initialConfigurations": [
           {
             "type": "pgm",
             "request": "launch",
             "name": "RPGM preview"
           }
-        ],
-        "languages": []
+        ]
       }
     ],
     "languages": [
@@ -166,6 +193,7 @@
   "dependencies": {
     "adm-zip": "^0.5.16",
     "micromatch": "^4.0.8",
-    "semver": "^7.7.3"
+    "semver": "^7.7.3",
+    "vscode-debugadapter": "^1.51.0"
   }
 }

@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { RuntimeManager } from './runtime';
+import { RuntimeManager } from './runtime-manager';
 import { Services } from '../services';
 import { ExecutionStatusItemManager } from './ui-status-item';
-import { ConfigManager } from './config';
+import { PreviewConfigGenerator } from './runnerfile';
 
-async function startRunner(folder: string) {
+async function debugPreChecks(folder: string): Promise<boolean> {
   // Default launch.json
   const launchPath = path.join(folder, '.vscode', 'launch.json');
   if (!fs.existsSync(launchPath)) {
@@ -35,13 +35,13 @@ async function startRunner(folder: string) {
     Services.Logger.info('No runtime installed.');
     const wantInstall = await vscode.window.showInformationMessage('To execute a PGM app, you need the PGM runtime installed on your computer. Do you want to install it now?', { modal: true }, ...['Download']);
     if (wantInstall === 'Cancel') {
-      return;
+      return false;
     }
 
     // download
     const success = await RuntimeManager.downloadRuntime(); // manage error messages in RuntimeManager
     if (!success) {
-      return;
+      return false;
     }
   }
   else {
@@ -54,19 +54,19 @@ async function startRunner(folder: string) {
         // download
         const success = await RuntimeManager.downloadRuntime(); // manage error messages in RuntimeManager
         if (!success) {
-          return;
+          return false;
         }
       }
     }
   }
 
-  // Launch instance
-  Services.App.load();
+  return true;
 }
 
 export class PGMRunner {
-  public static registerCommand(context: vscode.ExtensionContext): vscode.Disposable {
-    return vscode.commands.registerCommand(
+  public static initialize(context: vscode.ExtensionContext): void {
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('pgm', new PGMDebugConfigurationProvider()));
+    context.subscriptions.push(vscode.commands.registerCommand(
       'pgm.run',
       async () => {
         try {
@@ -83,31 +83,60 @@ export class PGMRunner {
             return;
           }
 
-          startRunner(folder.uri.fsPath);
+          debugPreChecks(folder.uri.fsPath);
           return;
         } catch (err) {
           vscode.window.showErrorMessage(`Error while launching: ${(err as Error).message}`);
         }
       }
-    );
+    ));
   }
 }
 
-export class PGMDebug implements vscode.DebugConfigurationProvider {
+export class PGMDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
+  provideDebugConfigurations(
+    folder: vscode.WorkspaceFolder | undefined
+  ): vscode.ProviderResult<vscode.DebugConfiguration[]> {
+    return [
+      {
+        type: "pgm",
+        request: "launch",
+        name: "RPGM preview"
+      }
+    ];
+  }
+
   async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.DebugConfiguration | undefined> {
     if (!vscode.workspace.workspaceFolders || folder === undefined) {
-      return config; // no workspace opened
+      vscode.window.showErrorMessage(`PGM: Could not launch debug. You need to be in a workspace.`);
+      return undefined;
     }
 
     // test if project file
     const files = await vscode.workspace.findFiles('*.ppro', null, 1);
     if (files.length === 0) {
-      return config;
+      vscode.window.showErrorMessage(`PGM: Could not launch debug. No project file found.`);
+      return undefined;
     }
 
-    startRunner(folder.uri.fsPath);
+    // prechecks
+    const resChecks = await debugPreChecks(folder.uri.fsPath);
+    if (!resChecks) {
+      return undefined;
+    }
+
+    const res = await PreviewConfigGenerator.load();
+    if (res === null) {
+      vscode.window.showErrorMessage(`PGM: Could not launch debug.`);
+      return undefined;
+    }
 
     // undefined prevent continuing vscode debug
-    return undefined;
+    config.type = 'pgm';
+    config.name = 'RPGM preview';
+    config.request = 'launch';
+    config.debugExePath = res.executable;
+    config.debugConfigPath = res.configFile;
+    return config;
   }
 }

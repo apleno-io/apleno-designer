@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { PGMProjectFileEditorProvider } from './project/project-editor';
 import { PGMSequenceFileEditorProvider } from './sequence/sequence-editor';
 import { PGMInterfaceFileEditorProvider } from './gui/gui-editor';
-import { PGMDebug, PGMRunner } from './execution/run';
+import { PGMDebugConfigurationProvider, PGMRunner } from './execution/run';
 import { Storage } from './utils/storage';
 import { Exporter } from './export/export';
 import { ExecutionStatusItemManager } from './execution/ui-status-item';
@@ -25,8 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 	Services.LanguageChooser.initialize(context);
 	context.subscriptions.push(Exporter.registerCommand(context));
 	ExecutionStatusItemManager.initialize(context);
-	context.subscriptions.push(PGMRunner.registerCommand(context));
-	context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('pgm', new PGMDebug()));
+	PGMRunner.initialize(context);
 }
 
 export function deactivate() { }
