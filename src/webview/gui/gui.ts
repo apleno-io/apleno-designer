@@ -94,9 +94,12 @@ class UIEditor extends EventTarget {
       (document.querySelector('[data-tab-content="ui"]') as HTMLElement).addEventListener('change', this.onSettingsChanged.bind(this));
 
       // DnD "Add" buttons
-      document.querySelectorAll('[data-tab-content="add"] button').forEach((button) => {
-        (button as HTMLElement).addEventListener('dragstart', (e: DragEvent) => {
+      document.querySelectorAll<HTMLElement>('[data-tab-content="add"] button').forEach((button) => {
+        button.addEventListener('dragstart', (e: DragEvent) => {
           e.dataTransfer?.setData('text/plain', (e.target as HTMLElement).dataset.addWidget as string);
+        });
+        button.addEventListener('click', (e: MouseEvent) => {
+          this.createWidget((e.target as HTMLElement).dataset.addWidget as string, null, 'after');
         });
       });
 
@@ -178,6 +181,11 @@ class UIEditor extends EventTarget {
     parent.innerHTML = WidgetFactory.getWidgetHTML(widget, { includeParentHTML: false, stateExtras: this.stateExtras });
   }
 
+  private scrollToBottom() {
+    const b = ((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).window;
+    b.scrollTo(0, ((document.querySelector('#gui-preview iframe') as HTMLIFrameElement).contentWindow as Window).document.body.scrollHeight);
+  }
+
   private handleChildMessage(msg: MessageEvent): void {
     if (msg.data.type === 'onDidClickWidget') {
       if (msg.data.widgetId === null) {
@@ -238,6 +246,13 @@ class UIEditor extends EventTarget {
       else {
         this.state?.widgets.unshift(widget);
       }
+      this.stateExtras.selectedWidget = widget.id;
+      fixContainers(this.state.widgets, { value: getMaxId(this.state.widgets) + 1 });
+      this.redrawAllWidgets();
+      this.scrollToBottom();
+      WidgetPropertyEditor.setWidget(widget);
+      this.setTab('props');
+      this.guiChanged();
       return;
     }
 
