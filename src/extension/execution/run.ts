@@ -90,6 +90,11 @@ export class PGMRunner {
         }
       }
     ));
+    vscode.debug.onDidReceiveDebugSessionCustomEvent((e) => {
+      if (e.session.type === 'pgm' && e.event === 'pgm/started' && e.body?.port) {
+        vscode.env.openExternal(vscode.Uri.parse(`http://localhost:${e.body?.port}`));
+      }
+    });
   }
 }
 
