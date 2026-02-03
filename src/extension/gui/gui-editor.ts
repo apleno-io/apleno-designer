@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
 import { GUIInterface, normalizeGUI } from '../../common/gui';
+import { GUICommands } from './gui-commands';
 
 /**
  * Define the type of edits used in pgui files.
@@ -420,7 +421,11 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
       document.makeEdit(message.edit as PGMInterfaceDocumentEdit);
       return;
     }
-    else if (message.type === 'response') {
+    if (message.type === 'onDidPressCommand') {
+      GUICommands.manageCommand(message.payload);
+      return;
+    }
+    if (message.type === 'response') {
       const callback = this._callbacks.get(message.requestId);
       callback?.(message.body);
       return;

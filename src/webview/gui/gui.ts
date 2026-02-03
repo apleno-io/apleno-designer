@@ -223,6 +223,12 @@ class UIEditor extends EventTarget {
       }
       // @ts-ignore
       this.stateExtras.selectedTabs[parseInt(msg.data.tabWidgetId)] = parseInt(msg.data.tabWidgetIndex);
+      return;
+    }
+
+    if (msg.data.type === 'onDidPressCommand') {
+      this.dispatchEvent(new CustomEvent('onDidPressCommand', { detail: msg.data.payload }));
+      return;
     }
   }
 
@@ -479,6 +485,9 @@ class UIEditor extends EventTarget {
   let initialState = {};
   let lastState = {};
   const editor = new UIEditor();
+  editor.addEventListener('onDidPressCommand', (e: CustomEventInit<any>) => {
+    vscode.postMessage({ type: 'onDidPressCommand', payload: e.detail });
+  });
   editor.addEventListener('onDidChange', (e: CustomEventInit<void>) => {
     const newState = editor.getState();
     if (!deepEqual(lastState, newState)) {

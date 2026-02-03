@@ -67,6 +67,39 @@ export const IframeContent = new class {
           });
         }
       }, { capture: true });
+      window.addEventListener('keydown', (e: KeyboardEvent) => {
+        // post ctrl/alt key to parent
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          const key = typeof e.key === 'string' ? e.key : '';
+          if (key.length === 0) {
+            return;
+          }
+          const pl = JSON.parse(JSON.stringify({
+            key: key.length === 1 ? key.toLowerCase() : key,
+            code: e.code,
+            ctrlKey: e.ctrlKey,
+            metaKey: e.metaKey,
+            altKey: e.altKey,
+            shiftKey: e.shiftKey,
+            repeat: e.repeat,
+          }));
+          window.parent.postMessage({
+            type: 'onDidPressCommand',
+            payload: pl
+          });
+        }
+
+        // delete key
+        if (e.key === 'Delete') {
+          e.preventDefault();
+          e.stopPropagation();
+          window.parent.postMessage({
+            type: 'onDidPressDelete'
+          }, '*');
+        }
+      }, true);
 
       setInterval(() => {
         if (this.mouseMode === MouseMode.ExternalDrag && Date.now() - this.dragLast > 200) {
