@@ -187,6 +187,11 @@ class UIEditor extends EventTarget {
   }
 
   private handleChildMessage(msg: MessageEvent): void {
+    if (msg.data.type === 'onDidPressDelete' && this.stateExtras.selectedWidget) {
+      this.deleteWidget(this.stateExtras.selectedWidget);
+      return;
+    }
+
     if (msg.data.type === 'onDidClickWidget') {
       if (msg.data.widgetId === null) {
         this.stateExtras.selectedWidget = null;
