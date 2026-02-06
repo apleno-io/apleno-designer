@@ -488,8 +488,8 @@ export function normalizeWidget(infos: any): GUIWidget {
   });
 
   // Subtypes verification
-  if (infos.data.subType && !WidgetSubTypes[infos.type].includes(infos.data.subType)) {
-    infos.data.subtype = WidgetSubTypes[infos.type][0];
+  if (('subType' in infos.data) && !WidgetSubTypes[infos.type].includes(infos.data.subType)) {
+    infos.data.subType = WidgetSubTypes[infos.type][0];
   }
 
   // Go through each child if container
