@@ -11,7 +11,6 @@ const subTypesLocalisation: { [key: string]: string } = {
   integer: 'Integer',
   slider: 'Slider',
   file: 'File',
-  folder: 'Folder',
   select: 'Select',
   multiselect: 'Select (multiple)',
   radio: 'Radio',

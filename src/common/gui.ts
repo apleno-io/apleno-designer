@@ -239,7 +239,7 @@ export const WidgetProperties: { [key: string]: string[] } = {
 export const WidgetSubTypes: { [key: string]: string[] } = {
   text: ['text', 'textarea', 'password'],
   number: ['float', 'integer', 'slider'],
-  path: ['file', 'folder'],
+  path: ['file'],
   select: ['select', 'multiselect', 'radio', 'multicheckboxes'],
   onoff: ['checkbox', 'switch'],
   progress: ['progressbar', 'progresscircle']
@@ -445,7 +445,7 @@ export function normalizeWidget(infos: any): GUIWidget {
     infos.type = 'number';
   }
   else if (infos.type === 'file' || infos.type === 'folder') {
-    infos.data.subType = infos.type;
+    infos.data.subType = 'file';
     infos.type = 'path';
   }
   else if (infos.type === 'doublenumeric' || infos.type === 'doublefloat') {
