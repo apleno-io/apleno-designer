@@ -2,7 +2,7 @@ import './gui-iframe.css';
 
 interface WidgetPosition {
   type: 'widget' | 'placeholder' | 'body';
-  widget: HTMLElement;
+  widget?: HTMLElement;
   widgetTopZone?: DOMRect;
   widgetBottomZone?: DOMRect;
   widgetZone?: DOMRect;
@@ -54,7 +54,7 @@ export const IframeContent = new class {
           parent.postMessage({
             type: 'onDidDropWidget',
             widgetType: wtype,
-            positionWidget: parseInt(position.widget.dataset.widgetId as string),
+            positionWidget: parseInt(position.widget?.dataset.widgetId as string),
             position: position.mouse === 'top' ? 'before' : 'after'
           });
         }
@@ -62,8 +62,16 @@ export const IframeContent = new class {
           parent.postMessage({
             type: 'onDidDropWidget',
             widgetType: wtype,
-            positionContainer: parseInt(position.widget.dataset.widgetId as string),
+            positionContainer: parseInt(position.widget?.dataset.widgetId as string),
             positionIndex: position.widgetContainerIndex
+          });
+        }
+        else if (position && position.type === 'body') {
+          parent.postMessage({
+            type: 'onDidDropWidget',
+            widgetType: wtype,
+            positionContainer: null,
+            position: 'after'
           });
         }
       }, { capture: true });
@@ -146,6 +154,13 @@ export const IframeContent = new class {
     if (topElement === null) {
       return null;
     }
+    if (topElement.tagName.toLowerCase() === 'body') {
+      return {
+        type: 'body',
+        widgetZone: document.body.getBoundingClientRect(),
+        mouse: null
+      };
+    }
     const w: HTMLElement | null = topElement.closest('[data-widget-id]');
     if (w === null) {
       return null;
@@ -163,9 +178,6 @@ export const IframeContent = new class {
         mouse: null
       };
     }
-
-    // todo: Detect if body (empty or bottom)
-
 
     // Normal widget
     const wRect = w.getBoundingClientRect();
@@ -198,7 +210,7 @@ export const IframeContent = new class {
 
     this.internalDropStartX = ev.clientX;
     this.internalDropStartY = ev.clientY;
-    this.internalDropWidgetId = position.widget.dataset.widgetId as string;
+    this.internalDropWidgetId = position.widget?.dataset.widgetId as string;
   }
 
   /**
@@ -229,7 +241,7 @@ export const IframeContent = new class {
         drop.style.width = `${position.widgetBottomZone.width}px`;
         drop.style.height = `${position.widgetBottomZone.height}px`;
       }
-      else if (position.type === 'placeholder' && position.widgetZone) {
+      else if ((position.type === 'placeholder' || position.type === 'body') && position.widgetZone) {
         drop.style.display = 'block';
         drop.style.top = `${position.widgetZone.y}px`;
         drop.style.left = `${position.widgetZone.x}px`;
@@ -257,7 +269,7 @@ export const IframeContent = new class {
 
     // Normal widget selection
     if (position.widget !== this.lastHoverWidget) {
-      this.lastHoverWidget = position.widget;
+      this.lastHoverWidget = position.widget || null;
       document.body.querySelectorAll('[data-widget-id]').forEach(w => w.classList.remove('gui-widget-hover'));
       if (position.widget) {
         position.widget.classList.add('gui-widget-hover');
@@ -276,7 +288,7 @@ export const IframeContent = new class {
         parent.postMessage({
           type: 'onDidDropWidget',
           widgetId: parseInt(this.internalDropWidgetId as string),
-          positionWidget: parseInt(position.widget.dataset.widgetId as string),
+          positionWidget: parseInt(position.widget?.dataset.widgetId as string),
           position: position.mouse === 'top' ? 'before' : 'after'
         });
       }
@@ -284,8 +296,16 @@ export const IframeContent = new class {
         parent.postMessage({
           type: 'onDidDropWidget',
           widgetId: parseInt(this.internalDropWidgetId as string),
-          positionContainer: parseInt(position.widget.dataset.widgetId as string),
+          positionContainer: parseInt(position.widget?.dataset.widgetId as string),
           positionIndex: position.widgetContainerIndex
+        });
+      }
+      else if (position && position.type === 'body') {
+        parent.postMessage({
+          type: 'onDidDropWidget',
+          widgetId: parseInt(this.internalDropWidgetId as string),
+          positionContainer: null,
+          position: 'after'
         });
       }
       ev.preventDefault();

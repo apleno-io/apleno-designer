@@ -1,4 +1,7 @@
 html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   box-sizing: border-box;
 }
 
@@ -7,11 +10,14 @@ html {
 }
 
 body {
+  margin: 0;
+  padding: 0;
   font-size: 14px;
   color: #292b2c;
   background-color: #fff;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe WPC, Segoe UI, HelveticaNeue-Light, Ubuntu, Droid Sans, sans-serif
+  font-family: -apple-system, BlinkMacSystemFont, Segoe WPC, Segoe UI, HelveticaNeue-Light, Ubuntu, Droid Sans, sans-serif;
+  min-height: 100%;
 }
 
 body.dragging,

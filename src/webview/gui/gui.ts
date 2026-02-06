@@ -299,7 +299,14 @@ class UIEditor extends EventTarget {
     }
   }
 
-  private moveWidget(id: number, positionWidgetId: number, position: 'before' | 'after' | number): void {
+  /**
+   * 
+   * @param id 
+   * @param positionWidgetId the widget id to move relative to. null for body.
+   * @param position 
+   * @returns 
+   */
+  private moveWidget(id: number, positionWidgetId: number | null, position: 'before' | 'after' | number): void {
     if (this.state === null) {
       return;
     }
@@ -307,7 +314,7 @@ class UIEditor extends EventTarget {
     // Check widget tries not to move in itself or on itself
     const widgetCheck = this.findWidget((w: GUIWidget) => w.id === id);
     if (widgetCheck === null) {
-      console.error(`Could not found widget id ${positionWidgetId} to move.`);
+      console.error(`Could not found widget id ${id} to move.`);
       return;
     }
     if (id === positionWidgetId) {
@@ -330,13 +337,22 @@ class UIEditor extends EventTarget {
       }
     });
     if (widget === null) {
-      console.error('Could not found widget id ' + positionWidgetId + ' to move.');
+      console.error(`Could not found widget id ${id} to move.`);
       return;
     }
 
     // Insert to new place
     let found: boolean = false;
-    if (position === 'after' || position === 'before') {
+    if (positionWidgetId === null) {
+      if (position === 'after') {
+        this.state?.widgets.push(widget);
+      }
+      else {
+        this.state?.widgets.unshift(widget);
+      }
+      found = true;
+    }
+    else if (position === 'after' || position === 'before') {
       this.forEachContainers((widgets: GUIWidget[]) => {
         for (let i = 0; i < widgets.length; ++i) {
           if (widgets[i].id === positionWidgetId) {
