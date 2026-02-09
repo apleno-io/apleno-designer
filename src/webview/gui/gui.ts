@@ -114,7 +114,7 @@ class UIEditor extends EventTarget {
   }
 
   public setState(state: GUIInterface): void {
-    this.state = normalizeGUI(state);
+    this.state = normalizeGUI(structuredClone(state));
     this.setUISettings();
     fixIds(this.state.widgets);
     fixContainers(this.state.widgets, { value: getMaxId(this.state.widgets) + 1 });
