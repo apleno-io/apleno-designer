@@ -68,7 +68,7 @@ class UIEditor extends EventTarget {
 
         // fix containers if modifier widget is tabs or columns
         if (this.state && widget.widgets && ['tabs', 'columns'].includes(widget.type)) {
-          fixContainers(widget.widgets, { value: getMaxId(this.state.widgets) + 1 });
+          fixContainers([widget], { value: getMaxId(this.state.widgets) + 1 });
           WidgetPropertyEditor.setChildren(widget.widgets);
         }
 
