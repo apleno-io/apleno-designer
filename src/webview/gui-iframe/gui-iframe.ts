@@ -170,10 +170,11 @@ export const IframeContent = new class {
     const container = topElement.closest('.pgm-emptycontainer');
     if (container) {
       // Columns: detect column. Tab: detect tab. List: nothing
+      const wRect = container.getBoundingClientRect();
       return {
         type: 'placeholder',
         widget: w,
-        widgetZone: container.getBoundingClientRect(),
+        widgetZone: new DOMRect(wRect.left + window.scrollX, wRect.y + window.scrollY, wRect.width, wRect.height),
         widgetContainerIndex: parseInt((container as HTMLElement).dataset.index as string),
         mouse: null
       };
