@@ -91,9 +91,9 @@ export class PGMRunner {
       }
     ));
     vscode.debug.onDidReceiveDebugSessionCustomEvent((e) => {
-      if (e.session.type === 'pgm' && e.event === 'pgm/started' && e.body?.port) {
-        vscode.env.openExternal(vscode.Uri.parse(`http://localhost:${e.body?.port}`));
-      }
+      //if (e.session.type === 'pgm' && e.event === 'pgm/started' && e.body?.port) {
+      //  vscode.env.openExternal(vscode.Uri.parse(`http://localhost:${e.body?.port}`));
+      //}
     });
   }
 }
@@ -140,8 +140,11 @@ export class PGMDebugConfigurationProvider implements vscode.DebugConfigurationP
     config.type = 'pgm';
     config.name = 'RPGM preview';
     config.request = 'launch';
-    config.debugExePath = res.executable;
-    config.debugConfigPath = res.configFile;
+    config.debugBin = res.bin;
+    config.debugApp = res.app;
+    config.debugR = res.r;
+    config.debugPython = res.python;
+    config.debugConda = res.conda;
     return config;
   }
 }

@@ -8,7 +8,6 @@ import { readFileSync } from "fs";
 class PGMDebugAdapter {
   private io: IOManager;
   private child: ChildProcessWithoutNullStreams | null = null;
-  private port: number | null = null;
 
   constructor() {
     this.io = new IOManager();
@@ -25,30 +24,18 @@ class PGMDebugAdapter {
   /**
    * Start the PGM runtime.
    */
-  private startChild(debugExePath: string, debugConfigPath: string) {
+  private startChild(bin: string, app: string, r: string, python: string, conda: string) {
     if (this.child) {
       return;
     }
 
-    // Attempt to read the port from the config file. It will be used later when
-    // notifying vscode the server is started with the port.
-    try {
-      const config = JSON.parse(readFileSync(debugConfigPath, 'utf8'));
-      this.port = config.port;
-    }
-    catch {
-      // silently ignore: the debugger will still start
-    }
-
-    this.child = spawn(debugExePath, [debugConfigPath], {
-      windowsHide: true
-    });
+    this.child = spawn(bin, [`--app=${app}`, `--r=${r}`, `--python=${python}`, `--conda=${conda}`], {});
 
     this.child.stdout.on("data", (d) => {
       // ugly way to detect if the runtime as started
-      if (`${d}`.includes('first sequence')) {
-        this.io.sendEvent('pgm/started', { port: this.port });
-      }
+      //if (`${d}`.includes('first sequence')) {
+      //  this.io.sendEvent('pgm/started', { port: this.port });
+      //}
       this.io.sendEvent("output", { category: "stdout", output: d.toString("utf8") });
     });
 
@@ -105,19 +92,22 @@ class PGMDebugAdapter {
 
       case "launch": {
         const args = req.arguments ?? {};
-        const debugExePath: string | undefined = args.debugExePath;
-        const debugConfigPath: string | undefined = args.debugConfigPath;
+        const debugBin: string = args.debugBin;
+        const debugApp: string = args.debugApp;
+        const debugR: string = args.debugR;
+        const debugPython: string = args.debugPython;
+        const debugConda: string = args.debugConda;
 
-        if (!debugExePath || !debugConfigPath) {
-          this.io.sendResponse(req, false, undefined, "Missing debugExePath/debugConfigPath in launch arguments.");
+        if (!debugApp) {
+          this.io.sendResponse(req, false, undefined, "Missing debugApp in launch arguments.");
           break;
         }
 
-        this.startChild(debugExePath, debugConfigPath);
+        this.startChild(debugBin, debugApp, debugR, debugPython, debugConda);
 
         // simulate
         this.io.sendEvent("process", {
-          name: path.basename(debugExePath),
+          name: 'PGM Runtime',
           systemProcessId: this.child?.pid ?? 0,
           isLocalProcess: true,
           startMethod: "launch"
