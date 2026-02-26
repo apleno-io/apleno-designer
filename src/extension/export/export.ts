@@ -4,7 +4,6 @@ import mm from 'micromatch';
 import path from 'path';
 import vscode from 'vscode';
 import { Storage } from '../utils/storage';
-import { Logger } from '../utils/logger';
 
 export class Exporter {
   /**
