@@ -136,7 +136,9 @@ export class PGMDebugConfigurationProvider implements vscode.DebugConfigurationP
       return undefined;
     }
 
+
     // undefined prevent continuing vscode debug
+    ExecutionStatusItemManager.setText(null);
     config.type = 'pgm';
     config.name = 'RPGM preview';
     config.request = 'launch';
