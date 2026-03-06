@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import vscode from 'vscode';
 import { Services } from '../services';
@@ -35,7 +34,7 @@ export class PreviewConfigGenerator {
     }
 
     return {
-      bin: path.join(RuntimeManager.getRuntimeFolder(), 'RPGM.exe'),
+      bin: path.join(RuntimeManager.getRuntimeFolder(), process.platform === 'win32' ? 'RPGM.exe' : 'RPGM'),
       app: workspace.uri.fsPath,
       r: await ConfigManager.getExecutablePath('r') || '',
       python: await ConfigManager.getExecutablePath('python') || '',
