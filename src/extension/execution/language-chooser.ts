@@ -56,6 +56,9 @@ export class LanguageChooser {
 
     // Save
     const config = await ConfigManager.getConfig();
+    if (!(lang in config)) {
+      config[lang] = {};
+    }
     config[lang].path = res;
     await ConfigManager.saveConfig(config);
   }
