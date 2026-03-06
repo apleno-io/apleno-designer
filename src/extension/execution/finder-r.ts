@@ -147,7 +147,7 @@ export const FinderR = new class {
   }
 
   /**
-   * Finds all mac installs by looking in common installs folders
+   * Finds all unix installs by looking in common installs folders
    * @returns 
    */
   private async getAllUnixPaths(): Promise<RFinderInstance[]> {
