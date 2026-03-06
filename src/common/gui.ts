@@ -401,8 +401,8 @@ export function normalizeWidget(infos: any): GUIWidget {
   }
 
   // LEGACY: Grid type int => integer
-  if (infos.data.gridtype && infos.data.gridtype === 'int') {
-    infos.data.gridtype = 'integer';
+  if (infos.data.gridType && infos.data.gridType === 'int') {
+    infos.data.gridType = 'integer';
   }
 
   // LEGACY: Grid stuff conversion
