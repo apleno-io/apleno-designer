@@ -366,7 +366,7 @@ export function normalizeWidget(infos: any): GUIWidget {
     id: infos.uid ? infos.uid : (infos.id || null),
     customId: infos.uid ? (infos.id || '') : (infos.customId || ''),
     type: infos.type ? infos.type : 'text',
-    data: infos.data ? infos.data : {},
+    data: infos.data ? { ...infos.data } : {},
     widgets: infos.widgets ? infos.widgets : infos.elements ? infos.elements : []
   };
 
@@ -374,9 +374,6 @@ export function normalizeWidget(infos: any): GUIWidget {
   if (!isContainerWidget(infos.type)) {
     delete infos.widgets;
   }
-
-  // LEGACY: Remove position
-  delete infos.position;
 
   // LEGACY: Remove fullwidth
   if (infos.data.fullWidth) {
