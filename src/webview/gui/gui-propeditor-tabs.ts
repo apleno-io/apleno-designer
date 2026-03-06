@@ -1,4 +1,4 @@
-import { Sanitizer } from "../../common/utils/sanitize";
+import { escapeHTML } from "../../common/utils/sanitize";
 
 export interface WidgetTabEditorData {
   values: string[];
@@ -39,7 +39,7 @@ export class WidgetTabEditor extends EventTarget {
     (this.parent.querySelector('#tabs-editor') as HTMLElement).innerHTML = `
 			${this.values.map((value: string, i: number) => `
 				<div class="tabs-editor-entry" data-entry="${i}">
-          <div class="tabs-editor-entry-text"><input type="text" value="${Sanitizer.xssAttribute(value)}"></div>
+          <div class="tabs-editor-entry-text"><input type="text" value="${escapeHTML(value)}"></div>
           <button class="btn-transparent${this.selected === i ? ' selected' : ''}" data-role="default">
             ${this.selected === i ? SVG_SELECTED : SVG_UNSELECTED}
           </button>

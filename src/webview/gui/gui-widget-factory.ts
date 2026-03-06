@@ -1,5 +1,5 @@
 import { type GUIWidget } from "../../common/gui";
-import { Sanitizer } from "../../common/utils/sanitize";
+import { escapeHTML } from "../../common/utils/sanitize";
 import { type StateExtras } from "./gui";
 
 enum WidgetCSSType {
@@ -28,7 +28,7 @@ export const WidgetFactory = new class {
 
     // Labels & help text
     const marginTopStyleTag: string = ` style="margin-top: ${widget.data.marginTop}px"`;
-    const labelHelp: string = widget.data.helpText && widget.data.helpText.length > 0 && widget.data.helpPosition === 'label' ? `<i class="fa-solid fa-circle-info" title="${Sanitizer.xssContent(widget.data.helpText)}"></i> ` : '';
+    const labelHelp: string = widget.data.helpText && widget.data.helpText.length > 0 && widget.data.helpPosition === 'label' ? `<i class="fa-solid fa-circle-info" title="${escapeHTML(widget.data.helpText)}"></i> ` : '';
     const label: string = `${labelHelp}${widget.data.labelText}${widget.data.isRequired ? '*' : ''}`;
     let result: string = '';
 
@@ -107,7 +107,7 @@ export const WidgetFactory = new class {
 
   private getContent(el: GUIWidget, options: WidgetRenderOptions = {}) {
     let html = '';
-    let val = Sanitizer.xssContent(el.data.value);
+    let val = escapeHTML(el.data.value);
 
     // child options
     const childOptions: WidgetRenderOptions = {
@@ -201,14 +201,14 @@ export const WidgetFactory = new class {
           const selected: boolean = Array.isArray(el.data.value) ? el.data.value.includes(`${x.value}`) : `${x.value}` === el.data.value;
           return `
                 <div class="${css.classContent}" style="${css.styleContent}">
-                    <label><input type="${type}" name="pgm-widget-${type}-${el.id}" value="${Sanitizer.xssContent(x.value)}"${selected ? ' checked' : ''}/> ${x.text}</label>
+                    <label><input type="${type}" name="pgm-widget-${type}-${el.id}" value="${escapeHTML(x.value)}"${selected ? ' checked' : ''}/> ${x.text}</label>
                 </div>`;
         }).join('\r') : '';
       }
       else if (el.data.subType === 'select' || el.data.subType === 'multiselect') {
         html = `<select class="pgm-widget-input ${css.hasStyle && css.type === WidgetCSSType.CLASS ? css.classContent : ''}" ${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''} ${el.data.subType === 'multiselect' ? 'multiple' : ''}>${el.data.choicesEntries?.map((x: any) => {
           const selected: boolean = Array.isArray(el.data.value) ? el.data.value.includes(`${x.value}`) : `${x.value}` === el.data.value;
-          return `<option value="${Sanitizer.xssAttribute(x.value)}" title="${Sanitizer.xssAttribute(x.text)}"${selected ? ' selected' : ''}>${Sanitizer.xssContent(x.text)}</option>`;
+          return `<option value="${escapeHTML(x.value)}" title="${escapeHTML(x.text)}"${selected ? ' selected' : ''}>${escapeHTML(x.text)}</option>`;
         }).join('\r')}</select>`;
       }
     }
@@ -228,7 +228,7 @@ export const WidgetFactory = new class {
       html = `<button class="pgm-button pgm-button-${el.data.buttonDesign} pgm-button-${el.data.buttonSize} ${css.type === WidgetCSSType.CLASS ? css.classContent : ''}"${css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''}>${val}</button>`;
     }
     else if (el.type === 'date') {
-      html = `<input type="date" class="pgm-widget-input ${css.classContent}" value="${Sanitizer.xssContent(el.data.value)}"${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''}/>`;
+      html = `<input type="date" class="pgm-widget-input ${css.classContent}" value="${escapeHTML(el.data.value)}"${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''}/>`;
     }
     else if (el.type === 'grid') {
       html = `<img class="pgm-widget-image ${css.classContent}" ${css.hasStyle && css.type === WidgetCSSType.STYLE ? css.fullHTMLTag : ''} src=""/>`;

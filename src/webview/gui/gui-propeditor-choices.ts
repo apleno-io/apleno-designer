@@ -1,5 +1,5 @@
 import { type GUIWidgetDataChoice } from "../../common/gui";
-import { Sanitizer } from "../../common/utils/sanitize";
+import { escapeHTML } from "../../common/utils/sanitize";
 
 export class WidgetChoiceEditor extends EventTarget {
   private parent: HTMLElement;
@@ -31,10 +31,10 @@ export class WidgetChoiceEditor extends EventTarget {
       ${this.values.map((value: GUIWidgetDataChoice, i: number) => `
         <div class="choices-editor-entry" data-entry="${i}">
           <div class="choices-editor-entry-text">
-            <input type="text" data-choices="value" value="${Sanitizer.xssAttribute(value.value)}">
+            <input type="text" data-choices="value" value="${escapeHTML(value.value)}">
           </div>
           <div class="choices-editor-entry-text">
-            <input type="text" data-choices="text" value="${Sanitizer.xssAttribute(value.text)}">
+            <input type="text" data-choices="text" value="${escapeHTML(value.text)}">
           </div>
           <button class="btn-transparent" data-role="up">
             <svg width="15" height="15" stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M7 15L12 9L17 15" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>

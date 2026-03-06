@@ -1,6 +1,6 @@
 import { type ProjectFile, type ProjectFileChangelog } from '../../common/project';
 import { deepEqual } from '../../common/utils/deep-equal';
-import { Sanitizer } from '../../common/utils/sanitize';
+import { escapeHTML } from '../../common/utils/sanitize';
 import './project.css';
 
 class ChangelogEditor extends EventTarget {
@@ -44,10 +44,10 @@ class ChangelogEditor extends EventTarget {
     const entries = `
 			${this.changelog.map((entry, i) => `
 				<tr data-entry="${i}">
-					<td>${Sanitizer.xssContent(entry.date)}</td>
-					<td>${Sanitizer.xssContent(entry.author)}</td>
-					<td>${Sanitizer.xssContent(entry.version)}</td>
-					<td>${Sanitizer.xssContent(entry.message)}</td>
+					<td>${escapeHTML(entry.date)}</td>
+					<td>${escapeHTML(entry.author)}</td>
+					<td>${escapeHTML(entry.version)}</td>
+					<td>${escapeHTML(entry.message)}</td>
 					<td>
 						<button class="flex-child-shrink flex-margin-left btn-transparent" data-role="up">
 							<svg width="20" height="20" stroke="currentColor" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g><path d="M7 15L12 9L17 15" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
