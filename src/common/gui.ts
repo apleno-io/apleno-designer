@@ -387,7 +387,7 @@ export function normalizeWidget(infos: any): GUIWidget {
   }
 
   // LEGACY: Convert names from older versions
-  for (let key in WidgetLegacyConversionTable) {
+  for (const key of Object.keys(WidgetLegacyConversionTable)) {
     for (let i = 0; i < WidgetLegacyConversionTable[key].length; ++i) {
       const keyNameToConvert: string = WidgetLegacyConversionTable[key][i];
       if (keyNameToConvert in infos.data) {
@@ -469,7 +469,7 @@ export function normalizeWidget(infos: any): GUIWidget {
 
   // Removed unknown properties
   const typeProps: string[] = WidgetProperties[infos.type];
-  for (let key in infos.data) {
+  for (const key of Object.keys(infos.data)) {
     if (!typeProps.includes(key)) {
       delete infos.data[key];
     }
@@ -498,7 +498,7 @@ export function normalizeWidget(infos: any): GUIWidget {
 }
 
 export function convertOldWidgetProperty(propertyName: string): string {
-  for (let key in WidgetLegacyConversionTable) {
+  for (const key of Object.keys(WidgetLegacyConversionTable)) {
     for (let i = 0; i < WidgetLegacyConversionTable[key].length; ++i) {
       const keyNameToConvert: string = WidgetLegacyConversionTable[key][i];
       if (keyNameToConvert === propertyName) {

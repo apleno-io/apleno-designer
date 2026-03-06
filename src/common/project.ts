@@ -88,7 +88,7 @@ export class ProjectFileUtils {
     }
 
     // All keys
-    for (let key in manifest) {
+    for (const key of Object.keys(manifest)) {
       if (key in result) {
         (result as any)[key] = manifest[key];
       }
