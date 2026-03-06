@@ -112,7 +112,7 @@ export const WidgetPropertyEditor = new class extends EventTarget {
    * Used to update children from a fixContainers call
    */
   public setChildren(widgets: GUIWidget[]) {
-    if (this.currentWidget && Array.isArray(this.currentWidget)) {
+    if (this.currentWidget && Array.isArray(this.currentWidget.widgets)) {
       this.currentWidget.widgets = structuredClone(widgets);
     }
   }
