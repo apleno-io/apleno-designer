@@ -299,48 +299,7 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
     // Setup initial content for the webview
     webviewPanel.webview.options = { enableScripts: true };
     webviewPanel.webview.html = await this.getHtmlForWebview(webviewPanel.webview);
-    webviewPanel.webview.onDidReceiveMessage(e => this.onMessage(document, e));
-
-    // Wait for the webview to be properly ready before we init
-    webviewPanel.webview.onDidReceiveMessage(async e => {
-      if (e.type === 'ready') {
-        if (document.uri.scheme === 'untitled') {
-          this.postMessage(webviewPanel, 'init', {
-            untitled: true,
-            editable: true
-          });
-        } else {
-          const editable = vscode.workspace.fs.isWritableFileSystem(document.uri.scheme);
-          this.postMessage(webviewPanel, 'init', {
-            value: document.documentData,
-            editable
-          });
-        }
-      }
-      else if (e.type === 'GetFileRelative') {
-        if (typeof e.path === 'string' && e.path.length > 0) {
-          this.postMessage(webviewPanel, 'GetFileRelativeResponse', vscode.workspace.asRelativePath(e.path));
-        }
-      }
-      else if (e.type === 'CheckFiles') {
-        if (!Array.isArray(e.paths) || vscode.workspace.workspaceFolders === undefined || vscode.workspace.workspaceFolders?.length === 0) {
-          this.postMessage(webviewPanel, 'CheckFilesResponse', {});
-          return;
-        }
-
-        const results = [];
-        for (let i = 0; i < e.paths.length; ++i) {
-          try {
-            const result = await vscode.workspace.fs.stat(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, e.paths[i]));
-            results.push({ path: e.paths[i], exists: result && result.type === vscode.FileType.File });
-          }
-          catch {
-            results.push({ path: e.paths[i], exists: false });
-          }
-        }
-        this.postMessage(webviewPanel, 'CheckFilesResponse', results);
-      }
-    });
+    webviewPanel.webview.onDidReceiveMessage(e => this.onMessage(document, webviewPanel, e));
   }
 
   private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<PGMInterfaceDocument>>();
@@ -416,7 +375,22 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
     panel.webview.postMessage({ type, body });
   }
 
-  private async onMessage(document: PGMInterfaceDocument, message: any) {
+  private async onMessage(document: PGMInterfaceDocument, webviewPanel: vscode.WebviewPanel, message: any) {
+    if (message.type === 'ready') {
+      if (document.uri.scheme === 'untitled') {
+        this.postMessage(webviewPanel, 'init', {
+          untitled: true,
+          editable: true
+        });
+      } else {
+        const editable = vscode.workspace.fs.isWritableFileSystem(document.uri.scheme);
+        this.postMessage(webviewPanel, 'init', {
+          value: document.documentData,
+          editable
+        });
+      }
+      return;
+    }
     if (message.type === 'OnDidChange') {
       document.makeEdit(message.edit as PGMInterfaceDocumentEdit);
       return;

@@ -273,55 +273,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 		// Setup initial content for the webview
 		webviewPanel.webview.options = { enableScripts: true };
 		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
-		webviewPanel.webview.onDidReceiveMessage(e => this.onMessage(document, e));
-
-		// Wait for the webview to be properly ready before we init
-		webviewPanel.webview.onDidReceiveMessage(async e => {
-			if (e.type === 'ready') {
-				if (document.uri.scheme === 'untitled') {
-					this.postMessage(webviewPanel, 'init', {
-						untitled: true,
-						editable: true
-					});
-				} else {
-					const editable = vscode.workspace.fs.isWritableFileSystem(document.uri.scheme);
-					this.postMessage(webviewPanel, 'init', {
-						value: document.documentData,
-						editable
-					});
-				}
-			}
-			else if (e.type === 'select-sequence') {
-				const res = await vscode.window.showOpenDialog({
-					canSelectFiles: true,
-					canSelectFolders: false,
-					canSelectMany: false,
-					title: 'Select the starting sequence file',
-					openLabel: 'Select',
-					filters: {
-						'PGM Sequence files': ['pseq']
-					}
-				});
-				if (Array.isArray(res) && res.length > 0) {
-					this.postMessage(webviewPanel, 'select-sequence', vscode.workspace.asRelativePath(res[0].path));
-				}
-			}
-			else if (e.type === 'select-logo' || e.type === 'select-icon') {
-				const res = await vscode.window.showOpenDialog({
-					canSelectFiles: true,
-					canSelectFolders: false,
-					canSelectMany: false,
-					title: 'Select the app  file',
-					openLabel: 'Select',
-					filters: {
-						'Images': ['jpg', 'png', 'gif', 'jpeg']
-					}
-				});
-				if (Array.isArray(res) && res.length > 0) {
-					this.postMessage(webviewPanel, e.type, vscode.workspace.asRelativePath(res[0].path));
-				}
-			}
-		});
+		webviewPanel.webview.onDidReceiveMessage(e => this.onMessage(document, webviewPanel, e));
 	}
 
 	private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<PGMProDocument>>();
@@ -495,7 +447,54 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 		panel.webview.postMessage({ type, body });
 	}
 
-	private async onMessage(document: PGMProDocument, message: any) {
+	private async onMessage(document: PGMProDocument, webviewPanel: vscode.WebviewPanel, message: any) {
+		if (message.type === 'ready') {
+			if (document.uri.scheme === 'untitled') {
+				this.postMessage(webviewPanel, 'init', {
+					untitled: true,
+					editable: true
+				});
+			} else {
+				const editable = vscode.workspace.fs.isWritableFileSystem(document.uri.scheme);
+				this.postMessage(webviewPanel, 'init', {
+					value: document.documentData,
+					editable
+				});
+			}
+			return;
+		}
+		if (message.type === 'select-sequence') {
+			const res = await vscode.window.showOpenDialog({
+				canSelectFiles: true,
+				canSelectFolders: false,
+				canSelectMany: false,
+				title: 'Select the starting sequence file',
+				openLabel: 'Select',
+				filters: {
+					'PGM Sequence files': ['pseq']
+				}
+			});
+			if (Array.isArray(res) && res.length > 0) {
+				this.postMessage(webviewPanel, 'select-sequence', vscode.workspace.asRelativePath(res[0].path));
+			}
+			return;
+		}
+		if (message.type === 'select-logo' || message.type === 'select-icon') {
+			const res = await vscode.window.showOpenDialog({
+				canSelectFiles: true,
+				canSelectFolders: false,
+				canSelectMany: false,
+				title: 'Select the app  file',
+				openLabel: 'Select',
+				filters: {
+					'Images': ['jpg', 'png', 'gif', 'jpeg']
+				}
+			});
+			if (Array.isArray(res) && res.length > 0) {
+				this.postMessage(webviewPanel, message.type, vscode.workspace.asRelativePath(res[0].path));
+			}
+			return;
+		}
 		if (message.type === 'edit') {
 			document.makeEdit(message.edit as PGMProDocumentEdit);
 			return;
