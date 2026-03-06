@@ -1,0 +1,156 @@
+@import '../../common/css/reset.css';
+@import '../../common/css/vscode.css';
+
+#sequence {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+#sequence-canvas {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 300px;
+  bottom: 0px;
+}
+
+#sequence-sidebar {
+  position: absolute;
+  top: 0;
+  width: 300px;
+  left: 0;
+  bottom: 0px;
+  overflow: hidden;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+#sequence-sidebar-content {
+  flex: 1 1 auto;
+  overflow: hidden auto;
+}
+
+#sequence-drop {
+  position: absolute;
+  top: 0;
+  width: 10px;
+  left: 300px;
+  bottom: 0px;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* SIDEBAR TABS */
+#sequence-sidebar-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 3px;
+  margin-bottom: 5px;
+  border: 1px solid var(--vscode-button-background);
+  border-width: 0 0 1px 0;
+}
+
+#sequence-sidebar-tabs button {
+  flex: 1 1 auto;
+  background-color: transparent;
+  border-radius: 4px 4px 0 0;
+  outline: none;
+  color: var(--vscode-button-secondaryForeground);
+  background-color: var(--vscode-button-secondaryBackground);
+}
+
+#sequence-sidebar-tabs button.selected {
+  background: var(--vscode-button-background);
+}
+
+#sequence-sidebar-tabs button:hover:not(.selected) {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.badge {
+  padding: 3px 5px;
+  font-size: 0.9rem;
+  background-color: var(--vscode-breadcrumb-background);
+  border-radius: 3px;
+}
+
+.badge-red {
+  color: var(--vscode-activityWarningBadge-foreground);
+  background-color: var(--vscode-activityErrorBadge-background);
+}
+
+/* ADD */
+h2:not(:first-child) {
+  margin: 20px 0 0;
+}
+
+h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+[data-tab-content="view"] button {
+  display: block;
+  margin: 3px 0;
+  width: 100%;
+  color: var(--vscode-button-secondaryForeground);
+  background-color: var(--vscode-button-secondaryBackground);
+  cursor: grab;
+}
+
+[data-tab-content="view"] button:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+/* PROP EDITOR */
+#step-editor-empty,
+#step-editor-nosetting {
+  margin-top: 30px;
+  text-align: center;
+}
+
+[data-tab-content="props"] label {
+  margin: 10px 0 2px;
+  user-select: none;
+}
+
+[data-tab-content="props"] input:not([type=checkbox]),
+textarea,
+select {
+  padding: 3px;
+}
+
+[data-tab-content="props"] input[type=checkbox] {
+  vertical-align: text-top;
+}
+
+.step-setting-help {
+  color: var(--vscode-list-deemphasizedForeground);
+}
+
+#step-actions {
+  margin-top: 1rem;
+  text-align: right;
+}
+
+/* ERRORS */
+#pseq-error-empty {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.pseq-error {
+  padding: 3px;
+  color: var(--vscode-errorForeground);
+  border-radius: 2px;
+}
+
+.pseq-error:hover {
+  cursor: pointer;
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-statusBarItem-errorBackground);
+}

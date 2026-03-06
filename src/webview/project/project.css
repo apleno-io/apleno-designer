@@ -1,0 +1,73 @@
+@import '../../common/css/reset.css';
+@import '../../common/css/vscode.css';
+
+html,
+body {
+  height: 100%;
+}
+
+.flex-horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-vertical {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-child-grow {
+  flex: 1;
+}
+
+.flex-child-shrink {
+  flex: 0;
+}
+
+.flex-margin-left {
+  margin-left: var(--input-padding-vertical);
+}
+
+#ppro-editor {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 50px;
+}
+
+h2 {
+  margin: 15px 0 8px 0;
+  font-size: 26px;
+  color: var(--vscode-settings-headerForeground);
+}
+
+.ppro-setting {
+  padding: 12px 12px 18px;
+}
+
+.ppro-setting:hover {
+  background-color: var(--vscode-settings-rowHoverBackground);
+}
+
+.ppro-setting-help {
+  margin: 8px 0;
+}
+
+.customfiles-list {
+  padding-bottom: 8px;
+}
+
+.customfiles-entry {
+  padding-bottom: 4px;
+}
+
+.warning {
+  color: var(--vscode-editorWarning-foreground);
+}
+
+#project-css {
+  width: 100%;
+  max-width: none;
+  height: 300px;
+  font-family: var(--vscode-editor-font-family);
+}

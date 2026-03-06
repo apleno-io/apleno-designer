@@ -26,7 +26,8 @@ const esbuildProblemMatcherPlugin = {
 async function main() {
 	const ctx = await esbuild.context({
 		entryPoints: [
-			'src/extension.ts'
+			{ out: 'extension', in: 'src/extension/extension.ts' },
+			{ out: 'debug-adapter', in: 'src/debug-adapter/debug-adapter.ts' }
 		],
 		bundle: true,
 		format: 'cjs',
@@ -34,19 +35,51 @@ async function main() {
 		sourcemap: !production,
 		sourcesContent: false,
 		platform: 'node',
-		outfile: 'dist/extension.js',
+		outdir: 'dist',
 		external: ['vscode'],
 		logLevel: 'silent',
+		loader: {
+			'.html': 'text'
+		},
+		plugins: [
+			/* add to the end of plugins array */
+			esbuildProblemMatcherPlugin,
+		],
+	});
+	const ctxMedia = await esbuild.context({
+		entryPoints: [
+			{ out: 'gui/gui.min', in: 'src/webview/gui/gui.ts' },
+			{ out: 'gui-iframe/gui-iframe.min', in: 'src/webview/gui-iframe/gui-iframe.ts' },
+			{ out: 'sequence/sequence.min', in: 'src/webview/sequence/sequence.ts' },
+			{ out: 'project/project.min', in: 'src/webview/project/project.ts' }
+		],
+		bundle: true,
+		format: 'iife',
+		minify: production,
+		sourcemap: !production,
+		sourcesContent: false,
+		platform: 'browser',
+		outdir: 'media',
+		external: ['vscode'],
+		logLevel: 'silent',
+		loader: {
+			'.html': 'text'
+		},
 		plugins: [
 			/* add to the end of plugins array */
 			esbuildProblemMatcherPlugin,
 		],
 	});
 	if (watch) {
-		await ctx.watch();
+		await Promise.all([
+			ctx.watch(),
+			ctxMedia.watch()
+		]);
 	} else {
 		await ctx.rebuild();
 		await ctx.dispose();
+		await ctxMedia.rebuild();
+		await ctxMedia.dispose();
 	}
 }
 

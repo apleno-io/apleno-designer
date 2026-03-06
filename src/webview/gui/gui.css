@@ -1,0 +1,149 @@
+@import '../../common/css/reset.css';
+@import '../../common/css/vscode.css';
+
+#gui {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+#gui-preview {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 300px;
+  bottom: 0px;
+}
+
+#gui-preview iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+#gui-sidebar {
+  position: absolute;
+  top: 0;
+  width: 300px;
+  left: 0;
+  bottom: 0px;
+  overflow: hidden;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+#gui-sidebar-content {
+  flex: 1 1 auto;
+  overflow: hidden auto;
+}
+
+/* SIDEBAR TABS */
+#gui-sidebar-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 3px;
+  margin-bottom: 5px;
+  border: 1px solid var(--vscode-button-background);
+  border-width: 0 0 1px 0;
+}
+
+#gui-sidebar-tabs button {
+  flex: 1 1 auto;
+  background-color: transparent;
+  border-radius: 4px 4px 0 0;
+  outline: none;
+  color: var(--vscode-button-secondaryForeground);
+  background-color: var(--vscode-button-secondaryBackground);
+}
+
+#gui-sidebar-tabs button.selected {
+  background: var(--vscode-button-background);
+}
+
+#gui-sidebar-tabs button:hover:not(.selected) {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+/* ADD */
+h2:not(:first-child) {
+  margin: 20px 0 0;
+}
+
+h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+[data-tab-content="add"] button {
+  display: block;
+  margin: 3px 0;
+  width: 100%;
+  color: var(--vscode-button-secondaryForeground);
+  background-color: var(--vscode-button-secondaryBackground);
+  cursor: grab;
+}
+
+[data-tab-content="add"] button:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+/* UI SETTINGS */
+[data-tab-content="ui"] label {
+  margin: 10px 0 2px;
+  user-select: none;
+}
+
+/* PROP EDITOR */
+#gui-propeditor-empty {
+  margin-top: 30px;
+  text-align: center;
+}
+
+#gui-propeditor-actions {
+  text-align: right;
+}
+
+#gui-propeditor label {
+  margin: 10px 0 2px;
+  user-select: none;
+}
+
+#gui-propeditor input:not([type=checkbox]),
+textarea,
+select {
+  padding: 3px;
+}
+
+#gui-propeditor input[type=checkbox] {
+  vertical-align: text-top;
+}
+
+.tabs-editor-entry,
+.choices-editor-entry,
+.columns-editor-entry {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 3px;
+}
+
+.tabs-editor-entry-text,
+.choices-editor-entry-text,
+.columns-editor-entry-text {
+  flex: 1 1 auto;
+}
+
+.tabs-editor-entry button,
+.choices-editor-entry button,
+.columns-editor-entry button {
+  flex: 0 0 auto;
+  padding: 0 2px;
+  height: 25px;
+  width: 22px;
+}
+
+.tabs-editor-entry button.selected {
+  color: var(--vscode-charts-green);
+}

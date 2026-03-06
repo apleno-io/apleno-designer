@@ -9,24 +9,152 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onDebugResolve:pgm"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "customEditors": [
-			{
-				"viewType": "pgm.ppro",
-				"displayName": "PGM Project Editor",
-				"selector": [
-					{
-						"filenamePattern": "*.ppro"
-					}
-				]
-			}
-		],
+      {
+        "viewType": "pgm.ppro",
+        "displayName": "PGM Project Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.ppro"
+          }
+        ]
+      },
+      {
+        "viewType": "pgm.pseq",
+        "displayName": "PGM Sequence Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.pseq"
+          }
+        ]
+      },
+      {
+        "viewType": "pgm.pgui",
+        "displayName": "PGM Interface Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.pgui"
+          }
+        ]
+      }
+    ],
     "commands": [
       {
+        "command": "pgm.export",
+        "title": "PGM: Export app"
+      },
+      {
+        "command": "pgm.initialize",
+        "title": "PGM: Create new project"
+      },
+      {
+        "command": "pgm.language.choose.r",
+        "title": "PGM: Choose R path for preview"
+      },
+      {
+        "command": "pgm.language.choose.python",
+        "title": "PGM: Choose Python path for preview"
+      },
+      {
+        "command": "pgm.language.choose.conda",
+        "title": "PGM: Choose Conda path for preview"
+      },
+      {
         "command": "pgm.ppro.new",
-        "title": "Create new PGM Project file"
+        "title": "PGM: Create new Project file"
+      },
+      {
+        "command": "pgm.pseq.new",
+        "title": "PGM: Create new Sequence file"
+      },
+      {
+        "command": "pgm.pgui.new",
+        "title": "PGM: Create new Interface file"
+      },
+      {
+        "command": "pgm.run",
+        "title": "PGM: Run preview"
+      },
+      {
+        "command": "pgm.logs",
+        "title": "PGM: Show logs"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "pgm",
+        "label": "RPGM",
+        "languages": [],
+        "program": "./dist/debug-adapter.js",
+        "runtime": "node",
+        "configurationAttributes": {
+          "launch": {
+            "required": [],
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "request": {
+                "type": "string"
+              },
+              "debugExePath": {
+                "type": "string",
+                "description": "Absolute path to debugger"
+              },
+              "debugConfigPath": {
+                "type": "string",
+                "description": "Absolute path to debugger config"
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "pgm",
+            "request": "launch",
+            "name": "RPGM preview"
+          }
+        ]
+      }
+    ],
+    "languages": [
+      {
+        "id": "ppro",
+        "extensions": [
+          ".ppro"
+        ],
+        "icon": {
+          "light": "./icons/ppro.svg",
+          "dark": "./icons/ppro.svg"
+        }
+      },
+      {
+        "id": "pseq",
+        "extensions": [
+          ".pseq"
+        ],
+        "icon": {
+          "light": "./icons/pseq.svg",
+          "dark": "./icons/pseq.svg"
+        }
+      },
+      {
+        "id": "pgui",
+        "extensions": [
+          ".pgui"
+        ],
+        "icon": {
+          "light": "./icons/pgui.svg",
+          "dark": "./icons/pgui.svg"
+        }
       }
     ]
   },
@@ -35,26 +163,37 @@
     "compile": "npm run check-types && npm run lint && node esbuild.js",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
-    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "watch:tsc": "tsc --noEmit --watch --project src/extension/tsconfig.json",
     "package": "npm run check-types && npm run lint && node esbuild.js --production",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "test:unit": "vitest"
   },
   "devDependencies": {
-    "@types/vscode": "^1.97.0",
+    "@types/adm-zip": "^0.5.7",
+    "@types/micromatch": "^4.0.10",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/semver": "^7.7.1",
+    "@types/vscode": "^1.97.0",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
     "@typescript-eslint/parser": "^8.22.0",
-    "eslint": "^9.19.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
     "esbuild": "^0.24.2",
+    "eslint": "^9.19.0",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.7.3",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "micromatch": "^4.0.8",
+    "semver": "^7.7.3",
+    "vscode-debugadapter": "^1.51.0"
   }
 }

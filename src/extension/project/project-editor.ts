@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { Disposable, disposeAll } from './dispose';
-import { getNonce } from './util';
-import { normalizeProject, ProjectFile } from './normalizers/normalizeProject';
+import { Disposable, disposeAll } from '../dispose';
+import { getNonce } from '../util';
+import { ProjectFile, ProjectFileUtils } from '../../common/project';
 
 /**
  * Define the type of edits used in ppro files.
@@ -27,14 +27,18 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 
 	private static async readFile(uri: vscode.Uri): Promise<ProjectFile> {
 		if (uri.scheme === 'untitled') {
-			return normalizeProject({});
+			return ProjectFileUtils.sanitize({});
 		}
 		const readData: Uint8Array = await vscode.workspace.fs.readFile(uri);
 		try {
-			return normalizeProject(JSON.parse(Buffer.from(readData).toString('utf8')));
+			const content = Buffer.from(readData).toString('utf8');
+			if (content.trim().length === 0) {
+				return ProjectFileUtils.sanitize({});
+			}
+			return ProjectFileUtils.sanitize(JSON.parse(content));
 		} catch (e) {
-			console.error(e);
-			return normalizeProject({});
+			vscode.window.showErrorMessage('Could not load the project file. It is not a valid JSON file.');
+			return ProjectFileUtils.sanitize({});
 		}
 	}
 
@@ -272,7 +276,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 		webviewPanel.webview.onDidReceiveMessage(e => this.onMessage(document, e));
 
 		// Wait for the webview to be properly ready before we init
-		webviewPanel.webview.onDidReceiveMessage(e => {
+		webviewPanel.webview.onDidReceiveMessage(async e => {
 			if (e.type === 'ready') {
 				if (document.uri.scheme === 'untitled') {
 					this.postMessage(webviewPanel, 'init', {
@@ -285,6 +289,36 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						value: document.documentData,
 						editable
 					});
+				}
+			}
+			else if (e.type === 'select-sequence') {
+				const res = await vscode.window.showOpenDialog({
+					canSelectFiles: true,
+					canSelectFolders: false,
+					canSelectMany: false,
+					title: 'Select the starting sequence file',
+					openLabel: 'Select',
+					filters: {
+						'PGM Sequence files': ['pseq']
+					}
+				});
+				if (Array.isArray(res) && res.length > 0) {
+					this.postMessage(webviewPanel, 'select-sequence', vscode.workspace.asRelativePath(res[0].path));
+				}
+			}
+			else if (e.type === 'select-logo' || e.type === 'select-icon') {
+				const res = await vscode.window.showOpenDialog({
+					canSelectFiles: true,
+					canSelectFolders: false,
+					canSelectMany: false,
+					title: 'Select the app  file',
+					openLabel: 'Select',
+					filters: {
+						'Images': ['jpg', 'png', 'gif', 'jpeg']
+					}
+				});
+				if (Array.isArray(res) && res.length > 0) {
+					this.postMessage(webviewPanel, e.type, vscode.workspace.asRelativePath(res[0].path));
 				}
 			}
 		});
@@ -315,14 +349,9 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 	 * Get the static HTML used for in our editor's webviews.
 	 */
 	private getHtmlForWebview(webview: vscode.Webview): string {
-		// Local path to script and css for the webview
-		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'ppro.js'));
-		const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'reset.css'));
-		const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'vscode.css'));
-		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', 'ppro.css'));
-
-		// Use a nonce to whitelist which scripts can be run
-		const nonce = getNonce();
+		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/project/project.min.js'));
+		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media/project/project.min.css'));
+		const nonce = getNonce(); // Use a nonce to whitelist scripts
 
 		return `
 			<!DOCTYPE html>
@@ -338,36 +367,38 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-				<link href="${styleResetUri}" rel="stylesheet" />
-				<link href="${styleVSCodeUri}" rel="stylesheet" />
 				<link href="${styleMainUri}" rel="stylesheet" />
 
 				<title>P</title>
 			</head>
 			<body>
 				<div id="ppro-editor">
-					<h2>Main Settings</h2>
+					<h2 class="ppro-setting">Main Settings</h2>
 
 					<div class="ppro-setting">
 						<label for="project-name">App Name</label>
+						<div class="ppro-setting-help">The app name that will be displayed in RPGM Client and Server.</div>
 						<input type="text" id="project-name" value="" />
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-author">Company Name or Author</label>
+						<div class="ppro-setting-help">The author or the company name.</div>
 						<input type="text" id="project-author" value="" />
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-description">App Description</label>
+						<div class="ppro-setting-help">A small description of the app purpose. Will be displayed in RPGM Client and Server.</div>
 						<input type="text" id="project-description" />
 					</div>
 
 					<div class="ppro-setting">
-						<label for="project-seq">Starting Sequence</label>
-						<div class="row">
-								<div class="col-10"><input type="text" id="project-seq" value="" /></div>
-								<div class="col-2 col-padding-left"><button class="success fullwidth btn-form" id="project-btn-sequence">Browse</button></div>
+						<label for="project-sequence">Starting Sequence</label>
+						<div class="ppro-setting-help">The starting sequence of your app.</div>
+						<div class="flex-horizontal">
+							<div class="flex-grow"><input type="text" id="project-sequence" value="" /></div>
+							<div class="flex-shrink flex-margin-left"><button data-role="select-sequence">Browse...</button></div>
 						</div>
 					</div>
 
@@ -375,100 +406,80 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 						<label for="project-wd">Languages Default Working Directory</label>
 						<div class="ppro-setting-help">This option is for the compatibility of RPGM 1 and 2 programs as the working directory was by default in the output folder.</div>
 						<select id="project-wd">
-							<option value="program">App folder</option>
+							<option value="app">App folder</option>
 							<option value="output">Output folder (RPGM 2 default)</option>
 						</select>
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-outputfolder">Output Folder Name</label>
-						<div class="ppro-setting-help">Name of the sub-directory for generated files during execution. If empty, a random string will be used.</div>
-						<div class="ppro-setting-help">Special values can be used: {{name}} for the name of the program, {{datetime}} for the current date and time.</div>
+						<div class="ppro-setting-help">Name of the sub-directory for generated files during execution. If empty, a random string will be used. Special values can be used: {{name}} for the name of the program, {{datetime}} for the current date and time.</div>
 						<input type="text" id="project-outputfolder" value="" />
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-customFiles">Custom JS/CSS Files</label>
 						<div class="ppro-setting-help">One file per line, with its relative path to the root folder of the project. The JS and CSS files will be loaded and executed with the app.</div>
-						<textarea id="project-customFiles"></textarea>
+						<div id="project-customFiles"></div>
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-console">Allow user to access languages consoles</label>
+						<div class="ppro-setting-help">Determine if the end-user can access and enter commands in the R or Python console.</div>
 						<select id="project-console">
-								<option value="enabled">Allow</option>
-								<option value="disabled">Disallow</option>
+							<option value="enabled">Allow</option>
+							<option value="disabled">Disallow</option>
 						</select>
 					</div>
 
-					<h2>Design</h2>
+					<h2 class="ppro-setting">Design Settings</h2>
+
+					<div class="ppro-setting">
+						<label for="project-icon">App Icon</label>
+						<div class="ppro-setting-help">Icon shown in RPGM Client and Server in the app listing.</div>
+						<div class="flex-horizontal">
+							<div class="flex-grow"><input type="text" id="project-icon" value="" /></div>
+							<div class="flex-shrink flex-margin-left"><button data-role="select-icon">Browse...</button></div>
+						</div>
+					</div>
 
 					<div class="ppro-setting">
 						<label for="project-logo">Top menu logo</label>
-						<div class="row">
-								<div class="col-10"><input type="text" id="project-logo" value="" /></div>
-								<div class="col-2 col-padding-left"><button class="success fullwidth btn-form" id="project-btn-logo">Browser</button></div>
+						<div class="ppro-setting-help">The image shown on top of the steps list.</div>
+						<div class="flex-horizontal">
+							<div class="flex-grow"><input type="text" id="project-logo" value="" /></div>
+							<div class="flex-shrink flex-margin-left"><button data-role="select-logo">Browse...</button></div>
 						</div>
 					</div>
 
 					<div class="ppro-setting">
 						<label for="project-steps">Show steps list</label>
+						<div class="ppro-setting-help">Determine if the steps list on the right will be visible or hidden.</div>
 						<select id="project-steps">
-								<option value="sidebar">Show</option>
-								<option value="hide">Hide</option>
+							<option value="hidden">Hide</option>
+							<option value="shown">Show</option>
 						</select>
+					</div>
+
+					<div class="ppro-setting">
+						<label for="project-css">Custom CSS</label>
+						<div class="ppro-setting-help">Custom CSS. <span class="warning">This is deprecated, please put your CSS code in a .css file and import it with a custom file entry above.</span></div>
+						<textarea id="project-css" row="15"></textarea>
+					</div>
+
+					<h2 class="ppro-setting">Changelog</h2>
+
+					<div class="ppro-setting">
+						<label for="project-changelog">Changelog</label>
+						<div class="ppro-setting-help">List of changes made to the project.</div>
+						<div id="project-changelog"></div>
 					</div>
 				</div>
 
-				<div id="drop-zone">
-					<p>Drag one or more files to this <i>drop zone</i>.</p>
-				</div>
-				
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
 	}
-
-	/*async provideDocumentDropEdits(_document: vscode.TextDocument, _position: vscode.Position, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<vscode.DocumentDropEdit | undefined> {
-		console.log('YO')
-		// Check the data transfer to see if we have dropped a list of uris
-		const dataTransferItem = dataTransfer.get('text/uri-list');
-		if (!dataTransferItem) {
-			return undefined;
-		}
-
-		// 'text/uri-list' contains a list of uris separated by new lines.
-		// Parse this to an array of uris.
-		const urlList = await dataTransferItem.asString();
-		if (token.isCancellationRequested) {
-			return undefined;
-		}
-
-		const uris: vscode.Uri[] = [];
-		for (const resource of urlList.split('\n')) {
-			try {
-				uris.push(vscode.Uri.parse(resource));
-			} catch {
-				// noop
-			}
-		}
-
-		if (!uris.length) {
-			return undefined;
-		}
-
-		const snippet = new vscode.SnippetString();
-		uris.forEach((uri, index) => {
-			snippet.appendText(`${index + 1}. ${uri.path}`);
-			snippet.appendTabstop();
-
-			if (index <= uris.length - 1 && uris.length > 1) {
-				snippet.appendText('\n');
-			}
-		});
-
-		return new vscode.DocumentDropEdit(snippet);
-	}*/
 
 	private _requestId = 1;
 	private readonly _callbacks = new Map<number, (response: any) => void>();
@@ -484,18 +495,15 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 		panel.webview.postMessage({ type, body });
 	}
 
-	private onMessage(document: PGMProDocument, message: any) {
-		switch (message.type) {
-			case 'edit':
-				document.makeEdit(message as PGMProDocumentEdit);
-				return;
-
-			case 'response':
-				{
-					const callback = this._callbacks.get(message.requestId);
-					callback?.(message.body);
-					return;
-				}
+	private async onMessage(document: PGMProDocument, message: any) {
+		if (message.type === 'edit') {
+			document.makeEdit(message.edit as PGMProDocumentEdit);
+			return;
+		}
+		else if (message.type === 'response') {
+			const callback = this._callbacks.get(message.requestId);
+			callback?.(message.body);
+			return;
 		}
 	}
 }
