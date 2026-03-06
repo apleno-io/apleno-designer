@@ -223,11 +223,10 @@ class UIEditor extends EventTarget {
     }
 
     if (msg.data.type === 'onDidChangeSelectedTab') {
-      if (!('selectedTabs' in this.stateExtras)) {
+      if (!('selectedTabs' in this.stateExtras) || this.stateExtras.selectedTabs === undefined) {
         this.stateExtras.selectedTabs = {};
       }
-      // @ts-ignore
-      this.stateExtras.selectedTabs[parseInt(msg.data.tabWidgetId)] = parseInt(msg.data.tabWidgetIndex);
+      this.stateExtras.selectedTabs[String(parseInt(msg.data.tabWidgetId))] = String(parseInt(msg.data.tabWidgetIndex));
       return;
     }
 
