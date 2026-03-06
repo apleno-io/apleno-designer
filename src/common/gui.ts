@@ -516,7 +516,7 @@ export function convertOldWidgetProperty(propertyName: string): string {
 
 export function normalizeGUI(infos: any): GUIInterface {
   const result: GUIInterface = {
-    widgets: infos.widgets ? infos.widgets : [],
+    widgets: [],
     displaySubmitButton: true,
     language: 'r'
   };
@@ -524,6 +524,11 @@ export function normalizeGUI(infos: any): GUIInterface {
   // Is an object
   if (typeof infos !== 'object' || infos === null) {
     return result;
+  }
+
+  // Widgets
+  if (infos.widgets) {
+    result.widgets = infos.widgets;
   }
 
   // Submit button
