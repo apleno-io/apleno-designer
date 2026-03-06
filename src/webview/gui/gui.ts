@@ -481,7 +481,7 @@ class UIEditor extends EventTarget {
     }
 
     this.state.language = (document.getElementById('settings-language') as HTMLSelectElement).value === 'r' ? 'r' : 'python';
-    this.state.displaySubmitButton = (document.getElementById('settings-language') as HTMLSelectElement).value === 'visible';
+    this.state.displaySubmitButton = (document.getElementById('settings-submit') as HTMLSelectElement).value === 'visible';
     this.guiChanged();
   }
 
