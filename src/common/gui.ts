@@ -322,7 +322,6 @@ export function fixContainers(widgets: GUIWidget[], nextCreateId: { value: numbe
             },
             widgets: [structuredClone((widgets[i].widgets as GUIWidget[])[j])]
           } as GUIWidget);
-          console.log(structuredClone(newList));
           (widgets[i].widgets as GUIWidget[])[j] = newList;
         }
       }
