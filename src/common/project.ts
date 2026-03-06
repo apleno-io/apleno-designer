@@ -25,14 +25,13 @@ export interface ProjectFile {
   dateCreated: number;
 }
 
-function checkChangelogEntry(entry: any): entry is ProjectFileChangelog {
-  return typeof entry === 'object' &&
-    entry !== null &&
-    Object.keys(entry).length === 4 &&
-    typeof entry.date === 'string' &&
-    typeof entry.author === 'string' &&
-    typeof entry.version === 'string' &&
-    typeof entry.message === 'string';
+const CHANGELOG_KEYS = new Set(['date', 'author', 'version', 'message']);
+function checkChangelogEntry(entry: unknown): entry is ProjectFileChangelog {
+  if (typeof entry !== 'object' || entry === null) {
+    return false;
+  }
+  const e = entry as Record<string, unknown>;
+  return Object.keys(e).every(k => CHANGELOG_KEYS.has(k) && typeof e[k] === 'string');
 }
 
 export class ProjectFileUtils {
@@ -117,6 +116,6 @@ export class ProjectFileUtils {
     result.changelog = Array.isArray(result.changelog) ? result.changelog : [];
     result.changelog = result.changelog.filter(checkChangelogEntry);
 
-    return result as ProjectFile;
+    return result;
   }
 }
