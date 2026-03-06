@@ -197,7 +197,7 @@ const WidgetPropertiesDefaults: any = {
   columnsPadding: 10,
 
   tabsNames: [],
-  tabsSelected: 1,
+  tabsSelected: 0,
 
   progressBarColor: '#27ae60',
   progressBarDescription: '%',
