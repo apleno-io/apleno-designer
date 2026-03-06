@@ -477,7 +477,8 @@ export function normalizeWidget(infos: any): GUIWidget {
 
   // Check every needed properties exists (w/ default values if not)
   typeProps.forEach((prop: string) => {
-    infos.data[prop] = prop in infos.data ? infos.data[prop] : WidgetPropertiesDefaults[prop];
+    const def = WidgetPropertiesDefaults[prop];
+    infos.data[prop] = prop in infos.data ? infos.data[prop] : (Array.isArray(def) ? [...def] : def);
   });
 
   // Subtypes verification
