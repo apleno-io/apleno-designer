@@ -497,7 +497,7 @@ class UIEditor extends EventTarget {
       this.debounceTimer = null;
     }, 500);
   }
-};
+}
 
 (function () {
   // @ts-ignore
