@@ -22,7 +22,7 @@ export interface SequenceFile {
   steps: SequenceFileStep[];
 }
 
-function findInfoByID(infos: any, customId: string): any {
+function findInfoByCustomId(infos: any, customId: string): any {
   for (let i = 0; i < infos.steps.length; ++i) {
     if (infos.steps[i].id === customId) {
       return infos.steps[i];
@@ -107,7 +107,7 @@ export class SequenceFileUtils {
       }
       // - Connect steps by UUID and not by user ID
       if (step.nextStep) {
-        const target: any = findInfoByID(infos, step.nextStep);
+        const target: any = findInfoByCustomId(infos, step.nextStep);
         if (target) {
           step.target = target.uuid;
         }
@@ -115,7 +115,7 @@ export class SequenceFileUtils {
       delete step.nextStep;
 
       if (step.onFalse) {
-        const target: any = findInfoByID(infos, step.onFalse);
+        const target: any = findInfoByCustomId(infos, step.onFalse);
         if (target !== null) {
           step.falsetarget = target.uuid;
         }
