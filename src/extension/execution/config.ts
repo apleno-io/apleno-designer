@@ -14,26 +14,26 @@ export const ConfigManager = new class {
   /**
    * Create default spawn config.
    */
-  public createDefaultConfig(): void {
+  public async createDefaultConfig(): Promise<void> {
     const configPath = this.getConfigPath();
     if (configPath === null) {
       return;
     }
 
-    this.saveConfig({});
+    await this.saveConfig({});
   }
 
   /**
    * Create default spawn config if it does not exists.
    */
-  public createDefaultConfigIfNotExist(): void {
+  public async createDefaultConfigIfNotExist(): Promise<void> {
     const configPath = this.getConfigPath();
     if (configPath === null) {
       return;
     }
 
     if (!fs.existsSync(configPath)) {
-      this.createDefaultConfig();
+      await this.createDefaultConfig();
     }
   }
 
@@ -46,7 +46,7 @@ export const ConfigManager = new class {
       return {};
     }
 
-    this.createDefaultConfigIfNotExist();
+    await this.createDefaultConfigIfNotExist();
     try {
       const content = await fs.promises.readFile(configPath, 'utf8');
       return JSON.parse(content);
