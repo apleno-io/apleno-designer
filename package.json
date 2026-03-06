@@ -77,10 +77,6 @@
         "title": "PGM: Create new Interface file"
       },
       {
-        "command": "pgm.run",
-        "title": "PGM: Run preview"
-      },
-      {
         "command": "pgm.logs",
         "title": "PGM: Show logs"
       }

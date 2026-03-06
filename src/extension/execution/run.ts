@@ -66,30 +66,6 @@ async function debugPreChecks(folder: string): Promise<boolean> {
 export class PGMRunner {
   public static initialize(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('pgm', new PGMDebugConfigurationProvider()));
-    context.subscriptions.push(vscode.commands.registerCommand(
-      'pgm.run',
-      async () => {
-        try {
-          // normal debug if no ppro project
-          const files = await vscode.workspace.findFiles('*.ppro', null, 1);
-          if (files.length === 0) {
-            return;
-          }
-
-          // get workspace folder
-          const folder = vscode.workspace.getWorkspaceFolder(files[0]);
-          if (folder === undefined) {
-            vscode.window.showErrorMessage('Could not get the workspace folder.');
-            return;
-          }
-
-          debugPreChecks(folder.uri.fsPath);
-          return;
-        } catch (err) {
-          vscode.window.showErrorMessage(`Error while launching: ${(err as Error).message}`);
-        }
-      }
-    ));
     vscode.debug.onDidReceiveDebugSessionCustomEvent((e) => {
       //if (e.session.type === 'pgm' && e.event === 'pgm/started' && e.body?.port) {
       //  vscode.env.openExternal(vscode.Uri.parse(`http://localhost:${e.body?.port}`));
