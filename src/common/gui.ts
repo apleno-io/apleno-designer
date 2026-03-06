@@ -87,11 +87,6 @@ const WidgetLegacyConversionTable: { [key: string]: string[] } = {
   value: [],
   language: ['isR', 'isr'],
   isRequired: ['required'],
-  isVisible: ['visible'],
-  isEnabled: ['enabled'],
-  isDynamic: ['isdynamic', 'dynamic'],
-  messageType: ['messagetype'],
-  messageText: ['messagetext'],
   codeOnChange: ['onChange', 'onchange'],
   conditionOnSubmit: ['condition'],
 
