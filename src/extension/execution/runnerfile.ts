@@ -1,6 +1,6 @@
 import path from 'path';
 import vscode from 'vscode';
-import { Services } from '../services';
+import { logger } from '../utils/logger';
 import { RuntimeManager } from './runtime-manager';
 import { ConfigManager } from './config';
 
@@ -17,8 +17,6 @@ export class PreviewConfigGenerator {
    * Please note that here, the app directory and the output directory are both the project folder.
    */
   public static async load(): Promise<PreviewConfigGeneratorResult | null> {
-    // Log
-    const logger = Services.Logger;
     logger.info('[instance] Launching the app');
 
     // Runtime

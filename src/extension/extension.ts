@@ -7,14 +7,16 @@ import { Storage } from './utils/storage';
 import { Exporter } from './export/export';
 import { ExecutionStatusItemManager } from './execution/ui-status-item';
 import { Services } from './services';
+import { logger } from './utils/logger';
 
 export function activate(context: vscode.ExtensionContext) {
-	// Project creator
-	Services.ProjectCreator.initialize(context);
-
-	// Utils
-	Services.Logger.initialize(context);
+	// Services
 	Storage.initialize(context);
+	Services.ProjectCreator.initialize(context);
+	context.subscriptions.push(vscode.commands.registerCommand('pgm.logs', () => {
+		ExecutionStatusItemManager.setText(null);
+		logger.show();
+	}));
 
 	// Editors
 	context.subscriptions.push(PGMProjectFileEditorProvider.register(context));

@@ -1,35 +1,28 @@
 import * as vscode from 'vscode';
-import { ExecutionStatusItemManager } from '../execution/ui-status-item';
 
-export class Logger {
+class Logger {
   private channel: vscode.LogOutputChannel | null = null;
 
-  public initialize(context: vscode.ExtensionContext) {
-    // Output channel
-    this.channel = vscode.window.createOutputChannel('PGM', { log: true });
-    this.channel.info('PGM Extension loading...');
-    context.subscriptions.push(this.channel);
-
-    // Command
-    context.subscriptions.push(vscode.commands.registerCommand('pgm.logs', this.show.bind(this)));
+  private get ch(): vscode.LogOutputChannel {
+    if (!this.channel) {
+      this.channel = vscode.window.createOutputChannel('PGM', { log: true });
+    }
+    return this.channel;
   }
 
-  public info(message: string, showNotification: boolean = false) {
-    this.channel?.info(message);
-    if (showNotification) {
-      vscode.window.showInformationMessage(message);
-    }
+  public info(message: string, showNotification = false) {
+    this.ch.info(message);
+    if (showNotification) { vscode.window.showInformationMessage(message); }
   }
 
-  public error(message: string, showNotification: boolean = false) {
-    this.channel?.error(message);
-    if (showNotification) {
-      vscode.window.showErrorMessage(message);
-    }
+  public error(message: string, showNotification = false) {
+    this.ch.error(message);
+    if (showNotification) { vscode.window.showErrorMessage(message); }
   }
 
   public show() {
-    ExecutionStatusItemManager.setText(null);
-    this.channel?.show();
+    this.ch.show();
   }
-};
+}
+
+export const logger = new Logger();

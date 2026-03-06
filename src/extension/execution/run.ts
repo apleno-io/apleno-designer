@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { RuntimeManager } from './runtime-manager';
-import { Services } from '../services';
+import { logger } from '../utils/logger';
 import { ExecutionStatusItemManager } from './ui-status-item';
 import { PreviewConfigGenerator } from './runnerfile';
 
@@ -25,14 +25,14 @@ async function debugPreChecks(folder: string): Promise<boolean> {
   }
 
   // Logging
-  Services.Logger.info('Starting PGM instance...');
+  logger.info('Starting PGM instance...');
   ExecutionStatusItemManager.setText('Starting PGM instance...');
 
   // Runtime installation management
   const version = await RuntimeManager.getRuntimeVersion();
   if (version === null) {
     // no runtime, offer to download in modal
-    Services.Logger.info('No runtime installed.');
+    logger.info('No runtime installed.');
     const wantInstall = await vscode.window.showInformationMessage('To execute a PGM app, you need the PGM runtime installed on your computer. Do you want to install it now?', { modal: true }, ...['Download']);
     if (wantInstall === 'Cancel') {
       return false;

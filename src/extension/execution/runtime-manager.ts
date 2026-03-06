@@ -3,7 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import semver from 'semver';
-import { Services } from '../services';
+import { logger } from '../utils/logger';
 import vscode from 'vscode';
 
 export const RuntimeManager = new class {
@@ -58,7 +58,7 @@ export const RuntimeManager = new class {
       }
     }
     catch (err) {
-      Services.Logger.error(`PGM: Could not fetch if an update of the runtime exists: ${err}`, true);
+      logger.error(`PGM: Could not fetch if an update of the runtime exists: ${err}`, true);
     }
     return null;
   }
@@ -67,13 +67,13 @@ export const RuntimeManager = new class {
    * Download and install the latest runtime.
    */
   public async downloadRuntime(): Promise<boolean> {
-    Services.Logger.info('Checking runtime folder...');
+    logger.info('Checking runtime folder...');
 
     try {
       await fs.promises.mkdir(this.getRuntimeFolder(), { recursive: true });
     }
     catch (err) {
-      Services.Logger.error(`Could not create runtime folder: ${err}`, true);
+      logger.error(`Could not create runtime folder: ${err}`, true);
       return false;
     }
 
@@ -84,7 +84,7 @@ export const RuntimeManager = new class {
       // Download & unzip
       try {
         const file = path.join(this.getRuntimeFolder(), 'latest.zip');
-        Services.Logger.info(`Downloading latest runtime in ${this.getRuntimeFolder()}...`);
+        logger.info(`Downloading latest runtime in ${this.getRuntimeFolder()}...`);
         let platform = 'unix';
         if (process.platform === 'win32') {
           platform = 'win';
@@ -95,11 +95,11 @@ export const RuntimeManager = new class {
         const runtimeURL = `https://files.pgm-solutions.com/runtime/runtime-${platform}-latest.zip`;
         const res = await fetch(runtimeURL);
         if (!res.ok) {
-          Services.Logger.error(`PGM: Could not download or install runtime ${runtimeURL}. Status: ${res.status}`, true);
+          logger.error(`PGM: Could not download or install runtime ${runtimeURL}. Status: ${res.status}`, true);
           return false;
         }
 
-        Services.Logger.info('Extracting runtime...');
+        logger.info('Extracting runtime...');
         await fs.promises.writeFile(file, Buffer.from(await res.arrayBuffer()));
         const zip = new AdmZip(file);
         await new Promise<void>((resolve, reject) => {
@@ -108,11 +108,11 @@ export const RuntimeManager = new class {
           });
         });
         await fs.promises.rm(file, { force: true });
-        Services.Logger.info('Runtime correctly installed...');
+        logger.info('Runtime correctly installed...');
         return true;
       }
       catch (err) {
-        Services.Logger.error(`PGM: Could not download or install runtime: ${err}`, true);
+        logger.error(`PGM: Could not download or install runtime: ${err}`, true);
         return false;
       }
     });
