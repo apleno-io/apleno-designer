@@ -396,7 +396,7 @@ export function normalizeWidget(infos: any): GUIWidget {
   for (let key in WidgetLegacyConversionTable) {
     for (let i = 0; i < WidgetLegacyConversionTable[key].length; ++i) {
       const keyNameToConvert: string = WidgetLegacyConversionTable[key][i];
-      if (infos.data.hasOwnProperty(keyNameToConvert)) {
+      if (keyNameToConvert in infos.data) {
         infos.data[key] = infos.data[keyNameToConvert];
         delete infos.data[keyNameToConvert];
       }
