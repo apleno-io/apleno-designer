@@ -1,11 +1,29 @@
-export function deepEqual(a: any, b: any): boolean {
-  // Primitive types
+export function deepEqual(a: unknown, b: unknown): boolean {
+  // Primitive types (NaN !== NaN by IEEE 754, so two NaN values are not considered equal)
   if (a === b) {
     return true;
   }
 
   // Check objects
   if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) {
+    return false;
+  }
+
+  // Date
+  if (a instanceof Date || b instanceof Date) {
+    return a instanceof Date && b instanceof Date && a.getTime() === b.getTime();
+  }
+
+  // RegExp
+  if (a instanceof RegExp || b instanceof RegExp) {
+    return a instanceof RegExp && b instanceof RegExp && a.source === b.source && a.flags === b.flags;
+  }
+
+  // Map, Set, ArrayBuffer and other built-ins are not supported
+  if (
+    a instanceof Map || a instanceof Set || a instanceof ArrayBuffer ||
+    b instanceof Map || b instanceof Set || b instanceof ArrayBuffer
+  ) {
     return false;
   }
 
@@ -27,16 +45,15 @@ export function deepEqual(a: any, b: any): boolean {
 
   // Objects
   const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
-  if (keysA.length !== keysB.length) {
+  const keysB = new Set(Object.keys(b));
+  if (keysA.length !== keysB.size) {
     return false;
   }
   for (const key of keysA) {
-    if (!keysB.includes(key) || !deepEqual(a[key], b[key])) {
+    if (!keysB.has(key) || !deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
       return false;
     }
   }
 
-  // ok
   return true;
 }
