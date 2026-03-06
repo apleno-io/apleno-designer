@@ -1,13 +1,14 @@
 {
   "name": "pgmsolutions-pgm",
-  "displayName": "pgmsolutions-pgm",
-  "description": "Extension for developing apps for RPGM.",
+  "displayName": "PGM",
+  "description": "Create amazing apps with user-friendly UI.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.97.0"
   },
   "categories": [
-    "Other"
+    "Data Science",
+    "Extension Packs"
   ],
   "activationEvents": [
     "onDebugResolve:pgm"
