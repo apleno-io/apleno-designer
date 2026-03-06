@@ -1,3 +1,5 @@
+const GUI_SCHEMA_VERSION: number = 50000;
+
 export interface GUIWidgetDataChoice {
   value: string;
   text: string;
@@ -545,6 +547,6 @@ export function normalizeGUI(infos: any): GUIInterface {
   // Don't normalize widgets because it will be per-widget during creation (because of end users functions like gui.add)
   result.widgets = result.widgets.map(w => normalizeWidget(w));
 
-  result.version = 50000;
+  result.version = GUI_SCHEMA_VERSION;
   return result;
 }
