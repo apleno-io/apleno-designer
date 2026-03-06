@@ -1,7 +1,5 @@
-import { spawn, ChildProcessWithoutNullStreams } from "child_process";
-import * as path from "path";
-import { DapRequest, IOManager } from "./io";
-import { readFileSync } from "fs";
+import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
+import { type DapRequest, IOManager } from "./io";
 
 // https://microsoft.github.io/debug-adapter-protocol/
 

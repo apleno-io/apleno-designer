@@ -1,4 +1,4 @@
-import vscode, { ThemeColor } from 'vscode';
+import * as vscode from 'vscode';
 
 export class ExecutionStatusItemManager {
   private static _statusItem: vscode.StatusBarItem | null = null;
@@ -27,7 +27,7 @@ export class ExecutionStatusItemManager {
     else {
       this._statusItem.text = text;
       if (color === 'red') {
-        this._statusItem.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
+        this._statusItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
       }
       else {
         this._statusItem.backgroundColor = undefined;

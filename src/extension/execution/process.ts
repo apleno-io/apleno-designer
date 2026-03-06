@@ -1,4 +1,4 @@
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import { type ChildProcessWithoutNullStreams, spawn } from "child_process";
 
 export const ChildProcessHelper = new class {
   public execute(executable: string, parameters: string[]): Promise<string> {

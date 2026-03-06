@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 export function getNonce() {
-	return require('crypto').randomBytes(16).toString('hex');
+	return crypto.randomBytes(16).toString('hex');
 }

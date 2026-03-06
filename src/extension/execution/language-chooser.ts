@@ -1,4 +1,4 @@
-import vscode from 'vscode';
+import * as vscode from 'vscode';
 import { FinderR } from './finder-r';
 import { FinderPython } from './finder-python';
 import { Conda } from './finder-conda';

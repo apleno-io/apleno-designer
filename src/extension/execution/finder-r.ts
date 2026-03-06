@@ -10,7 +10,7 @@
  *     - Repo: /usr/bin/R
  */
 
-import { promises as fsPromises } from 'fs';
+import * as fs from 'fs';
 import * as path from 'path';
 import { ChildProcessHelper } from './process';
 
@@ -53,7 +53,7 @@ export const FinderR = new class {
         if (r && r.length > 1 && r[1].trim().length > 0) {
           try {
             // Check if actually exists
-            await fsPromises.access(path.join(r[1].trim(), '/bin/R.exe'));
+            await fs.promises.access(path.join(r[1].trim(), '/bin/R.exe'));
             instances.push({
               path: path.join(r[1].trim(), '/bin/R.exe'),
               version: rVersions[i],
@@ -78,7 +78,7 @@ export const FinderR = new class {
     for (let i = 0; i < paths.length; ++i) {
       try {
         const filepath: string = path.join(paths[i], 'R.exe');
-        await fsPromises.access(filepath);
+        await fs.promises.access(filepath);
         const folder: string = path.dirname(filepath);
         const version: RegExpExecArray | null = /(\d+\.\d+\.\d+)/.exec(filepath);
         instances.push({
@@ -110,7 +110,7 @@ export const FinderR = new class {
     // Read Frameworks folder
     const frameworksFolder: string = '/Library/Frameworks/R.framework/Versions';
     try {
-      const folders: string[] = await fsPromises.readdir(frameworksFolder);
+      const folders: string[] = await fs.promises.readdir(frameworksFolder);
       folders.forEach((v) => {
         if (v.startsWith('.')) {
           return;
@@ -128,7 +128,7 @@ export const FinderR = new class {
     // brew installs
     const brewFolder = '/usr/local/Cellar/r';
     try {
-      const folders: string[] = await fsPromises.readdir(brewFolder);
+      const folders: string[] = await fs.promises.readdir(brewFolder);
       folders.forEach((v) => {
         if (v.startsWith('.')) {
           return;
@@ -155,7 +155,7 @@ export const FinderR = new class {
 
     // Read Frameworks folder
     try {
-      await fsPromises.access('/usr/bin/R');
+      await fs.promises.access('/usr/bin/R');
       installs.push({
         path: '/usr/lib/R',
         version: '',

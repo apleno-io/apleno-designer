@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { FinderPython } from './finder-python';
 import { FinderR } from './finder-r';

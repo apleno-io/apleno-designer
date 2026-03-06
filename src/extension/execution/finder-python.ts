@@ -1,4 +1,4 @@
-import { promises as fsPromises } from 'fs';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as ChildProcess from 'child_process';
 import { Conda } from './finder-conda';
@@ -36,7 +36,7 @@ export const FinderPython = new class {
       for (let f = 0; f < filesToSearch.length; ++f) {
         try {
           const filepath: string = path.join(envPath[i], filesToSearch[f]);
-          await fsPromises.access(filepath);
+          await fs.promises.access(filepath);
           const folder: string = path.dirname(filepath).toLowerCase();
           if (!found.some(x => x.folder === folder)) {
             found.push({ file: filepath, folder });
@@ -51,7 +51,7 @@ export const FinderPython = new class {
     // If results are empty, tests on Windows for a py.exe in Windows
     if (process.platform === 'win32' && (foundPaths.length === 0 || foundPaths.every(p => p.path.includes('WindowsApps')))) {
       try {
-        await fsPromises.access('C:/Windows/py.exe');
+        await fs.promises.access('C:/Windows/py.exe');
         foundPaths.push({ type: 'base', path: 'C:/Windows/py.exe' });
       }
       catch { }

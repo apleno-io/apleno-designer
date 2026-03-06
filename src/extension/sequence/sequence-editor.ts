@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { SequenceFile, SequenceFileUtils } from '../../common/sequence';
+import { type SequenceFile, SequenceFileUtils } from '../../common/sequence';
 
 /**
  * Define the type of edits used in pseq files.

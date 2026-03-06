@@ -1,4 +1,4 @@
-import { fixContainers, GUIWidget, WidgetProperties, WidgetSubTypes } from "../../common/gui";
+import { type GUIWidget, WidgetProperties, WidgetSubTypes } from "../../common/gui";
 import { WidgetChoiceEditor } from "./gui-propeditor-choices";
 import { WidgetColumnEditor } from "./gui-propeditor-columns";
 import { WidgetTabEditor } from "./gui-propeditor-tabs";

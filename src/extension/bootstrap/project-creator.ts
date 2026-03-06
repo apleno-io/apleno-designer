@@ -1,4 +1,4 @@
-import vscode, { Uri } from 'vscode';
+import * as vscode from 'vscode';
 
 /**
  * Class for bootstraping a new PGM project.
@@ -12,7 +12,7 @@ export class ProjectCreator {
       'pgm.initialize',
       async () => {
         // get target
-        const targetFolder: Uri | undefined = await this.askTargetFolder();
+        const targetFolder: vscode.Uri | undefined = await this.askTargetFolder();
         if (!targetFolder) {
           return;
         }
@@ -71,7 +71,7 @@ export class ProjectCreator {
   /**
    * Ask the user a target folder to bootstrap the project.
    */
-  private async askTargetFolder(): Promise<Uri | undefined> {
+  private async askTargetFolder(): Promise<vscode.Uri | undefined> {
     const folders = vscode.workspace.workspaceFolders;
 
     // not in a workspace => dialog
@@ -129,7 +129,7 @@ export class ProjectCreator {
   /**
    * Show the open dialog to choose a folder.
    */
-  private async pickFolder(): Promise<Uri | undefined> {
+  private async pickFolder(): Promise<vscode.Uri | undefined> {
     const picked = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,

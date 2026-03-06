@@ -1,4 +1,4 @@
-import { fixContainers, fixIds, getMaxId, GUIInterface, GUIWidget, isContainerWidget, normalizeGUI, normalizeWidget, WidgetProperties } from '../../common/gui';
+import { fixContainers, fixIds, getMaxId, type GUIInterface, type GUIWidget, isContainerWidget, normalizeGUI, normalizeWidget, WidgetProperties } from '../../common/gui';
 import { deepEqual } from '../../common/utils/deep-equal';
 import { WidgetPropertyEditor } from './gui-propeditor';
 import { WidgetFactory } from './gui-widget-factory';

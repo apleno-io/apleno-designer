@@ -1,4 +1,4 @@
-import { ProjectFile, ProjectFileChangelog } from '../../common/project';
+import { type ProjectFile, type ProjectFileChangelog } from '../../common/project';
 import { deepEqual } from '../../common/utils/deep-equal';
 import { Sanitizer } from '../../common/utils/sanitize';
 import './project.css';

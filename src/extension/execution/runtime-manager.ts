@@ -1,10 +1,10 @@
 import AdmZip from 'adm-zip';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import semver from 'semver';
 import { logger } from '../utils/logger';
-import vscode from 'vscode';
+import * as vscode from 'vscode';
 
 export const RuntimeManager = new class {
   /**

@@ -20,6 +20,12 @@ export default [{
             format: ["camelCase", "PascalCase"],
         }],
 
+        "@typescript-eslint/no-require-imports": "error",
+        "@typescript-eslint/consistent-type-imports": ["error", {
+            prefer: "type-imports",
+            fixStyle: "inline-type-imports",
+        }],
+
         curly: "warn",
         eqeqeq: "warn",
         "no-throw-literal": "warn",

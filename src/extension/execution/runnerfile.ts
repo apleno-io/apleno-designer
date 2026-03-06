@@ -1,5 +1,5 @@
-import path from 'path';
-import vscode from 'vscode';
+import * as path from 'path';
+import * as vscode from 'vscode';
 import { logger } from '../utils/logger';
 import { RuntimeManager } from './runtime-manager';
 import { ConfigManager } from './config';

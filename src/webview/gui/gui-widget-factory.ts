@@ -1,6 +1,6 @@
-import { GUIWidget } from "../../common/gui";
+import { type GUIWidget } from "../../common/gui";
 import { Sanitizer } from "../../common/utils/sanitize";
-import { StateExtras } from "./gui";
+import { type StateExtras } from "./gui";
 
 enum WidgetCSSType {
   STYLE,

@@ -1,5 +1,5 @@
 import * as ChildProcess from 'child_process';
-import * as fs from 'fs/promises';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
@@ -72,7 +72,7 @@ export const Conda = new class {
     for (const place in placesToSearch) {
       let entries: string[] = [];
       try {
-        entries = (await fs.readdir(placesToSearch[place])).filter(e => e.toLowerCase().includes('conda'));
+        entries = (await fs.promises.readdir(placesToSearch[place])).filter(e => e.toLowerCase().includes('conda'));
       }
       catch {
         continue;
@@ -81,7 +81,7 @@ export const Conda = new class {
       for (const entry in entries) {
         const exe: string = path.join(placesToSearch[place], entries[entry], process.platform === 'win32' ? 'Scripts/conda.exe' : 'bin/conda.exe');
         try {
-          await fs.stat(exe);
+          await fs.promises.stat(exe);
           actualCondas.push(exe);
         }
         catch { }

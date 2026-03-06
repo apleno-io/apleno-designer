@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
 export interface StorageConfig {
   lastExportFolder?: string;

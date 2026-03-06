@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { GUIInterface, normalizeGUI } from '../../common/gui';
+import { type GUIInterface, normalizeGUI } from '../../common/gui';
 import { GUICommands } from './gui-commands';
 
 /**

@@ -1,4 +1,4 @@
-import { SequenceError } from "./sequence-check";
+import { type SequenceError } from "./sequence-check";
 
 /**
  * Part showing sequence errors.

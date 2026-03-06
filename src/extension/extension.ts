@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { PGMProjectFileEditorProvider } from './project/project-editor';
 import { PGMSequenceFileEditorProvider } from './sequence/sequence-editor';
 import { PGMInterfaceFileEditorProvider } from './gui/gui-editor';
-import { PGMDebugConfigurationProvider, PGMRunner } from './execution/run';
+import { PGMRunner } from './execution/run';
 import { Storage } from './utils/storage';
 import { Exporter } from './export/export';
 import { ExecutionStatusItemManager } from './execution/ui-status-item';

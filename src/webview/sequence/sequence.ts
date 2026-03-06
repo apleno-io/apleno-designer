@@ -15,7 +15,7 @@
 
 import { SequenceFileUtils } from "../../common/sequence";
 import { deepEqual } from "../../common/utils/deep-equal";
-import SequenceChecker, { SequenceError } from "./sequence-check";
+import SequenceChecker, { type SequenceError } from "./sequence-check";
 import SequenceDetails from "./sequence-details";
 import SequenceErrorBox from "./sequence-errorbox";
 import './sequence.css';

@@ -1,4 +1,4 @@
-import { GUIWidgetDataChoice } from "../../common/gui";
+import { type GUIWidgetDataChoice } from "../../common/gui";
 import { Sanitizer } from "../../common/utils/sanitize";
 
 export class WidgetChoiceEditor extends EventTarget {

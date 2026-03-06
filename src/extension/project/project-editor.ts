@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { ProjectFile, ProjectFileUtils } from '../../common/project';
+import { type ProjectFile, ProjectFileUtils } from '../../common/project';
 
 /**
  * Define the type of edits used in ppro files.

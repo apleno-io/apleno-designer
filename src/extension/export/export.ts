@@ -1,8 +1,8 @@
 import AdmZip from 'adm-zip';
-import fs from 'fs';
+import * as fs from 'fs';
 import mm from 'micromatch';
-import path from 'path';
-import vscode from 'vscode';
+import * as path from 'path';
+import * as vscode from 'vscode';
 import { Storage } from '../utils/storage';
 
 export class Exporter {
