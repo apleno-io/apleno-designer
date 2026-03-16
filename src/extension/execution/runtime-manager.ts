@@ -1,4 +1,4 @@
-import AdmZip from 'adm-zip';
+import { execFile } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -85,29 +85,46 @@ export const RuntimeManager = new class {
       try {
         const file = path.join(this.getRuntimeFolder(), 'latest.zip');
         logger.info(`Downloading latest runtime in ${this.getRuntimeFolder()}...`);
-        let platform = 'unix';
+        let platform = 'linux';
         if (process.platform === 'win32') {
           platform = 'win';
         }
         else if (process.platform === 'darwin') {
           platform = 'mac';
         }
-        const runtimeURL = `https://files.pgm-solutions.com/runtime/runtime-${platform}-latest.zip`;
-        const res = await fetch(runtimeURL);
-        if (!res.ok) {
-          logger.error(`PGM: Could not download or install runtime ${runtimeURL}. Status: ${res.status}`, true);
-          return false;
+
+        // Get version
+        const resVersion = await fetch('https://files.pgm-solutions.com/runtime/latest.json');
+        if (!resVersion.ok) {
+          throw new Error(`Could not download latest version`);
+        }
+        const dataVersion: unknown = await resVersion.json();
+        if (typeof dataVersion !== 'object' || dataVersion === null || !('version' in dataVersion)) {
+          throw new Error(`Invalid latest version to download: ${dataVersion}`);
         }
 
+        // Actually download
+        const runtimeURL = `https://files.pgm-solutions.com/runtime/client-${platform}-${dataVersion.version}.zip`;
+        const res = await fetch(runtimeURL);
+        if (!res.ok) {
+          throw new Error(`Could not download or install runtime ${runtimeURL}. Status: ${res.status}`);
+        }
+
+        // Extract
         logger.info('Extracting runtime...');
         await fs.promises.writeFile(file, Buffer.from(await res.arrayBuffer()));
-        const zip = new AdmZip(file);
         await new Promise<void>((resolve, reject) => {
-          zip.extractAllToAsync(this.getRuntimeFolder(), true, false, (err: Error | undefined) => {
-            if (err) { reject(err); } else { resolve(); }
-          });
+          if (process.platform === 'win32') {
+            execFile('powershell.exe', ['-NoProfile', '-Command', `Expand-Archive -Force -LiteralPath '${file}' -DestinationPath '${this.getRuntimeFolder()}'`], (err) => err ? reject(err) : resolve());
+          } else {
+            execFile('unzip', ['-o', file, '-d', this.getRuntimeFolder()], (err) => err ? reject(err) : resolve());
+          }
         });
         await fs.promises.rm(file, { force: true });
+
+        // Version file
+        await fs.promises.writeFile(path.join(this.getRuntimeFolder(), 'version.json'), JSON.stringify({ version: dataVersion.version }), 'utf8');
+
         logger.info('Runtime correctly installed...');
         return true;
       }

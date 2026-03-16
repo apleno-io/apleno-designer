@@ -31,6 +31,12 @@ export class PreviewConfigGenerator {
       return null;
     }
 
+    // Correct binary path
+    let bin = path.join(RuntimeManager.getRuntimeFolder(), process.platform === 'win32' ? 'RPGM.exe' : 'rpgm');
+    if (process.platform === 'darwin') {
+      bin = 'mac-arm64/RPGM.app/Contents/MacOS/RPGM';
+    }
+
     return {
       bin: path.join(RuntimeManager.getRuntimeFolder(), process.platform === 'win32' ? 'RPGM.exe' : 'RPGM'),
       app: workspace.uri.fsPath,
