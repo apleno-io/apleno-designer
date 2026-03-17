@@ -1,8 +1,18 @@
 {
   "name": "pgmsolutions-pgm",
+  "version": "0.0.1",
+  "publisher": "pgm-solutions",
+  "author": {
+    "name": "PGM Solutions"
+  },
   "displayName": "PGM",
   "description": "Create amazing apps with user-friendly UI.",
-  "version": "0.0.1",
+  "icon": "icons/app.png",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pgmsolutions/plugin-pgm.git"
+  },
+  "license": "SEE LICENSE IN LICENSE.md",
   "engines": {
     "vscode": "^1.97.0"
   },
