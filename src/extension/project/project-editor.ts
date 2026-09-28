@@ -190,10 +190,10 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 	private static newFileId = 1;
 
 	public static register(context: vscode.ExtensionContext): vscode.Disposable {
-		vscode.commands.registerCommand('pgm.ppro.new', () => {
+		vscode.commands.registerCommand('apleno.ppro.new', () => {
 			const workspaceFolders = vscode.workspace.workspaceFolders;
 			if (!workspaceFolders) {
-				vscode.window.showErrorMessage("Creating new PGM Project file currently requires opening a workspace");
+				vscode.window.showErrorMessage("Creating a new Apleno project file currently requires opening a workspace");
 				return;
 			}
 
@@ -214,7 +214,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 			});
 	}
 
-	private static readonly viewType = 'pgm.ppro';
+	private static readonly viewType = 'apleno.ppro';
 
 	/**
 	 * Tracks all known webviews
@@ -329,7 +329,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 
 					<div class="ppro-setting">
 						<label for="project-name">App Name</label>
-						<div class="ppro-setting-help">The app name that will be displayed in RPGM Client and Server.</div>
+						<div class="ppro-setting-help">The app name that will be displayed in Apleno Server.</div>
 						<input type="text" id="project-name" value="" />
 					</div>
 
@@ -341,7 +341,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 
 					<div class="ppro-setting">
 						<label for="project-description">App Description</label>
-						<div class="ppro-setting-help">A small description of the app purpose. Will be displayed in RPGM Client and Server.</div>
+						<div class="ppro-setting-help">A small description of the app purpose. Will be displayed in Apleno Server.</div>
 						<input type="text" id="project-description" />
 					</div>
 
@@ -356,10 +356,10 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 
 					<div class="ppro-setting">
 						<label for="project-wd">Languages Default Working Directory</label>
-						<div class="ppro-setting-help">This option is for the compatibility of RPGM 1 and 2 programs as the working directory was by default in the output folder.</div>
+						<div class="ppro-setting-help">This option is for the compatibility of Apleno 1.x and 2.x programs as the working directory was by default in the output folder.</div>
 						<select id="project-wd">
 							<option value="app">App folder</option>
-							<option value="output">Output folder (RPGM 2 default)</option>
+							<option value="output">Output folder (Apleno 2.x default)</option>
 						</select>
 					</div>
 
@@ -388,7 +388,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 
 					<div class="ppro-setting">
 						<label for="project-icon">App Icon</label>
-						<div class="ppro-setting-help">Icon shown in RPGM Client and Server in the app listing.</div>
+						<div class="ppro-setting-help">Icon shown in Apleno Server in the app listing.</div>
 						<div class="flex-horizontal">
 							<div class="flex-grow"><input type="text" id="project-icon" value="" /></div>
 							<div class="flex-shrink flex-margin-left"><button data-role="select-icon">Browse...</button></div>
@@ -471,7 +471,7 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 				title: 'Select the starting sequence file',
 				openLabel: 'Select',
 				filters: {
-					'PGM Sequence files': ['pseq']
+					'Apleno Sequence Files': ['pseq']
 				}
 			});
 			if (Array.isArray(res) && res.length > 0) {
