@@ -7,9 +7,9 @@ export class ExecutionStatusItemManager {
    * Create the status bar item.
    */
   public static initialize(context: vscode.ExtensionContext): void {
-    this._statusItem = vscode.window.createStatusBarItem('pgm', vscode.StatusBarAlignment.Left, 1);
-    this._statusItem.tooltip = 'Show PGM logs';
-    this._statusItem.command = 'pgm.logs';
+    this._statusItem = vscode.window.createStatusBarItem('apleno', vscode.StatusBarAlignment.Left, 1);
+    this._statusItem.tooltip = 'Show Apleno logs';
+    this._statusItem.command = 'apleno.logs';
     context.subscriptions.push(this._statusItem);
   }
 

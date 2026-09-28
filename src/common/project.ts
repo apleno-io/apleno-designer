@@ -61,14 +61,14 @@ export class ProjectFileUtils {
       return result;
     }
 
-    // RPGM2 compatibility
+    // Apleno 2.x compatibility
     if (manifest.settings) {
       result.sidebarLogo = manifest.settings.topLogo || '';
       result.stepListType = !('listType' in manifest.settings) || manifest.settings.listType === 'sidebar' ? 'shown' : 'hidden';
       result.defaultWorkingDirectory = 'output';
     }
 
-    // RPGM3 compatibility
+    // Apleno 3.x compatibility
     if (manifest.start) {
       result.consoleAccess = ['r', 'enabled'].includes(manifest.rconsole) ? 'enabled' : 'disabled';
       result.customCSSDarkCode = manifest.css || '';

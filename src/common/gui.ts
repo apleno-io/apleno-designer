@@ -82,7 +82,7 @@ export interface GUIInterface {
   language: 'r' | 'python';
 }
 
-// RPGM2-3 compatibility and conversion
+// Apleno 2.x - 3.x compatibility and conversion
 const WidgetLegacyConversionTable: { [key: string]: string[] } = {
   subType: ['subtype'],
 

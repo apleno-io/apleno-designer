@@ -14,9 +14,9 @@ async function debugPreChecks(folder: string): Promise<boolean> {
       version: '0.2.0',
       configurations: [
         {
-          type: "pgm",
+          type: "apleno",
           request: "launch",
-          name: "RPGM preview"
+          name: "Apleno preview"
         }
       ]
     };
@@ -25,15 +25,15 @@ async function debugPreChecks(folder: string): Promise<boolean> {
   }
 
   // Logging
-  logger.info('Starting PGM instance...');
-  ExecutionStatusItemManager.setText('Starting PGM instance...');
+  logger.info('Starting Apleno instance...');
+  ExecutionStatusItemManager.setText('Starting Apleno instance...');
 
   // Runtime installation management
   const version = await RuntimeManager.getRuntimeVersion();
   if (version === null) {
     // no runtime, offer to download in modal
     logger.info('No runtime installed.');
-    const wantInstall = await vscode.window.showInformationMessage('To execute a PGM app, you need the PGM runtime installed on your computer. Do you want to install it now?', { modal: true }, ...['Download']);
+    const wantInstall = await vscode.window.showInformationMessage('To execute an Apleno app, you need the Apleno Runtime installed on your computer. Do you want to install it now?', { modal: true }, ...['Download']);
     if (wantInstall === 'Cancel') {
       return false;
     }
@@ -49,7 +49,7 @@ async function debugPreChecks(folder: string): Promise<boolean> {
     const update = await RuntimeManager.checkUpdateAvailable();
     if (update) {
       // non-modal: offer to update in notification
-      const wantInstall = await vscode.window.showInformationMessage(`A PGM runtime update is available (installed: ${version}, available: ${update}). Do you want to download and install the update?`, { modal: true }, ...['Download']);
+      const wantInstall = await vscode.window.showInformationMessage(`An Apleno Runtime update is available (installed: ${version}, available: ${update}). Do you want to download and install the update?`, { modal: true }, ...['Download']);
       if (wantInstall === 'Download') {
         // download
         const success = await RuntimeManager.downloadRuntime(); // manage error messages in RuntimeManager
@@ -65,9 +65,9 @@ async function debugPreChecks(folder: string): Promise<boolean> {
 
 export class PGMRunner {
   public static initialize(context: vscode.ExtensionContext): void {
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('pgm', new PGMDebugConfigurationProvider()));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('apleno', new PGMDebugConfigurationProvider()));
     vscode.debug.onDidReceiveDebugSessionCustomEvent((e) => {
-      //if (e.session.type === 'pgm' && e.event === 'pgm/started' && e.body?.port) {
+      //if (e.session.type === 'apleno' && e.event === 'apleno/started' && e.body?.port) {
       //  vscode.env.openExternal(vscode.Uri.parse(`http://localhost:${e.body?.port}`));
       //}
     });
@@ -80,23 +80,23 @@ export class PGMDebugConfigurationProvider implements vscode.DebugConfigurationP
   ): vscode.ProviderResult<vscode.DebugConfiguration[]> {
     return [
       {
-        type: "pgm",
+        type: "apleno",
         request: "launch",
-        name: "RPGM preview"
+        name: "Apleno preview"
       }
     ];
   }
 
   async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.DebugConfiguration | undefined> {
     if (!vscode.workspace.workspaceFolders || folder === undefined) {
-      vscode.window.showErrorMessage(`PGM: Could not launch debug. You need to be in a workspace.`);
+      vscode.window.showErrorMessage(`Apleno: Could not launch debug. You need to be in a workspace.`);
       return undefined;
     }
 
     // test if project file
     const files = await vscode.workspace.findFiles('*.ppro', null, 1);
     if (files.length === 0) {
-      vscode.window.showErrorMessage(`PGM: Could not launch debug. No project file found.`);
+      vscode.window.showErrorMessage(`Apleno: Could not launch debug. No project file found.`);
       return undefined;
     }
 
@@ -108,15 +108,15 @@ export class PGMDebugConfigurationProvider implements vscode.DebugConfigurationP
 
     const res = await PreviewConfigGenerator.load();
     if (res === null) {
-      vscode.window.showErrorMessage(`PGM: Could not launch debug.`);
+      vscode.window.showErrorMessage(`Apleno: Could not launch debug.`);
       return undefined;
     }
 
 
     // undefined prevent continuing vscode debug
     ExecutionStatusItemManager.setText(null);
-    config.type = 'pgm';
-    config.name = 'RPGM preview';
+    config.type = 'apleno';
+    config.name = 'Apleno preview';
     config.request = 'launch';
     config.debugBin = res.bin;
     config.debugApp = res.app;

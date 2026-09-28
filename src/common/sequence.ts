@@ -87,7 +87,7 @@ export class SequenceFileUtils {
       }
     });
 
-    // RPGM2 compatibility
+    // Apleno 2.x compatibility
     // - Remove 'start' root key
     delete infos.start;
     // - For each steps

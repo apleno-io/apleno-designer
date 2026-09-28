@@ -218,10 +218,10 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
   private static newFileId = 1;
 
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
-    vscode.commands.registerCommand('pgm.pgui.new', () => {
+    vscode.commands.registerCommand('apleno.pgui.new', () => {
       const workspaceFolders = vscode.workspace.workspaceFolders;
       if (!workspaceFolders) {
-        vscode.window.showErrorMessage("Creating new PGM interface file currently requires opening a workspace");
+        vscode.window.showErrorMessage("Creating a new Apleno interface file currently requires opening a workspace");
         return;
       }
 
@@ -240,7 +240,7 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
       });
   }
 
-  private static readonly viewType = 'pgm.pgui';
+  private static readonly viewType = 'apleno.pgui';
 
   /**
    * Tracks all known webviews

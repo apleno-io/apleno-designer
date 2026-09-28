@@ -5,7 +5,7 @@ class Logger {
 
   private get ch(): vscode.LogOutputChannel {
     if (!this.channel) {
-      this.channel = vscode.window.createOutputChannel('PGM', { log: true });
+      this.channel = vscode.window.createOutputChannel('Apleno', { log: true });
     }
     return this.channel;
   }

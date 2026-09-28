@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 /**
- * Class for bootstraping a new PGM project.
+ * Class for bootstraping a new Apleno project.
  */
 export class ProjectCreator {
   /**
@@ -9,7 +9,7 @@ export class ProjectCreator {
    */
   public initialize(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(
-      'pgm.initialize',
+      'apleno.initialize',
       async () => {
         // get target
         const targetFolder: vscode.Uri | undefined = await this.askTargetFolder();
@@ -21,7 +21,7 @@ export class ProjectCreator {
         const entries = await vscode.workspace.fs.readDirectory(targetFolder);
         if (entries.some(([name, type]) => type === vscode.FileType.File && name.endsWith(".ppro"))) {
           const choice = await vscode.window.showWarningMessage(
-            "This folder already contains a PGM project.",
+            "This folder already contains an Apleno project.",
             "Cancel",
             "Continue anyway"
           );
@@ -31,7 +31,7 @@ export class ProjectCreator {
           }
         }
 
-        // create project.ppro, main.pseq, start.pgui, launch.json and pgm.json
+        // create project.ppro, main.pseq, start.pgui, launch.json and apleno.json
         await this.writeFile(targetFolder, 'project.ppro', JSON.stringify({ start: 'main.pseq' }, null, '\t'));
         await this.writeFile(targetFolder, 'main.pseq', JSON.stringify({
           steps: [{
@@ -47,13 +47,13 @@ export class ProjectCreator {
           "version": "0.2.0",
           "configurations": [
             {
-              "type": "pgm",
+              "type": "apleno",
               "request": "launch",
-              "name": "RPGM preview"
+              "name": "Apleno preview"
             }
           ]
         }, null, '\t'));
-        await this.writeFile(targetFolder, '.vscode/pgm.json', JSON.stringify({}, null, '\t'));
+        await this.writeFile(targetFolder, '.vscode/apleno.json', JSON.stringify({}, null, '\t'));
 
         // open project if different
         if (!vscode.workspace.getWorkspaceFolder(targetFolder)) {
@@ -88,7 +88,7 @@ export class ProjectCreator {
           { label: "Choose another folder...", description: "", uri: undefined },
         ],
         {
-          title: "Initialize a new PGM project",
+          title: "Initialize a new Apleno project",
           placeHolder: "Select a folder",
         },
       );
@@ -113,7 +113,7 @@ export class ProjectCreator {
         })),
         { label: "Choose another folder...", description: "", uri: undefined as unknown as vscode.Uri },
       ],
-      { title: "Choose the folder to initialize the PGM project" },
+      { title: "Choose the folder to initialize the Apleno project" },
     );
 
     if (!pickedRoot) {

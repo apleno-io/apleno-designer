@@ -213,10 +213,10 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
   private static newFileId = 1;
 
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
-    vscode.commands.registerCommand('pgm.pseq.new', () => {
+    vscode.commands.registerCommand('apleno.pseq.new', () => {
       const workspaceFolders = vscode.workspace.workspaceFolders;
       if (!workspaceFolders) {
-        vscode.window.showErrorMessage("Creating new PGM sequence file currently requires opening a workspace");
+        vscode.window.showErrorMessage("Creating a new Apleno sequence file currently requires opening a workspace");
         return;
       }
 
@@ -237,7 +237,7 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
       });
   }
 
-  private static readonly viewType = 'pgm.pseq';
+  private static readonly viewType = 'apleno.pseq';
 
   /**
    * Tracks all known webviews

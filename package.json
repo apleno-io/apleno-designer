@@ -1,16 +1,16 @@
 {
-  "name": "pgmsolutions-pgm",
+  "name": "apleno-designer",
   "version": "0.0.1",
   "publisher": "pgm-solutions",
   "author": {
     "name": "PGM Solutions"
   },
-  "displayName": "PGM",
+  "displayName": "Apleno Designer",
   "description": "Create amazing apps with user-friendly UI.",
   "icon": "icons/app.png",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pgmsolutions/plugin-pgm.git"
+    "url": "git+https://github.com/pgmsolutions/apleno-designer.git"
   },
   "license": "SEE LICENSE IN LICENSE.md",
   "engines": {
@@ -21,14 +21,14 @@
     "Extension Packs"
   ],
   "activationEvents": [
-    "onDebugResolve:pgm"
+    "onDebugResolve:apleno"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "customEditors": [
       {
-        "viewType": "pgm.ppro",
-        "displayName": "PGM Project Editor",
+        "viewType": "apleno.ppro",
+        "displayName": "Apleno Project Editor",
         "selector": [
           {
             "filenamePattern": "*.ppro"
@@ -36,8 +36,8 @@
         ]
       },
       {
-        "viewType": "pgm.pseq",
-        "displayName": "PGM Sequence Editor",
+        "viewType": "apleno.pseq",
+        "displayName": "Apleno Sequence Editor",
         "selector": [
           {
             "filenamePattern": "*.pseq"
@@ -45,8 +45,8 @@
         ]
       },
       {
-        "viewType": "pgm.pgui",
-        "displayName": "PGM Interface Editor",
+        "viewType": "apleno.pgui",
+        "displayName": "Apleno Interface Editor",
         "selector": [
           {
             "filenamePattern": "*.pgui"
@@ -56,46 +56,46 @@
     ],
     "commands": [
       {
-        "command": "pgm.export",
-        "title": "PGM: Export app"
+        "command": "apleno.export",
+        "title": "Apleno: Export app"
       },
       {
-        "command": "pgm.initialize",
-        "title": "PGM: Create new project"
+        "command": "apleno.initialize",
+        "title": "Apleno: Create new project"
       },
       {
-        "command": "pgm.language.choose.r",
-        "title": "PGM: Choose R path for preview"
+        "command": "apleno.language.choose.r",
+        "title": "Apleno: Choose R path for preview"
       },
       {
-        "command": "pgm.language.choose.python",
-        "title": "PGM: Choose Python path for preview"
+        "command": "apleno.language.choose.python",
+        "title": "Apleno: Choose Python path for preview"
       },
       {
-        "command": "pgm.language.choose.conda",
-        "title": "PGM: Choose Conda path for preview"
+        "command": "apleno.language.choose.conda",
+        "title": "Apleno: Choose Conda path for preview"
       },
       {
-        "command": "pgm.ppro.new",
-        "title": "PGM: Create new Project file"
+        "command": "apleno.ppro.new",
+        "title": "Apleno: Create new Project file"
       },
       {
-        "command": "pgm.pseq.new",
-        "title": "PGM: Create new Sequence file"
+        "command": "apleno.pseq.new",
+        "title": "Apleno: Create new Sequence file"
       },
       {
-        "command": "pgm.pgui.new",
-        "title": "PGM: Create new Interface file"
+        "command": "apleno.pgui.new",
+        "title": "Apleno: Create new Interface file"
       },
       {
-        "command": "pgm.logs",
-        "title": "PGM: Show logs"
+        "command": "apleno.logs",
+        "title": "Apleno: Show logs"
       }
     ],
     "debuggers": [
       {
-        "type": "pgm",
-        "label": "RPGM",
+        "type": "apleno",
+        "label": "Apleno",
         "languages": [],
         "program": "./dist/debug-adapter.js",
         "runtime": "node",
@@ -125,9 +125,9 @@
         },
         "initialConfigurations": [
           {
-            "type": "pgm",
+            "type": "apleno",
             "request": "launch",
-            "name": "RPGM preview"
+            "name": "Apleno preview"
           }
         ]
       }
@@ -198,9 +198,9 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
+    "@vscode/debugadapter": "^1.68.0",
     "adm-zip": "^0.5.16",
     "micromatch": "^4.0.8",
-    "semver": "^7.7.3",
-    "vscode-debugadapter": "^1.51.0"
+    "semver": "^7.7.3"
   }
 }

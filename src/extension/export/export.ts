@@ -10,7 +10,7 @@ export class Exporter {
    * Register the export command.
    */
   public static registerCommand(context: vscode.ExtensionContext): vscode.Disposable {
-    return vscode.commands.registerCommand('pgm.export', this.selectAndExport.bind(this));
+    return vscode.commands.registerCommand('apleno.export', this.selectAndExport.bind(this));
   }
 
   /**
@@ -20,10 +20,10 @@ export class Exporter {
     const config = await Storage.getConfig();
     const uri = await vscode.window.showSaveDialog({
       filters: {
-        'PGM': ['pgm']
+        'Apleno app': ['pgm']
       },
       defaultUri: config.lastExportFolder ? vscode.Uri.file(config.lastExportFolder) : undefined,
-      title: 'Export PGM app'
+      title: 'Export Apleno app'
     });
     if (typeof uri === 'undefined') {
       return false;
@@ -43,10 +43,10 @@ export class Exporter {
       return false;
     }
 
-    // Get .pgmignore
-    const ignore: string[] = ['!.git/**/*', '!.pgmignore'];
+    // Get .aplenoignore
+    const ignore: string[] = ['!.git/**/*', '!.aplenoignore'];
     try {
-      const ignoreContent = await fs.promises.readFile(path.join(folder.uri.fsPath, '.pgmignore'), 'utf8');
+      const ignoreContent = await fs.promises.readFile(path.join(folder.uri.fsPath, '.aplenoignore'), 'utf8');
       ignore.push(...ignoreContent.replace(/\r\n/g, '\n').split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('#')).map(l => `!${l.startsWith('./') ? l.substring(2) : l}`));
     }
     catch { }
@@ -75,10 +75,10 @@ export class Exporter {
       await fs.promises.writeFile(destination, zip.toBuffer());
     }
     catch (err) {
-      vscode.window.showErrorMessage(`PGM: Could not export project: ${err}`);
+      vscode.window.showErrorMessage(`Apleno: Could not export project: ${err}`);
       return false;
     }
-    vscode.window.showInformationMessage(`PGM: Project correctly exported.`);
+    vscode.window.showInformationMessage(`Apleno: Project correctly exported.`);
     return true;
   }
 }

@@ -12,15 +12,15 @@ export const RuntimeManager = new class {
    */
   public getRuntimeFolder(): string {
     if (process.platform === "win32") {
-      return path.join(process.env.LOCALAPPDATA as string, 'pgmruntime');
+      return path.join(process.env.LOCALAPPDATA as string, 'aplenoruntime');
     }
     else if (process.platform === "darwin") {
-      return path.join(os.homedir(), "Library", "Application Support", 'pgmruntime');
+      return path.join(os.homedir(), "Library", "Application Support", 'aplenoruntime');
     }
 
     // Linux / BSD: XDG if possible
     const xdgData = process.env.XDG_DATA_HOME || path.join(os.homedir(), ".local", "share");
-    return path.join(xdgData, 'pgmruntime');
+    return path.join(xdgData, 'aplenoruntime');
   }
 
   /**
@@ -58,7 +58,7 @@ export const RuntimeManager = new class {
       }
     }
     catch (err) {
-      logger.error(`PGM: Could not fetch if an update of the runtime exists: ${err}`, true);
+      logger.error(`Apleno: Could not fetch if an update of the runtime exists: ${err}`, true);
     }
     return null;
   }
@@ -78,7 +78,7 @@ export const RuntimeManager = new class {
     }
 
     return vscode.window.withProgress({
-      title: "Installing PGM Runtime...",
+      title: "Installing Apleno Runtime...",
       location: vscode.ProgressLocation.Notification,
     }, async (_progress) => {
       // Download & unzip
@@ -129,7 +129,7 @@ export const RuntimeManager = new class {
         return true;
       }
       catch (err) {
-        logger.error(`PGM: Could not download or install runtime: ${err}`, true);
+        logger.error(`Apleno: Could not download or install runtime: ${err}`, true);
         return false;
       }
     });

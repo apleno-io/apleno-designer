@@ -20,7 +20,7 @@ class PGMDebugAdapter {
   }
 
   /**
-   * Start the PGM runtime.
+   * Start the Apleno runtime.
    */
   private startChild(bin: string, app: string, r: string, python: string, conda: string) {
     if (this.child) {
@@ -32,7 +32,7 @@ class PGMDebugAdapter {
     this.child.stdout.on("data", (d) => {
       // ugly way to detect if the runtime as started
       //if (`${d}`.includes('first sequence')) {
-      //  this.io.sendEvent('pgm/started', { port: this.port });
+      //  this.io.sendEvent('apleno/started', { port: this.port });
       //}
       this.io.sendEvent("output", { category: "stdout", output: d.toString("utf8") });
     });
@@ -49,7 +49,7 @@ class PGMDebugAdapter {
   }
 
   /**
-   * Kill the PGM runtime.
+   * Kill the Apleno Runtime.
    */
   private killChild() {
     if (this.child === null) {
@@ -105,7 +105,7 @@ class PGMDebugAdapter {
 
         // simulate
         this.io.sendEvent("process", {
-          name: 'PGM Runtime',
+          name: 'Apleno Runtime',
           systemProcessId: this.child?.pid ?? 0,
           isLocalProcess: true,
           startMethod: "launch"

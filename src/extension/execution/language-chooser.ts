@@ -7,19 +7,19 @@ import { ConfigManager } from './config';
 export class LanguageChooser {
   public initialize(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(
-      'pgm.language.choose.r',
+      'apleno.language.choose.r',
       async () => {
         this.chooseLanguage('r');
       }
     ));
     context.subscriptions.push(vscode.commands.registerCommand(
-      'pgm.language.choose.python',
+      'apleno.language.choose.python',
       async () => {
         this.chooseLanguage('python');
       }
     ));
     context.subscriptions.push(vscode.commands.registerCommand(
-      'pgm.language.choose.conda',
+      'apleno.language.choose.conda',
       async () => {
         this.chooseLanguage('conda');
       }
