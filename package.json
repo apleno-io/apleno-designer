@@ -1,9 +1,9 @@
 {
   "name": "apleno-designer",
   "version": "0.0.1",
-  "publisher": "pgm-solutions",
+  "publisher": "apleno",
   "author": {
-    "name": "PGM Solutions"
+    "name": "Apleno"
   },
   "displayName": "Apleno Designer",
   "description": "Create amazing apps with user-friendly UI.",
