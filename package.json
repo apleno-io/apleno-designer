@@ -10,7 +10,7 @@
   "icon": "icons/app.png",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pgmsolutions/apleno-designer.git"
+    "url": "git+https://github.com/apleno-io/apleno-designer.git"
   },
   "license": "Apache-2.0",
   "engines": {
