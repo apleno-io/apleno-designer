@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Apleno sequence file (.pseq)",
+  "description": "A sequence is the flowchart of an Apleno app: a graph of steps executed one after another, starting from the single 'start' step and following each step's 'target'. The file is JSON, edited visually by the Apleno Sequence Editor.",
+  "type": "object",
+  "required": ["_version", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "_version": {
+      "description": "Format version. The current version is 4.",
+      "type": "integer",
+      "const": 4
+    },
+    "cameraX": {
+      "description": "Editor view position (horizontal). Only used by the visual editor.",
+      "type": "number",
+      "default": 0
+    },
+    "cameraY": {
+      "description": "Editor view position (vertical). Only used by the visual editor.",
+      "type": "number",
+      "default": 0
+    },
+    "cameraZoom": {
+      "description": "Editor zoom level. Only used by the visual editor.",
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "default": 1
+    },
+    "steps": {
+      "description": "All steps of the sequence. Exactly one step must have type 'start'. Step ids must be unique.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/step" },
+      "contains": {
+        "type": "object",
+        "properties": { "type": { "const": "start" } }
+      }
+    }
+  },
+  "definitions": {
+    "step": {
+      "type": "object",
+      "required": ["id", "type", "x", "y", "parameters"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "Numeric identifier of the step, unique in the file. Other steps point to this step with 'parameters.target' / 'parameters.targetOnFalse'.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "type": {
+          "description": "'start': entry point of the sequence (exactly one). 'script': runs an R (.R) or Python (.py) script file. 'gui': displays an interface (.pgui file) and waits for the user to submit it. 'condition': evaluates an R/Python expression and goes to 'target' if true, 'targetOnFalse' if false. 'sequence': runs another sequence (.pseq file). 'end': ends the sequence.",
+          "enum": ["start", "script", "gui", "condition", "sequence", "end"]
+        },
+        "x": {
+          "description": "Horizontal position of the step center in the visual editor. Steps are 200x50 and snap to a 50-unit grid; lay them out top to bottom about 150 units apart, with condition branches offset horizontally (e.g. 300 units).",
+          "type": "number"
+        },
+        "y": {
+          "description": "Vertical position of the step center in the visual editor (y grows downward).",
+          "type": "number"
+        },
+        "customId": {
+          "description": "Identifier usable from R/Python code to refer to this step (not used for start/end). Must be unique in the sequence when not empty.",
+          "type": "string"
+        },
+        "customName": {
+          "description": "Name of the step displayed to the end user in the steps list (not used for start/end).",
+          "type": "string"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "file": {
+              "description": "For 'script', 'gui' and 'sequence' steps: path of the file to run/display, relative to the project root folder (e.g. 'scripts/load.R', 'interfaces/form.pgui', 'sub.pseq').",
+              "type": "string"
+            },
+            "language": {
+              "description": "For 'condition' steps: language of 'code'.",
+              "enum": ["r", "python"]
+            },
+            "code": {
+              "description": "For 'condition' steps: R/Python expression returning TRUE/True or FALSE/False.",
+              "type": "string"
+            },
+            "target": {
+              "description": "Id of the next step (for a condition: the step to go to when the expression is true). Required for every step type except 'end'.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "targetOnFalse": {
+              "description": "For 'condition' steps: id of the step to go to when the expression is false.",
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "enum": ["start", "script", "gui", "condition", "sequence"] } } },
+          "then": { "properties": { "parameters": { "required": ["target"] } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "script" } } },
+          "then": { "properties": { "parameters": { "required": ["file"], "properties": { "file": { "pattern": "\\.(R|r|py)$" } } } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "gui" } } },
+          "then": { "properties": { "parameters": { "required": ["file"], "properties": { "file": { "pattern": "\\.pgui$" } } } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "sequence" } } },
+          "then": { "properties": { "parameters": { "required": ["file"], "properties": { "file": { "pattern": "\\.pseq$" } } } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "condition" } } },
+          "then": {
+            "properties": {
+              "parameters": {
+                "required": ["code", "language", "targetOnFalse"],
+                "properties": { "code": { "minLength": 1 } }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

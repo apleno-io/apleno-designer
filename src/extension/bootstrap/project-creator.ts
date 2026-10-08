@@ -1,4 +1,7 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
+import { type ProjectFile, ProjectFileUtils } from '../../common/project';
+import { SequenceFileUtils } from '../../common/sequence';
 
 /**
  * Class for bootstraping a new Apleno project.
@@ -31,18 +34,13 @@ export class ProjectCreator {
           }
         }
 
-        // create project.ppro, main.pseq, start.pgui, launch.json and apleno.json
-        await this.writeFile(targetFolder, 'project.ppro', JSON.stringify({ start: 'main.pseq' }, null, '\t'));
-        await this.writeFile(targetFolder, 'main.pseq', JSON.stringify({
-          steps: [{
-            id: 'start',
-            name: 'Start',
-            type: 'start',
-            x: 0,
-            y: 0,
-            uuid: 1
-          }]
-        }, null, '\t'));
+        // create project.ppro, main.pseq, launch.json and apleno.json
+        const project: ProjectFile = {
+          ...ProjectFileUtils.sanitize({ name: path.posix.basename(targetFolder.path) }),
+          dateCreated: Math.floor(Date.now() * 0.001)
+        };
+        await this.writeFile(targetFolder, 'project.ppro', JSON.stringify(project, null, '\t'));
+        await this.writeFile(targetFolder, 'main.pseq', JSON.stringify(SequenceFileUtils.getDefaultFile(), null, '\t'));
         await this.writeFile(targetFolder, '.vscode/launch.json', JSON.stringify({
           "version": "0.2.0",
           "configurations": [
@@ -54,6 +52,17 @@ export class ProjectCreator {
           ]
         }, null, '\t'));
         await this.writeFile(targetFolder, '.vscode/apleno.json', JSON.stringify({}, null, '\t'));
+
+        // instructions and file schemas for AI assistants (don't overwrite user's instructions)
+        for (const schema of ['ppro', 'pseq', 'pgui']) {
+          await this.copyFromExtension(context, `schemas/${schema}.schema.json`, targetFolder, `.apleno/schemas/${schema}.schema.json`);
+        }
+        if (!await this.exists(targetFolder, 'AGENTS.md')) {
+          await this.copyFromExtension(context, 'templates/AGENTS.md', targetFolder, 'AGENTS.md');
+        }
+        if (!await this.exists(targetFolder, 'CLAUDE.md')) {
+          await this.writeFile(targetFolder, 'CLAUDE.md', '@AGENTS.md\n');
+        }
 
         // open project if different
         if (!vscode.workspace.getWorkspaceFolder(targetFolder)) {
@@ -150,5 +159,26 @@ export class ProjectCreator {
       fileUri,
       encoder.encode(content)
     );
+  }
+
+  /**
+   * Copy a file shipped with the extension into the project.
+   */
+  private async copyFromExtension(context: vscode.ExtensionContext, source: string, folder: vscode.Uri, fileName: string) {
+    const content = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(context.extensionUri, source));
+    await vscode.workspace.fs.writeFile(vscode.Uri.joinPath(folder, fileName), content);
+  }
+
+  /**
+   * Check if a file exists in the project.
+   */
+  private async exists(folder: vscode.Uri, fileName: string): Promise<boolean> {
+    try {
+      await vscode.workspace.fs.stat(vscode.Uri.joinPath(folder, fileName));
+      return true;
+    }
+    catch {
+      return false;
+    }
   }
 }

@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Apleno project file (.ppro)",
+  "description": "The manifest of an Apleno app, at the root of the project folder. It holds the app metadata, the starting sequence and display settings. The file is JSON, edited visually by the Apleno Project Editor.",
+  "type": "object",
+  "required": ["name", "sequenceStart"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "description": "App name, displayed in Apleno Server.",
+      "type": "string",
+      "default": ""
+    },
+    "company": {
+      "description": "Author or company name.",
+      "type": "string",
+      "default": ""
+    },
+    "description": {
+      "description": "Short description of the app purpose, displayed in Apleno Server.",
+      "type": "string",
+      "default": ""
+    },
+    "sequenceStart": {
+      "description": "Path of the sequence (.pseq) run when the app starts, relative to the project root folder.",
+      "type": "string",
+      "pattern": "\\.pseq$",
+      "default": "main.pseq"
+    },
+    "defaultWorkingDirectory": {
+      "description": "Working directory of the R/Python scripts: 'app' (the project folder) or 'output' (the output folder; Apleno 1.x/2.x behavior, kept for compatibility).",
+      "enum": ["app", "output"],
+      "default": "app"
+    },
+    "outputFolderName": {
+      "description": "Name of the sub-directory created for the files generated during an execution. Placeholders: {{name}} (app name), {{datetime}} (current date and time). Empty string for a random name.",
+      "type": "string",
+      "default": "{{name}}_{{datetime}}"
+    },
+    "customFiles": {
+      "description": "JavaScript (.js) and CSS (.css) files loaded with the app, as paths relative to the project root folder. This is the recommended way to add custom styles.",
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "consoleAccess": {
+      "description": "Whether the end user can open the R/Python console and type commands.",
+      "enum": ["enabled", "disabled"],
+      "default": "disabled"
+    },
+    "icon": {
+      "description": "Path of the app icon displayed in Apleno Server, relative to the project root folder. Empty string for none.",
+      "type": "string",
+      "default": ""
+    },
+    "sidebarLogo": {
+      "description": "Path of the image displayed above the steps list, relative to the project root folder. Empty string for none.",
+      "type": "string",
+      "default": ""
+    },
+    "stepListType": {
+      "description": "Whether the list of steps is shown to the end user.",
+      "enum": ["hidden", "shown"],
+      "default": "hidden"
+    },
+    "customCSSLightCode": {
+      "description": "Deprecated: CSS code for the light theme. Use a .css file in 'customFiles' instead.",
+      "type": "string",
+      "default": ""
+    },
+    "customCSSDarkCode": {
+      "description": "Deprecated: CSS code for the dark theme. Use a .css file in 'customFiles' instead.",
+      "type": "string",
+      "default": ""
+    },
+    "customCSSLightFile": {
+      "description": "Deprecated. Use a .css file in 'customFiles' instead.",
+      "type": "string",
+      "default": ""
+    },
+    "customCSSDarkFile": {
+      "description": "Deprecated. Use a .css file in 'customFiles' instead.",
+      "type": "string",
+      "default": ""
+    },
+    "changelog": {
+      "description": "History of the app versions, most recent first.",
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": { "description": "Date of the change, as 'YYYY-MM-DD'.", "type": "string" },
+          "author": { "description": "Author of the change.", "type": "string" },
+          "version": { "description": "Version number, e.g. '1.2.0'.", "type": "string" },
+          "message": { "description": "Description of the change.", "type": "string" }
+        }
+      }
+    },
+    "dateCreated": {
+      "description": "Unix timestamp. Managed by the editor; do not edit.",
+      "type": "number"
+    }
+  }
+}
