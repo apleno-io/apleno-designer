@@ -21,6 +21,10 @@ Full documentation: https://docs.apleno.io
 
 **Before creating or editing one of these files, read its schema.** Only use properties, widget types, subtypes and enum values that the schema defines: the visual editors silently drop anything else. Write files with tab indentation, like the editors do.
 
+The extension checks these files and reports errors in the VS Code Problems panel (source "Apleno"): fix them after editing.
+
+The **`apleno` skill** (`.claude/skills/apleno/`) has the detailed references (all API functions, widget behavior, Plotly graphs, custom JavaScript/CSS, Excel, Leaflet and Handsontable modules) and complete example apps. Use it for anything beyond simple edits.
+
 ## Sequences (`.pseq`)
 
 - Exactly one `start` step. Execution follows `parameters.target` from step to step until an `end` step.
@@ -36,7 +40,9 @@ Full documentation: https://docs.apleno.io
 - Each widget has a numeric `id` unique in the whole file (nested widgets included: use highest id + 1), a `customId` used to reference it from code, a `type` and a `data` object.
 - Containers: `box` holds a vertical list of widgets. `columns` and `tabs` must have exactly one child per entry of `columnsWidths` / `tabsNames`, and each child must be a `box`, usually `{"labelPosition": "hidden", "marginTop": 0, "boxDesign": "none", "boxHeader": ""}`. Column widths use a 12-unit grid.
 - `"language": true` makes `value` an R/Python expression evaluated when the interface is displayed, e.g. `"value": "nrow(data)", "language": true`.
-- After a `gui` step is submitted, each input widget's value is available in R/Python as a variable named after its `customId`. Give input widgets short, valid variable names as `customId` (e.g. `age`, `input_file`).
+- Each widget's value is available in R/Python as a variable named after its `customId`: in the interface code while it is displayed, and in the next steps after it is submitted. Give input widgets short, valid variable names as `customId` (e.g. `age`, `input_file`).
+- `graph` widgets display Plotly figures: `graphVariable` is an expression returning `list(data = ..., layout = ...)` (R) or `{'data': ..., 'layout': ...}` (Python).
+- With `"displaySubmitButton": false`, the interface is a dashboard driven by buttons (`buttonCode`); `gui.submit()` moves to the next step.
 
 Minimal interface:
 
@@ -60,11 +66,14 @@ Minimal interface:
 
 The functions below are predefined in every R and Python session run by Apleno. Do **not** import or `library()` anything to use them. Names are identical in R and Python (in Python, `rpgm`, `gui` and `script` are modules already present in the global scope). Use `TRUE`/`FALSE` in R and `True`/`False` in Python.
 
-**Referencing an interface.** `step <- rpgm.step(file, stepId)` builds a reference to a `gui` step: `file` is the `.pseq` file containing the step and `stepId` is the step's `customId`. GUI functions take this reference and the widget's `customId`:
+**Referencing an interface.** GUI functions take a step reference and the widget's `customId`:
+
+- `'this'` is the interface currently displayed: use it in interface code (`buttonCode`, `codeOnChange`...) and in the functions it calls.
+- `rpgm.step(file, stepId)` is a specific `gui` step, e.g. from a script step preparing an interface: `file` is the sequence containing the step (`"main"` or `"main.pseq"`) and `stepId` is the step's `customId`.
 
 ```r
-step <- rpgm.step("main.pseq", "form")
-gui.setValue(step, "username", "John")
+gui.hide(rpgm.step("main", "form"), "results")   # in a script step, before the interface
+gui.setValue("this", "total", sum(values))        # in the interface code
 ```
 
 ### `gui.*`: change an interface from code

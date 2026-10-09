@@ -1,4 +1,6 @@
 const esbuild = require("esbuild");
+const fs = require("fs");
+const path = require("path");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -23,7 +25,47 @@ const esbuildProblemMatcherPlugin = {
 	},
 };
 
+/**
+ * Assemble the AI assistant skill in dist/skill/apleno: the files of
+ * templates/skill/apleno plus the source files of the example apps
+ * (no data files nor third-party libraries).
+ */
+const SKILL_EXAMPLE_EXTENSIONS = ['.ppro', '.pseq', '.pgui', '.r', '.py', '.js', '.css', '.md'];
+const SKILL_EXAMPLE_EXCLUDE = [
+	'cyberrisk/main-0.py',
+	'cyberrisk/modules/mathjax.js',
+	'map/leaflet/',
+	'map/test.R',
+	'portfolio/mathjax.js'
+];
+const SKILL_EXAMPLE_MAX_SIZE = 100 * 1024;
+
+function buildSkill() {
+	const target = path.join('dist', 'skill', 'apleno');
+	fs.rmSync(target, { recursive: true, force: true });
+	fs.cpSync(path.join('templates', 'skill', 'apleno'), target, { recursive: true });
+	fs.cpSync('examples', path.join(target, 'examples'), {
+		recursive: true,
+		filter: (source) => {
+			const relative = path.relative('examples', source).replace(/\\/g, '/');
+			if (relative === '' || fs.statSync(source).isDirectory()) {
+				return !SKILL_EXAMPLE_EXCLUDE.includes(`${relative}/`);
+			}
+			if (!SKILL_EXAMPLE_EXTENSIONS.includes(path.extname(source).toLowerCase()) || SKILL_EXAMPLE_EXCLUDE.includes(relative)) {
+				return false;
+			}
+			if (fs.statSync(source).size > SKILL_EXAMPLE_MAX_SIZE) {
+				console.warn(`[skill] skipped ${relative}: larger than ${SKILL_EXAMPLE_MAX_SIZE / 1024} KB (add it to SKILL_EXAMPLE_EXCLUDE)`);
+				return false;
+			}
+			return true;
+		}
+	});
+}
+
 async function main() {
+	buildSkill();
+
 	const ctx = await esbuild.context({
 		entryPoints: [
 			{ out: 'extension', in: 'src/extension/extension.ts' },
