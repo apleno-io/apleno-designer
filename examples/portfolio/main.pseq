@@ -1,0 +1,63 @@
+{
+	"steps": [
+		{
+			"id": "start",
+			"name": "Start",
+			"type": "start",
+			"x": 70,
+			"y": 10,
+			"uuid": 1,
+			"target": 4
+		},
+		{
+			"uuid": 2,
+			"file": "dashboard.pgui",
+			"id": "dashboard",
+			"name": "dashboard",
+			"type": "gui",
+			"x": 70,
+			"y": 370,
+			"target": 3
+		},
+		{
+			"x": 70,
+			"y": 460,
+			"uuid": 3,
+			"file": "",
+			"id": "",
+			"name": "",
+			"target": "",
+			"type": "end"
+		},
+		{
+			"uuid": 4,
+			"file": "heston-edp.py",
+			"id": "heston-edp",
+			"name": "heston-edp",
+			"type": "rscript",
+			"x": 70,
+			"y": 70,
+			"target": 5
+		},
+		{
+			"uuid": 5,
+			"file": "heston-mc.py",
+			"id": "heston-mc",
+			"name": "heston-mc",
+			"type": "rscript",
+			"x": 70,
+			"y": 170,
+			"target": 6
+		},
+		{
+			"uuid": 6,
+			"file": "graph.py",
+			"id": "graph",
+			"name": "graph",
+			"type": "rscript",
+			"x": 70,
+			"y": 270,
+			"target": 2
+		}
+	]
+}

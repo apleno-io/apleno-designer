@@ -1,0 +1,63 @@
+{
+	"steps": [
+		{
+			"id": "start",
+			"name": "Start",
+			"type": "start",
+			"x": 60,
+			"y": 50,
+			"uuid": 1,
+			"target": 6
+		},
+		{
+			"uuid": 2,
+			"file": "main.pgui",
+			"id": "leaflet",
+			"name": "main",
+			"type": "gui",
+			"x": 340,
+			"y": 80,
+			"target": 3
+		},
+		{
+			"x": 340,
+			"y": 190,
+			"uuid": 3,
+			"file": "",
+			"id": "",
+			"name": "",
+			"target": "",
+			"type": "end"
+		},
+		{
+			"uuid": 4,
+			"file": "main.R",
+			"id": "main.R",
+			"name": "main.R",
+			"type": "rscript",
+			"x": 60,
+			"y": 270,
+			"target": 2
+		},
+		{
+			"uuid": 5,
+			"file": "chargement.R",
+			"id": "chargement.R",
+			"name": "chargement.R",
+			"type": "rscript",
+			"x": 60,
+			"y": 190,
+			"target": 4
+		},
+		{
+			"uuid": 6,
+			"file": "interpCol.r",
+			"id": "interpCol",
+			"name": "interpCol",
+			"type": "rscript",
+			"x": 60,
+			"y": 110,
+			"target": 5
+		}
+	]
+}

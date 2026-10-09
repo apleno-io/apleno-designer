@@ -1,0 +1,1123 @@
+{
+	"elements": [
+		{
+			"id": "",
+			"type": "label",
+			"data": {
+				"value": "Contrôle Optimal pour Risque Cyber<br><span style=\"font-size:80%\">Avec processus de Hawkes controlés</span>",
+				"isr": false,
+				"css": "border: solid #2c3e50 2px; border-radius: 8px;text-align:center; padding: 16px 32px; margin: auto; color:white; background: #005782",
+				"margintop": "10",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": "32",
+				"fontfamily": "default",
+				"fontcolor": "#000000"
+			}
+		},
+		{
+			"id": "",
+			"type": "box",
+			"data": {
+				"css": "bluebox",
+				"margintop": "10",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"boxdesign": "light",
+				"boxheader": "Les processus"
+			},
+			"elements": [
+				{
+					"id": "",
+					"type": "columns",
+					"data": {
+						"css": "",
+						"margintop": "10",
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"columnswidths": [
+							6,
+							6
+						],
+						"columnspadding": 10
+					},
+					"elements": [
+						{
+							"id": "",
+							"type": "box",
+							"data": {
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"boxdesign": "none",
+								"boxheader": ""
+							},
+							"elements": [
+								{
+									"id": "",
+									"type": "label",
+									"data": {
+										"value": "\\(X_s^{t, x, \\alpha} = x + \\int_{t}^{s}(c - \\alpha_u)du + \\frac12\\sigma \\int_{t}^{s} dW_u - \\sum_{k = N_t+1}^{N_s}Y_k\\)",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "Le processus de richesse :",
+										"labelposition": "topaligned",
+										"helptext": "L'assureur encaisse les primes et investit pour diminuer les sinistres subis",
+										"helpposition": "bottom",
+										"fontsize": "14",
+										"fontfamily": "default",
+										"fontcolor": "#000000"
+									}
+								},
+								{
+									"id": "c",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "2",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(c\\)",
+										"labelposition": "left",
+										"helptext": "Le taux de prime",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "",
+										"condition": "",
+										"min": "",
+										"max": "",
+										"step": ""
+									}
+								},
+								{
+									"id": "sigma",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "1",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(\\sigma\\)",
+										"labelposition": "left",
+										"helptext": "Volatilité d'un portefeuille martingale",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "",
+										"condition": "",
+										"min": "",
+										"max": "",
+										"step": ""
+									}
+								},
+								{
+									"id": "",
+									"type": "select",
+									"data": {
+										"subtype": "select",
+										"value": "tabulated",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(\\mathbb{P}_{Y}\\)",
+										"labelposition": "left",
+										"helptext": "Loi des sinistres \\((Y_k)_{k\\geq 1}\\)",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "",
+										"condition": "",
+										"choices": [
+											{
+												"value": "tabulated",
+												"text": "Tabulée"
+											}
+										],
+										"choicesvalues": "",
+										"choicestexts": ""
+									}
+								},
+								{
+									"id": "PY",
+									"type": "grid",
+									"data": {
+										"value": "PY",
+										"isr": true,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "",
+										"labelposition": "left",
+										"helptext": "",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "",
+										"condition": "",
+										"gridtype": "text",
+										"gridcolumns": "",
+										"gridrows": "",
+										"gridnbcolumns": "",
+										"gridnbrows": ""
+									}
+								}
+							]
+						},
+						{
+							"id": "",
+							"type": "box",
+							"data": {
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"boxdesign": "none",
+								"boxheader": ""
+							},
+							"elements": [
+								{
+									"id": "",
+									"type": "label",
+									"data": {
+										"value": "\\(\\Lambda_s^{t, \\lambda} = \\lambda - \\int_{t}^{s}\\beta(\\Lambda_u^{t, \\lambda} - \\mu)du + \\delta \\int_{t}^{s}dN_u\\)",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "Le processus d'intensité :",
+										"labelposition": "topaligned",
+										"helptext": "Correspond à un Hawkes avec noyau exponentiel",
+										"helpposition": "bottom",
+										"fontsize": "14",
+										"fontfamily": "default",
+										"fontcolor": "#000000"
+									}
+								},
+								{
+									"id": "mu",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "mu",
+										"isr": true,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(\\mu\\)",
+										"labelposition": "left",
+										"helptext": "Intensité plancher",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "",
+										"condition": "",
+										"min": "",
+										"max": "",
+										"step": ""
+									}
+								},
+								{
+									"id": "beta",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "2.5",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(\\beta\\)",
+										"labelposition": "left",
+										"helptext": "Taux de décroissance de l'intensité vers le plancher (1 unité de temps = -92,8%)",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "beta_helptext(beta)",
+										"condition": "",
+										"min": "0",
+										"max": "",
+										"step": ""
+									}
+								},
+								{
+									"id": "delta",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "1.5",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(\\delta\\)",
+										"labelposition": "left",
+										"helptext": "Valeur d'augmentation de l'intensité après un sinistre",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "",
+										"condition": "",
+										"min": "",
+										"max": "",
+										"step": ""
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "",
+			"type": "box",
+			"data": {
+				"css": "bluebox",
+				"margintop": "10",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"boxdesign": "light",
+				"boxheader": "Programme"
+			},
+			"elements": [
+				{
+					"id": "",
+					"type": "columns",
+					"data": {
+						"css": "",
+						"margintop": "10",
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"columnswidths": [
+							6,
+							6
+						],
+						"columnspadding": 10
+					},
+					"elements": [
+						{
+							"id": "",
+							"type": "box",
+							"data": {
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"boxdesign": "none",
+								"boxheader": ""
+							},
+							"elements": [
+								{
+									"id": "",
+									"type": "label",
+									"data": {
+										"value": "\\(U(X_T^{t, x})\\) avec \\(U(x) = -\\exp(-\\eta x)\\)",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "Condition terminale :",
+										"labelposition": "topaligned",
+										"helptext": "Utilité exponentielle avec aversion au risque \\(\\eta\\) avec réduction de la dimension (richesse)",
+										"helpposition": "bottom",
+										"fontsize": "14",
+										"fontfamily": "default",
+										"fontcolor": "#000000"
+									}
+								},
+								{
+									"id": "eta",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "0.05",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(\\eta\\)",
+										"labelposition": "left",
+										"helptext": "",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "",
+										"condition": "",
+										"min": "0",
+										"max": "",
+										"step": ""
+									}
+								},
+								{
+									"id": "T",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "50",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(T\\)",
+										"labelposition": "left",
+										"helptext": "La date terminale",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "nt_helptext(T/nt)",
+										"condition": "",
+										"min": "1",
+										"max": "",
+										"step": ""
+									}
+								}
+							]
+						},
+						{
+							"id": "",
+							"type": "box",
+							"data": {
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"boxdesign": "none",
+								"boxheader": ""
+							},
+							"elements": [
+								{
+									"id": "",
+									"type": "label",
+									"data": {
+										"value": "\\(\\Lambda_s^{t, \\lambda, \\alpha} = \\frac{\\Lambda_s^{t, \\lambda}}{1 + \\gamma\\alpha_s} \\)",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "Intensité contrôlée",
+										"labelposition": "topaligned",
+										"helptext": "La processus \\(N\\) est d'intensité \\(\\Lambda^{t, \\lambda, \\alpha}\\)",
+										"helpposition": "bottom",
+										"fontsize": "14",
+										"fontfamily": "default",
+										"fontcolor": "#000000"
+									}
+								},
+								{
+									"id": "gamma",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "0.25",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(\\gamma\\)",
+										"labelposition": "left",
+										"helptext": "",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "",
+										"condition": "",
+										"min": "",
+										"max": "",
+										"step": ""
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "",
+			"type": "box",
+			"data": {
+				"css": "bluebox",
+				"margintop": "10",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"boxdesign": "light",
+				"boxheader": "Paramètres du schéma numérique"
+			},
+			"elements": [
+				{
+					"id": "",
+					"type": "columns",
+					"data": {
+						"css": "",
+						"margintop": "10",
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"columnswidths": [
+							6,
+							6
+						],
+						"columnspadding": 10
+					},
+					"elements": [
+						{
+							"id": "",
+							"type": "box",
+							"data": {
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"boxdesign": "none",
+								"boxheader": ""
+							},
+							"elements": [
+								{
+									"id": "l_min",
+									"type": "label",
+									"data": {
+										"value": "mu",
+										"isr": true,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(\\lambda_{min}\\)",
+										"labelposition": "left",
+										"helptext": "",
+										"helpposition": "bottom",
+										"fontsize": "14",
+										"fontfamily": "default",
+										"fontcolor": "#000000"
+									}
+								},
+								{
+									"id": "l_max",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "mu + 20.",
+										"isr": true,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(\\lambda_{max}\\)",
+										"labelposition": "left",
+										"helptext": "",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "nl_helptext((l_max-mu)/nl)",
+										"condition": "",
+										"min": "",
+										"max": "",
+										"step": ""
+									}
+								}
+							]
+						},
+						{
+							"id": "",
+							"type": "box",
+							"data": {
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"boxdesign": "none",
+								"boxheader": ""
+							},
+							"elements": [
+								{
+									"id": "nl",
+									"type": "number",
+									"data": {
+										"subtype": "float",
+										"value": "160",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(n_{\\lambda}\\)",
+										"labelposition": "left",
+										"helptext": "Nombre de pas d'espace, \\(d\\lambda\\) = 0.1",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "nl_helptext((l_max-mu)/nl)",
+										"condition": "",
+										"min": "",
+										"max": "",
+										"step": ""
+									}
+								},
+								{
+									"id": "nt",
+									"type": "number",
+									"data": {
+										"subtype": "integer",
+										"value": "20000",
+										"isr": false,
+										"css": "",
+										"margintop": "10",
+										"labeltext": "\\(n_t\\)",
+										"labelposition": "left",
+										"helptext": "Le nombre de pas de temps ,\\(dt = 0.002\\)",
+										"helpposition": "bottom",
+										"required": false,
+										"onchange": "nt_helptext(T/nt)",
+										"condition": "",
+										"min": "1000",
+										"max": "50000",
+										"step": "1000"
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "",
+			"type": "tabs",
+			"data": {
+				"css": "",
+				"margintop": "10",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"tabsnames": [
+					"⚙️ Calcul contrôle optimal",
+					"📊 Trajectoires",
+					"📈 Analyse en \\(\\eta\\)"
+				],
+				"tabscurrent": "1"
+			},
+			"elements": [
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"css": "",
+						"margintop": "10",
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "light",
+						"boxheader": ""
+					},
+					"elements": [
+						{
+							"id": "",
+							"type": "columns",
+							"data": {
+								"css": "",
+								"margintop": "10",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"columnswidths": [
+									2,
+									10
+								],
+								"columnspadding": 10
+							},
+							"elements": [
+								{
+									"id": "",
+									"type": "box",
+									"data": {
+										"css": "",
+										"margintop": 10,
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"boxdesign": "none",
+										"boxheader": ""
+									},
+									"elements": [
+										{
+											"id": "oc_calcul",
+											"type": "button",
+											"data": {
+												"value": "Calculer",
+												"isr": false,
+												"css": "",
+												"margintop": "10",
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "",
+												"helpposition": "bottom",
+												"onpress": "disable_calcul_bouton('oc_calcul'); updateGlobal(); Alpha, V = OC_Value(eta); enable_calcul_bouton('oc_calcul'); graph_alpha(int(nt/2), int(nl/2));",
+												"buttonsize": "fw",
+												"buttondesign": "primary"
+											}
+										}
+									]
+								},
+								{
+									"id": "",
+									"type": "box",
+									"data": {
+										"css": "",
+										"margintop": 10,
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"boxdesign": "none",
+										"boxheader": ""
+									},
+									"elements": [
+										{
+											"id": "ocProgress",
+											"type": "progress",
+											"data": {
+												"subtype": "progressbar",
+												"value": "0",
+												"isr": false,
+												"css": "",
+												"margintop": "10",
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "",
+												"helpposition": "bottom",
+												"progresscolor": "#3498db",
+												"progressdescription": "%"
+											}
+										}
+									]
+								}
+							]
+						},
+						{
+							"id": "graph_alpha",
+							"type": "image",
+							"data": {
+								"value": "controle.png",
+								"isr": false,
+								"css": "",
+								"margintop": "10",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom"
+							}
+						}
+					]
+				},
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"css": "",
+						"margintop": "10",
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "light",
+						"boxheader": ""
+					},
+					"elements": [
+						{
+							"id": "traj_top",
+							"type": "label",
+							"data": {
+								"value": "Effectuer le <em>⚙️ Calcul contrôle optimal</em> afin de simuler des trajectoires.",
+								"isr": false,
+								"css": "",
+								"margintop": "10",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"fontsize": "14",
+								"fontfamily": "default",
+								"fontcolor": "#000000"
+							}
+						},
+						{
+							"id": "traj_list",
+							"type": "box",
+							"data": {
+								"css": "",
+								"margintop": "10",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"boxdesign": "none",
+								"boxheader": ""
+							},
+							"elements": [
+								{
+									"id": "",
+									"type": "columns",
+									"data": {
+										"css": "",
+										"margintop": "10",
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"columnswidths": [
+											2,
+											2,
+											8
+										],
+										"columnspadding": 10
+									},
+									"elements": [
+										{
+											"id": "",
+											"type": "box",
+											"data": {
+												"css": "",
+												"margintop": 10,
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "",
+												"helpposition": "bottom",
+												"boxdesign": "none",
+												"boxheader": ""
+											},
+											"elements": [
+												{
+													"id": "n",
+													"type": "number",
+													"data": {
+														"subtype": "float",
+														"value": "4000",
+														"isr": false,
+														"css": "",
+														"margintop": "10",
+														"labeltext": "\\(n\\)",
+														"labelposition": "left",
+														"helptext": "Nombre de simulations",
+														"helpposition": "bottom",
+														"required": false,
+														"onchange": "",
+														"condition": "",
+														"min": "",
+														"max": "",
+														"step": ""
+													}
+												}
+											]
+										},
+										{
+											"id": "",
+											"type": "box",
+											"data": {
+												"css": "",
+												"margintop": 10,
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "",
+												"helpposition": "bottom",
+												"boxdesign": "none",
+												"boxheader": ""
+											},
+											"elements": [
+												{
+													"id": "traj_calcul",
+													"type": "button",
+													"data": {
+														"value": "Calculer",
+														"isr": false,
+														"css": "",
+														"margintop": "10",
+														"labeltext": "",
+														"labelposition": "hidden",
+														"helptext": "",
+														"helpposition": "bottom",
+														"onpress": "disable_calcul_bouton('traj_calcul'); X, Lambda, A = BouttonSimTraj(); X_0, Lambda_0 = BouttonSimTraj_0(); enable_calcul_bouton('traj_calcul'); gui.setValue(\"this\", \"moments\", pd.DataFrame(moments(X[:, nt], X_0[:, nt]), index = [\"Optimal\", \"Sans contrôle\"])); graph_density()",
+														"buttonsize": "fw",
+														"buttondesign": "primary"
+													}
+												}
+											]
+										},
+										{
+											"id": "",
+											"type": "box",
+											"data": {
+												"css": "",
+												"margintop": 10,
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "",
+												"helpposition": "bottom",
+												"boxdesign": "none",
+												"boxheader": ""
+											},
+											"elements": [
+												{
+													"id": "trajProgress",
+													"type": "progress",
+													"data": {
+														"subtype": "progressbar",
+														"value": "0",
+														"isr": false,
+														"css": "",
+														"margintop": "10",
+														"labeltext": "",
+														"labelposition": "hidden",
+														"helptext": "",
+														"helpposition": "bottom",
+														"progresscolor": "#3498db",
+														"progressdescription": "%"
+													}
+												}
+											]
+										}
+									]
+								},
+								{
+									"id": "",
+									"type": "columns",
+									"data": {
+										"css": "",
+										"margintop": "10",
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"columnswidths": [
+											6,
+											6
+										],
+										"columnspadding": 10
+									},
+									"elements": [
+										{
+											"id": "",
+											"type": "box",
+											"data": {
+												"css": "",
+												"margintop": 10,
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "",
+												"helpposition": "bottom",
+												"boxdesign": "none",
+												"boxheader": ""
+											},
+											"elements": [
+												{
+													"id": "moments",
+													"type": "table",
+													"data": {
+														"value": "",
+														"isr": false,
+														"css": "",
+														"margintop": "10",
+														"labeltext": "",
+														"labelposition": "hidden",
+														"helptext": "",
+														"helpposition": "bottom"
+													}
+												}
+											]
+										},
+										{
+											"id": "",
+											"type": "box",
+											"data": {
+												"css": "",
+												"margintop": 10,
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "",
+												"helpposition": "bottom",
+												"boxdesign": "none",
+												"boxheader": ""
+											},
+											"elements": [
+												{
+													"id": "density",
+													"type": "image",
+													"data": {
+														"value": "density.png",
+														"isr": false,
+														"css": "",
+														"margintop": "10",
+														"labeltext": "",
+														"labelposition": "hidden",
+														"helptext": "",
+														"helpposition": "bottom"
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"css": "",
+						"margintop": "10",
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "light",
+						"boxheader": ""
+					},
+					"elements": [
+						{
+							"id": "",
+							"type": "columns",
+							"data": {
+								"css": "",
+								"margintop": "10",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"columnswidths": [
+									2,
+									10
+								],
+								"columnspadding": 10
+							},
+							"elements": [
+								{
+									"id": "",
+									"type": "box",
+									"data": {
+										"css": "",
+										"margintop": 10,
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"boxdesign": "none",
+										"boxheader": ""
+									},
+									"elements": [
+										{
+											"id": "oc_calcul_eta",
+											"type": "button",
+											"data": {
+												"value": "Calculer",
+												"isr": false,
+												"css": "",
+												"margintop": "10",
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "",
+												"helpposition": "bottom",
+												"onpress": "disable_calcul_bouton('oc_calcul_eta'); updateGlobal(); A_eta = OC_Eta(Eta); graph_eta(A_eta, int(nl/2)); enable_calcul_bouton('oc_calcul_eta');",
+												"buttonsize": "fw",
+												"buttondesign": "primary"
+											}
+										}
+									]
+								},
+								{
+									"id": "",
+									"type": "box",
+									"data": {
+										"css": "",
+										"margintop": 10,
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"boxdesign": "none",
+										"boxheader": ""
+									},
+									"elements": [
+										{
+											"id": "analyseProgress1",
+											"type": "progress",
+											"data": {
+												"subtype": "progressbar",
+												"value": "0",
+												"isr": false,
+												"css": "",
+												"margintop": "10",
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "Calcul de contrôle optimal en cours",
+												"helpposition": "bottom",
+												"progresscolor": "#3498db",
+												"progressdescription": "%"
+											}
+										},
+										{
+											"id": "analyseProgress2",
+											"type": "progress",
+											"data": {
+												"subtype": "progressbar",
+												"value": "0",
+												"isr": false,
+												"css": "",
+												"margintop": "10",
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "Progression globale",
+												"helpposition": "bottom",
+												"progresscolor": "#3498db",
+												"progressdescription": "%"
+											}
+										}
+									]
+								}
+							]
+						},
+						{
+							"id": "analyse",
+							"type": "image",
+							"data": {
+								"value": "analyse.png",
+								"isr": false,
+								"css": "",
+								"margintop": "10",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "",
+			"type": "label",
+			"data": {
+				"value": "Apleno Designer app",
+				"isr": false,
+				"css": "border: solid #2c3e50 2px; border-radius: 8px;text-align:center; padding: 16px 32px; margin: auto; color:white; background: #005782; margin-bottom:10px;",
+				"margintop": "10",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": "12",
+				"fontfamily": "default",
+				"fontcolor": "#000000"
+			}
+		}
+	],
+	"submitbutton": false,
+	"language": "python"
+}

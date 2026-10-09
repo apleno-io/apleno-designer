@@ -1,0 +1,330 @@
+{
+	"elements": [
+		{
+			"id": "",
+			"type": "label",
+			"data": {
+				"value": "Exposition et Emprunte Cat Nat",
+				"isr": false,
+				"css": "",
+				"margintop": "10",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": "24",
+				"fontfamily": "default",
+				"fontcolor": "#ffffff"
+			}
+		},
+		{
+			"id": "",
+			"type": "label",
+			"data": {
+				"value": "Une carte Leaflet pilotée par R via RPGM",
+				"isr": false,
+				"css": "",
+				"margintop": "",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": "14",
+				"fontfamily": "default",
+				"fontcolor": "#ffffff"
+			}
+		},
+		{
+			"id": "",
+			"type": "label",
+			"data": {
+				"value": "Choisir une empreinte :",
+				"isr": false,
+				"css": "",
+				"margintop": "30",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": "14",
+				"fontfamily": "default",
+				"fontcolor": "#ffffff"
+			}
+		},
+		{
+			"id": "",
+			"type": "columns",
+			"data": {
+				"css": "",
+				"margintop": "",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"columnswidths": [
+					5,
+					5,
+					2
+				],
+				"columnspadding": 10
+			},
+			"elements": [
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"css": "",
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "none",
+						"boxheader": ""
+					},
+					"elements": [
+						{
+							"id": "empreinte",
+							"type": "select",
+							"data": {
+								"subtype": "select",
+								"value": "Primes",
+								"isr": false,
+								"css": "max-width: 200px;",
+								"margintop": "0",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"required": false,
+								"onchange": "loadDonnees(empreinte, path[[empreinte]]); rpgm.sendToJavascript('updateMap', list())",
+								"condition": "",
+								"choices": [
+									{
+										"value": "Primes",
+										"text": "Exposition"
+									},
+									{
+										"value": "Ciaran",
+										"text": "Tempête Ciaran"
+									}
+								],
+								"choicesvalues": "",
+								"choicestexts": ""
+							}
+						}
+					]
+				},
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"css": "",
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "none",
+						"boxheader": ""
+					},
+					"elements": [
+						{
+							"id": "progressbar_donnees",
+							"type": "progress",
+							"data": {
+								"subtype": "progressbar",
+								"value": "0",
+								"isr": false,
+								"css": "",
+								"margintop": "0",
+								"labeltext": "",
+								"labelposition": "top",
+								"helptext": "",
+								"helpposition": "bottom",
+								"progresscolor": "#7289da",
+								"progressdescription": "%"
+							}
+						}
+					]
+				},
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"css": "",
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "none",
+						"boxheader": ""
+					},
+					"elements": [
+						{
+							"id": "",
+							"type": "button",
+							"data": {
+								"value": "Reset view",
+								"isr": false,
+								"css": "",
+								"margintop": "0",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"onpress": "setDefaultView()",
+								"buttonsize": "md",
+								"buttondesign": "outline-primary"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "",
+			"type": "columns",
+			"data": {
+				"css": "maincols",
+				"margintop": "20",
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"columnswidths": [
+					8,
+					4
+				],
+				"columnspadding": 10
+			},
+			"elements": [
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"css": "",
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "none",
+						"boxheader": ""
+					},
+					"elements": [
+						{
+							"id": "",
+							"type": "label",
+							"data": {
+								"value": "<div id=\"map\"></div>",
+								"isr": false,
+								"css": "",
+								"margintop": "10",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"fontsize": "14",
+								"fontfamily": "default",
+								"fontcolor": "#000000"
+							}
+						}
+					]
+				},
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"css": "",
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "none",
+						"boxheader": ""
+					},
+					"elements": [
+						{
+							"id": "",
+							"type": "tabs",
+							"data": {
+								"css": "",
+								"margintop": "",
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"tabsnames": [
+									"Résidence",
+									"Occupation",
+									"Propriétaire"
+								],
+								"tabscurrent": "1"
+							},
+							"elements": [
+								{
+									"id": "var_1",
+									"type": "graph",
+									"data": {
+										"css": "",
+										"margintop": "10",
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"graph": "",
+										"graphwidth": "100",
+										"graphheight": "500"
+									}
+								},
+								{
+									"id": "var_2",
+									"type": "graph",
+									"data": {
+										"css": "",
+										"margintop": "10",
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"graph": "",
+										"graphwidth": "100",
+										"graphheight": "500"
+									}
+								},
+								{
+									"id": "var_3",
+									"type": "graph",
+									"data": {
+										"css": "",
+										"margintop": "10",
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"graph": "",
+										"graphwidth": "100",
+										"graphheight": "500"
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "loadRepeater",
+			"type": "interval",
+			"data": {
+				"intervalcode": "loadDonnees(empreinte, path[[empreinte]]);",
+				"intervaltime": "200"
+			}
+		}
+	],
+	"submitbutton": false,
+	"language": "r"
+}

@@ -1,0 +1,53 @@
+{
+	"steps": [
+		{
+			"id": "start",
+			"name": "Start",
+			"type": "start",
+			"x": 130,
+			"y": 40,
+			"uuid": 1,
+			"target": 7
+		},
+		{
+			"uuid": 5,
+			"file": "main.pgui",
+			"id": "main",
+			"name": "main",
+			"type": "gui",
+			"x": 130,
+			"y": 290,
+			"target": 9
+		},
+		{
+			"uuid": 7,
+			"file": "sources\\interface.py",
+			"id": "interface",
+			"name": "interface",
+			"type": "rscript",
+			"x": 130,
+			"y": 110,
+			"target": 10
+		},
+		{
+			"x": 130,
+			"y": 380,
+			"uuid": 9,
+			"file": "",
+			"id": "",
+			"name": "",
+			"target": "",
+			"type": "end"
+		},
+		{
+			"uuid": 10,
+			"file": "main.py",
+			"id": "main-py",
+			"name": "main-py",
+			"type": "rscript",
+			"x": 130,
+			"y": 200,
+			"target": 5
+		}
+	]
+}

@@ -1,0 +1,46 @@
+{
+	"start": "main.pseq",
+	"name": "Cartographie de l'Exposition et Emprunte Cat Nat",
+	"company": "PGM Solutions",
+	"description": "Une carte Leaflet pilotée par R via RPGM",
+	"wd": "program",
+	"logo": "",
+	"css": "#map {\r\n    height: 540px;\r\n}\r\n\r\n@media (max-width: 1250px) {\r\n    .maincols [class*=pgm-widget-column-] {\r\n        float: none;\r\n        min-height: 1px;\r\n    }\r\n    .maincols .pgm-widget-column-4, .maincols .pgm-widget-column-8 {\r\n        width: 100%;\r\n        padding: 0 !important;\r\n    }\r\n}\r\n\r\n.choices {\r\n    color:white;\r\n}\r\n.choices__inner {\r\n    background: #34495e;\r\n}\r\n.choices[data-type*=select-one] .choices__input {\r\n    background:black;\r\n}\r\n.choices__list .choices__list--dropdown {\r\n    background: black;\r\n}\r\n.choices__list--dropdown .choices__item--selectable, .choices__list[aria-expanded] .choices__item--selectable {\r\n    background: black;\r\n}\r\n#pgm-content .pgm-gui .choices__list--dropdown {\r\n    z-index: 1500;\r\n}\r\n\r\n\r\n\r\n.choices__list--dropdown .choices__item--selectable.is-highlighted, .choices__list[aria-expanded] .choices__item--selectable.is-highlighted {\r\n    background: #34495e;\r\n}\r\n\r\n.choices__list--dropdown .choices__item, .choices__list[aria-expanded] .choices__item {\r\n    background:black;\r\n}\r\n\r\n\r\n.pgm-widget-tab {\r\n    background: none;\r\n    color: #ecf0f1;\r\n}\r\n\r\n.pgm-widget-tab-selected {\r\n    background: #2e3134;\r\n    border-radius: 6px 6px 0 0;\r\n}\r\n",
+	"list": "hide",
+	"rconsole": "r",
+	"outputfolder": "{{name}}_{{datetime}}",
+	"history": [
+		{
+			"date": "20/11/2023",
+			"version": "1.0.3",
+			"author": "Nicolas",
+			"changelog": "Optimisation et divers modifs mineures"
+		},
+		{
+			"date": "17/11/2023",
+			"version": "1.0.2",
+			"author": "Nicolas",
+			"changelog": "Optimisation de la vitesse de chargement"
+		},
+		{
+			"date": "16/11/2023",
+			"version": "1.0.1",
+			"author": "Nicolas",
+			"changelog": "Amélioration des performances d'affichage"
+		},
+		{
+			"date": "16/11/2023",
+			"version": "1.0.0",
+			"author": "Nicolas",
+			"changelog": "Complètement fonctionnelle"
+		}
+	],
+	"created": "2023-09-21T09:45:25+02:00",
+	"version": "4.6.0",
+	"customFiles": [
+		"leaflet/leaflet.js",
+		"leaflet/leaflet.css",
+		"main.js",
+		"main.css"
+	]
+}

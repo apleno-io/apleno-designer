@@ -1,0 +1,44 @@
+{
+	"start": "main.pseq",
+	"name": "Contrôle Optimal en Gestion de Portefeuille avec Heston",
+	"company": "PGM Solutions",
+	"description": "",
+	"wd": "program",
+	"logo": "",
+	"css": "@import url(\"https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap\");\r\n\r\n:root {\r\n    --cfont: 'Spline Sans', system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", \"Noto Sans\", \"Liberation Sans\", Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";\r\n}\r\n\r\n#pgm {\r\n    background-color: #ecf0f1;\r\n    font-family: var(--cfont);\r\n    font-size: 16px;\r\n}\r\n\r\n.pgm-gui {\r\n    margin: 0 auto;\r\n    max-width: 1078px;\r\n}\r\n\r\n.title {\r\n    background-color:white;\r\n    border-radius:10px;\r\n    padding: 2px;\r\n    text-align:center;\r\n}\r\n\r\n.ch1 {\r\n    font-family: var(--cfont);\r\n    font-size: 30px !important;\r\n    color: rgb(20, 27, 34) !important;\r\n    margin-top: 30px;\r\n}\r\n\r\n.ch2 {\r\n    font-family: var(--cfont);\r\n    font-size: 20px !important;\r\n    color: rgb(20, 27, 34) !important;\r\n    margin-bottom: 50px;\r\n}\r\n\r\n.ch3 {\r\n    font-family: var(--cfont);\r\n    font-size: 25px !important;\r\n    color: rgb(20, 27, 34) !important;\r\n    margin: 50px 0 20px;\r\n    font-weight: 600;\r\n}\r\n\r\n.cbox {\r\n    background-color: #fff;\r\n    box-shadow: 0 30px 30px -25px rgb(65 51 183 / 25%);\r\n    border-radius: 16px;\r\n    padding: 30px;\r\n    margin-bottom: 30px;\r\n}\r\n\r\n.ch4 {\r\n    border-radius: 16px;\r\n    font-size: 26px !important;\r\n    font-family: var(--cfont);\r\n    color: rgb(20, 27, 34) !important;\r\n    font-weight: 400;\r\n}\r\n\r\ninput.pgm-widget-input {\r\n    font-family: var(--cfont);\r\n    background-color: #ecf0f1;\r\n    border-radius: 10px;\r\n    padding: 20px;\r\n}\r\n\r\n.pgm-widget-label-top {\r\n    font-size: 19px;\r\n    font-weight: 600;\r\n}\r\n\r\n.pgm-widget-help {\r\n    font-size: 1rem;\r\n    font-family: var(--cfont);\r\n    margin-top: 3px;\r\n}\r\n\r\n.pgm-widget-progressbar {\r\n    background-color: #eaeaea;\r\n    font-size: 1.25rem;\r\n    line-height: 1.5;\r\n}\r\n\r\n.pgm-widget-progressbar-inner {\r\n    font-family: var(--cfont);\r\n}",
+	"list": "hide",
+	"rconsole": "r",
+	"outputfolder": "{{name}}_{{datetime}}",
+	"history": [
+		{
+			"date": "21/12/2023",
+			"version": "1.0.3",
+			"author": "Nicolas",
+			"changelog": "CSS màj"
+		},
+		{
+			"date": "21/12/2023",
+			"version": "1.0.2",
+			"author": "William",
+			"changelog": "CSS màj"
+		},
+		{
+			"date": "20/12/2023",
+			"version": "1.0.1",
+			"author": "Nicolas",
+			"changelog": "Formules avec Mathjax"
+		},
+		{
+			"date": "21/06/2023",
+			"version": "1.0.0",
+			"author": "Nicolas",
+			"changelog": "Version partageable LinkedIn"
+		}
+	],
+	"created": "2023-06-15T16:57:10+02:00",
+	"version": "4.5.0",
+	"customFiles": [
+		"mathjax.js",
+		"mathjax-init.js"
+	]
+}
