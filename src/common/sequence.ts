@@ -1,9 +1,27 @@
-export interface SequenceFileStep {
+/**
+ * Sequence files (.pseq).
+ *
+ * The runtime reads the v3 format: a `steps` list where each step has its user
+ * `id`, a numeric `uuid` referenced by `target`/`falsetarget`, and its settings
+ * at the step level (`file`, `r`, `language`). The editor works on its own
+ * internal model (SequenceState), converted from the file when reading and
+ * back to v3 when saving (SequenceFileUtils.toV3).
+ */
+
+export type SequenceStepType = 'start' | 'gui' | 'script' | 'condition' | 'sequence' | 'end';
+
+/**
+ * Step of the editor's internal model.
+ */
+export interface SequenceStep {
+  /** uuid of the step in the file */
   id: number;
-  type: 'start' | 'gui' | 'script' | 'condition' | 'sequence' | 'end';
+  type: SequenceStepType;
   x: number;
   y: number;
+  /** id of the step in the file */
   customId?: string;
+  /** name of the step in the file */
   customName?: string;
   parameters: {
     file?: string;
@@ -14,13 +32,44 @@ export interface SequenceFileStep {
   };
 }
 
-export interface SequenceFile {
-  _version: number;
+/**
+ * Editor's internal model of a sequence.
+ */
+export interface SequenceState {
   cameraX: number;
   cameraY: number;
   cameraZoom: number;
-  steps: SequenceFileStep[];
+  steps: SequenceStep[];
 }
+
+/**
+ * Step of a v3 sequence file, as read by the runtime.
+ */
+export interface SequenceFileStepV3 {
+  id?: string;
+  uuid: number;
+  name?: string;
+  x: number;
+  y: number;
+  type: 'start' | 'gui' | 'rscript' | 'condition' | 'sequence' | 'end';
+  file?: string;
+  r?: string;
+  language?: 'r' | 'python';
+  target?: number;
+  falsetarget?: number;
+}
+
+/**
+ * v3 sequence file. The camera keys are only used by the editor.
+ */
+export interface SequenceFileV3 {
+  cameraX: number;
+  cameraY: number;
+  cameraZoom: number;
+  steps: SequenceFileStepV3[];
+}
+
+const STEP_TYPES: SequenceStepType[] = ['start', 'gui', 'script', 'condition', 'sequence', 'end'];
 
 function findInfoByCustomId(infos: any, customId: string): any {
   for (let i = 0; i < infos.steps.length; ++i) {
@@ -32,14 +81,13 @@ function findInfoByCustomId(infos: any, customId: string): any {
 }
 
 export class SequenceFileUtils {
-  public static getDefaultFile(): SequenceFile {
+  public static getDefaultFile(): SequenceState {
     return {
-      _version: 4,
       cameraX: 0,
       cameraY: 0,
       cameraZoom: 1,
       steps: [{
-        id: 0,
+        id: 1,
         type: 'start',
         x: 0,
         y: 0,
@@ -48,20 +96,58 @@ export class SequenceFileUtils {
     };
   }
 
-  public static sanitize(manifest: any): SequenceFile | null {
+  /**
+   * Read the content of a sequence file (v2 or v3 format) into the internal model.
+   */
+  public static sanitize(manifest: any): SequenceState | null {
     // Is an object
     if (typeof manifest !== 'object' || manifest === null) {
       return null;
     }
 
-    // Future version
-    if (typeof manifest._version === 'number' && manifest._version > 4) {
-      throw new Error('This sequence file is from a newer version of the software and cannot be loaded.');
+    // Format of the Apleno Designer extension 1.0.x, not supported by the runtime
+    if ('_version' in manifest) {
+      throw new Error('This sequence file uses the format of Apleno Designer 1.0.x, which the Apleno runtime cannot read. Please recreate it.');
     }
 
-    // Update if needed
-    const manifestV4 = !('_version' in manifest) ? this.V3toV4(this.V2toV3(manifest)) : manifest;
-    return this.sanitizeV4(manifestV4);
+    return this.sanitizeState(this.V3toState(this.V2toV3(manifest)));
+  }
+
+  /**
+   * Convert the internal model to the v3 file format, keeping only the keys
+   * meaningful for each step type.
+   */
+  public static toV3(state: SequenceState): SequenceFileV3 {
+    return {
+      cameraX: state.cameraX,
+      cameraY: state.cameraY,
+      cameraZoom: state.cameraZoom,
+      steps: state.steps.map(step => {
+        const p = step.parameters;
+        const isEdge = step.type === 'start' || step.type === 'end';
+        const result: SequenceFileStepV3 = {
+          ...(isEdge ? {} : { id: step.customId ?? '', name: step.customName ?? '' }),
+          uuid: step.id,
+          x: step.x,
+          y: step.y,
+          type: step.type === 'script' ? 'rscript' : step.type
+        };
+        if (['script', 'gui', 'sequence'].includes(step.type)) {
+          result.file = p.file ?? '';
+        }
+        if (step.type === 'condition') {
+          result.r = p.code ?? '';
+          result.language = p.language === 'python' ? 'python' : 'r';
+        }
+        if (step.type !== 'end' && typeof p.target === 'number') {
+          result.target = p.target;
+        }
+        if (step.type === 'condition' && typeof p.targetOnFalse === 'number') {
+          result.falsetarget = p.targetOnFalse;
+        }
+        return result;
+      })
+    };
   }
 
   private static V2toV3(infos: any): any {
@@ -71,7 +157,7 @@ export class SequenceFileUtils {
     // Get highest UUID
     let nextuuid: number = 0;
     infos.steps.forEach((step: any) => {
-      if (step.uuid && step.uuid > nextuuid) {
+      if (typeof step.uuid === 'number' && step.uuid > nextuuid) {
         nextuuid = step.uuid;
       }
     });
@@ -126,91 +212,69 @@ export class SequenceFileUtils {
     return infos;
   }
 
-  private static V3toV4(infos: any): SequenceFile {
-    // we have a v3 step here
-    // v3 step is:
-    // - id (custom user id), uuid (unique id), type, name
-    // - r, target, falsetarget, language, file
+  /**
+   * Convert v3 steps to the internal model:
+   * - id (custom user id), uuid (unique id), type, name
+   * - r, target, falsetarget, language, file
+   */
+  private static V3toState(infos: any): any {
+    const steps = Array.isArray(infos.steps) ? infos.steps.filter((s: any) => typeof s === 'object' && s !== null) : [];
 
-    // Check steps
-    infos.steps = Array.isArray(infos.steps) ? infos.steps.filter((s: any) => typeof s === 'object' && s !== null) : [];
+    return {
+      cameraX: infos.cameraX,
+      cameraY: infos.cameraY,
+      cameraZoom: infos.cameraZoom,
+      steps: steps.map((step: any) => {
+        let type = step.type;
+        if (type === 'rscript') {
+          type = 'script';
+        }
+        if (!STEP_TYPES.includes(type)) {
+          type = 'end';
+        }
 
-    infos.steps.forEach((step: any) => {
-      if (step.id) {
-        step.customId = step.id;
-        delete step.id;
-      }
-      if (step.uuid) {
-        step.id = step.uuid;
-        delete step.uuid;
-      }
-      if (step.name) {
-        step.customName = step.name;
-        delete step.name;
-      }
+        const parameters: SequenceStep['parameters'] = {};
+        if (typeof step.file === 'string' && step.file.length > 0) {
+          parameters.file = step.file;
+        }
+        if (typeof step.r === 'string' && step.r.length > 0) {
+          parameters.code = step.r;
+        }
+        if (typeof step.target === 'number') {
+          parameters.target = step.target;
+        }
+        if (typeof step.falsetarget === 'number') {
+          parameters.targetOnFalse = step.falsetarget;
+        }
+        if (type === 'condition') {
+          parameters.language = step.language === 'python' ? 'python' : 'r';
+        }
 
-      if (!('type' in step) || step.type === 'report') {
-        step.type = 'end';
-      }
-      if (step.type === 'rscript') {
-        step.type = 'script';
-      }
-      if (!['start', 'gui', 'script', 'condition', 'sequence', 'end'].includes(step.type)) {
-        step.type = 'end';
-      }
+        return {
+          id: step.uuid,
+          type,
+          x: step.x,
+          y: step.y,
+          customId: typeof step.id === 'string' && step.id.length > 0 ? step.id : undefined,
+          customName: typeof step.name === 'string' && step.name.length > 0 ? step.name : undefined,
+          parameters
+        };
+      })
+    };
+  }
 
-      if (!('parameters' in step) || typeof step.parameters !== 'object') {
-        step.parameters = {};
-      }
+  private static sanitizeState(info: any): SequenceState {
+    const state: SequenceState = {
+      cameraX: typeof info.cameraX === 'number' ? info.cameraX : 0,
+      cameraY: typeof info.cameraY === 'number' ? info.cameraY : 0,
+      cameraZoom: typeof info.cameraZoom === 'number' ? info.cameraZoom : 1,
+      steps: []
+    };
 
-      if (step.file) {
-        step.parameters.file = step.file;
-        delete step.file;
-      }
-      if (step.r) {
-        step.parameters.code = step.r;
-        delete step.r;
-      }
-      if (step.target) {
-        step.parameters.target = step.target;
-        delete step.target;
-      }
-      if (step.falsetarget) {
-        step.parameters.targetOnFalse = step.falsetarget;
-        delete step.falsetarget;
-      }
-      step.parameters.language = 'language' in step && step.language === 'python' ? 'python' : 'r';
-      delete step.language;
-    });
-
-    // mark as v4
-    infos._version = 4;
-
-    return infos as SequenceFile;
-  };
-
-  private static sanitizeV4(info: any): SequenceFile | null {
-    info._version = typeof info._version === 'number' ? info._version : 4;
-    info.cameraX = typeof info.cameraX === 'number' ? info.cameraX : 0;
-    info.cameraY = typeof info.cameraY === 'number' ? info.cameraY : 0;
-    info.cameraZoom = typeof info.cameraZoom === 'number' ? info.cameraZoom : 1;
-    info.steps = Array.isArray(info.steps) ? info.steps.filter((s: any) => typeof s === 'object' && s !== null) : [];
-
-    info.steps = info.steps.map((step: any) => {
-      // Is an object with parameters key
-      if (typeof step !== 'object' || step === null) {
-        return null;
-      }
-      if (!('parameters' in step) || typeof step.parameters !== 'object') {
-        step.parameters = {};
-      }
-
-      // Sanitize
+    for (const step of info.steps) {
+      // Steps without a valid uuid can't be linked
       if (typeof step.id !== 'number' || step.id < 0) {
-        return null;
-      }
-      if (typeof step.type !== 'string' || !['start', 'gui', 'script', 'condition', 'sequence', 'end'].includes(step.type)) {
-        return null;
+        continue;
       }
       if (typeof step.x !== 'number') {
         step.x = 0;
@@ -218,48 +282,20 @@ export class SequenceFileUtils {
       if (typeof step.y !== 'number') {
         step.y = 0;
       }
-      if ('customId' in step && typeof step.customId !== 'string') {
-        step.customId = '';
+      if (step.customId === undefined) {
+        delete step.customId;
       }
-      if ('customName' in step && typeof step.customName !== 'string') {
-        step.customName = '';
+      if (step.customName === undefined) {
+        delete step.customName;
       }
-      if ('parameters' in step) {
-        const parameters = step.parameters;
-        if ('file' in parameters && typeof parameters.file !== 'string') {
-          parameters.file = '';
-        }
-        if ('language' in parameters && !['r', 'python'].includes(parameters.language)) {
-          parameters.language = 'r';
-        }
-        if ('code' in parameters && typeof parameters.code !== 'string') {
-          parameters.code = '';
-        }
-        if ('target' in parameters && typeof parameters.target !== 'number') {
-          parameters.target = 0;
-        }
-        if ('targetOnFalse' in parameters && typeof parameters.targetOnFalse !== 'number') {
-          parameters.targetOnFalse = 0;
-        }
-      }
-
-      return step as SequenceFileStep;
-    });
-
-    // Second pass to remove null values
-    info.steps = info.steps.filter((s: any) => typeof s === 'object' && s !== null);
-
-    // if no step: default start step
-    if (info.steps.length === 0) {
-      info.steps.push({
-        id: 0,
-        type: 'start',
-        x: 0,
-        y: 0,
-        parameters: {}
-      });
+      state.steps.push(step as SequenceStep);
     }
 
-    return info as SequenceFile;
+    // if no step: default start step
+    if (state.steps.length === 0) {
+      state.steps.push(this.getDefaultFile().steps[0]);
+    }
+
+    return state;
   }
 }

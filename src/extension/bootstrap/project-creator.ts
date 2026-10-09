@@ -41,7 +41,7 @@ export class ProjectCreator {
           dateCreated: Math.floor(Date.now() * 0.001)
         };
         await this.writeFile(targetFolder, 'project.ppro', JSON.stringify(project, null, '\t'));
-        await this.writeFile(targetFolder, 'main.pseq', JSON.stringify(SequenceFileUtils.getDefaultFile(), null, '\t'));
+        await this.writeFile(targetFolder, 'main.pseq', JSON.stringify(SequenceFileUtils.toV3(SequenceFileUtils.getDefaultFile()), null, '\t'));
         await this.writeFile(targetFolder, '.vscode/launch.json', JSON.stringify({
           "version": "0.2.0",
           "configurations": [

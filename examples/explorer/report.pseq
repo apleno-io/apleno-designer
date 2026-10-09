@@ -1,36 +1,30 @@
 {
-	"_version": 4,
 	"cameraX": 0,
 	"cameraY": 0,
 	"cameraZoom": 1,
 	"steps": [
 		{
-			"id": 0,
-			"type": "start",
+			"uuid": 0,
 			"x": 0,
 			"y": 0,
-			"parameters": {
-				"target": 1
-			}
+			"type": "start",
+			"target": 1
 		},
 		{
-			"id": 1,
-			"type": "script",
+			"id": "html-report",
+			"name": "HTML report",
+			"uuid": 1,
 			"x": 0,
 			"y": 150,
-			"customId": "html-report",
-			"customName": "HTML report",
-			"parameters": {
-				"file": "report.R",
-				"target": 2
-			}
+			"type": "rscript",
+			"file": "report.R",
+			"target": 2
 		},
 		{
-			"id": 2,
-			"type": "end",
+			"uuid": 2,
 			"x": 0,
 			"y": 300,
-			"parameters": {}
+			"type": "end"
 		}
 	]
 }

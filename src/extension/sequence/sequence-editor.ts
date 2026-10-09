@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { type SequenceFile, SequenceFileUtils } from '../../common/sequence';
+import { type SequenceState, SequenceFileUtils } from '../../common/sequence';
 import { type ExternallyEditableDocument, watchExternalChanges } from '../utils/external-changes';
 
 /**
  * Define the type of edits used in pseq files.
  */
 interface PGMSequenceDocumentEdit {
-  readonly state: SequenceFile;
+  readonly state: SequenceState;
 }
 
 interface PGMSequenceDocumentDelegate {
@@ -27,7 +27,7 @@ class PGMSequenceDocument extends Disposable implements vscode.CustomDocument, E
     return new PGMSequenceDocument(uri, file.data, isBackup ? null : file.raw, delegate);
   }
 
-  private static async readFile(uri: vscode.Uri): Promise<{ data: SequenceFile, raw: Uint8Array | null }> {
+  private static async readFile(uri: vscode.Uri): Promise<{ data: SequenceState, raw: Uint8Array | null }> {
     const defaultFile = SequenceFileUtils.getDefaultFile();
 
     if (uri.scheme === 'untitled') {
@@ -57,7 +57,7 @@ class PGMSequenceDocument extends Disposable implements vscode.CustomDocument, E
     }
 
     try {
-      const sanitized: SequenceFile | null = SequenceFileUtils.sanitize(JSONContent);
+      const sanitized: SequenceState | null = SequenceFileUtils.sanitize(JSONContent);
       if (sanitized === null) {
         return { data: defaultFile, raw };
       }
@@ -70,7 +70,7 @@ class PGMSequenceDocument extends Disposable implements vscode.CustomDocument, E
 
   private readonly _uri: vscode.Uri;
 
-  private _documentData: SequenceFile;
+  private _documentData: SequenceState;
   private _edits: PGMSequenceDocumentEdit[] = [];
   private _savedEdits: PGMSequenceDocumentEdit[] = [];
 
@@ -81,7 +81,7 @@ class PGMSequenceDocument extends Disposable implements vscode.CustomDocument, E
 
   private readonly _delegate: PGMSequenceDocumentDelegate;
 
-  private constructor(uri: vscode.Uri, initialContent: SequenceFile, diskContent: Uint8Array | null, delegate: PGMSequenceDocumentDelegate) {
+  private constructor(uri: vscode.Uri, initialContent: SequenceState, diskContent: Uint8Array | null, delegate: PGMSequenceDocumentDelegate) {
     super();
     this._uri = uri;
     this._documentData = initialContent;
@@ -93,7 +93,7 @@ class PGMSequenceDocument extends Disposable implements vscode.CustomDocument, E
     return this._uri;
   }
 
-  public get documentData(): SequenceFile {
+  public get documentData(): SequenceState {
     return this._documentData;
   }
 
@@ -115,7 +115,7 @@ class PGMSequenceDocument extends Disposable implements vscode.CustomDocument, E
   public readonly onDidDispose = this._onDidDispose.event;
 
   private readonly _onDidChangeDocument = this._register(new vscode.EventEmitter<{
-    readonly content?: SequenceFile;
+    readonly content?: SequenceState;
     readonly edits: readonly PGMSequenceDocumentEdit[];
   }>());
 
@@ -298,9 +298,10 @@ export class PGMSequenceFileEditorProvider implements vscode.CustomEditorProvide
           throw new Error('Could not find webview to save for');
         }
         const panel = webviewsForDocument[0];
-        const response = await this.postMessageWithResponse<SequenceFile>(panel, 'getFileData', {});
+        const response = await this.postMessageWithResponse<SequenceState>(panel, 'getFileData', {});
 
-        return Buffer.from(JSON.stringify(response, null, '\t'), 'utf8');
+        // The runtime reads the v3 format
+        return Buffer.from(JSON.stringify(SequenceFileUtils.toV3(response), null, '\t'), 'utf8');
       }
     });
 

@@ -17,7 +17,7 @@ function underlined(text: string, item: { offset: number, length: number }): str
 }
 
 function sequence(steps: unknown[]) {
-  return { _version: 4, cameraX: 0, cameraY: 0, cameraZoom: 1, steps };
+  return { cameraX: 0, cameraY: 0, cameraZoom: 1, steps };
 }
 
 describe('getFileKind', () => {
@@ -92,9 +92,9 @@ describe('AplenoValidator', () => {
 
   it('accepts a valid sequence and returns its file references', () => {
     const text = json(sequence([
-      { id: 0, type: 'start', x: 0, y: 0, parameters: { target: 1 } },
-      { id: 1, type: 'gui', x: 0, y: 150, customId: 'form', parameters: { file: 'form.pgui', target: 2 } },
-      { id: 2, type: 'end', x: 0, y: 300, parameters: {} }
+      { uuid: 1, type: 'start', x: 0, y: 0, target: 2 },
+      { uuid: 2, id: 'form', name: 'Form', type: 'gui', x: 0, y: 150, file: 'form.pgui', target: 3 },
+      { uuid: 3, type: 'end', x: 0, y: 300 }
     ]));
     const result = validator.validate('pseq', text);
     expect(result.problems).toEqual([]);
@@ -104,24 +104,34 @@ describe('AplenoValidator', () => {
 
   it('reports sequence graph errors', () => {
     const text = json(sequence([
-      { id: 0, type: 'start', x: 0, y: 0, parameters: { target: 9 } },
-      { id: 1, type: 'start', x: 0, y: 0, parameters: { target: 1 } },
-      { id: 1, type: 'end', x: 0, y: 0, parameters: {} }
+      { uuid: 1, type: 'start', x: 0, y: 0, target: 9 },
+      { uuid: 2, type: 'start', x: 0, y: 0, target: 2 },
+      { uuid: 2, id: 'a', type: 'rscript', file: 'a.R', x: 0, y: 0, target: 1 },
+      { uuid: 3, id: 'a', type: 'rscript', file: 'b.R', x: 0, y: 0, target: 1 }
     ]));
     const messages = validator.validate('pseq', text).problems.map(p => p.message);
     expect(messages).toEqual(expect.arrayContaining([
-      'steps[0].parameters.target: target points to step 9, which does not exist.',
+      'steps[0].target: target points to uuid 9, which does not exist.',
       'steps[1].type: a sequence must have exactly one "start" step.',
-      'steps[1].parameters.target: target points to the step itself.',
-      'steps[2].id: duplicate step id 1. Step ids must be unique (next free id: 2).'
+      'steps[1].target: target points to the step itself.',
+      'steps[2].uuid: duplicate step uuid 2. Step uuids must be unique (next free uuid: 4).',
+      'steps[3].id: id "a" is already used by another step.'
     ]));
   });
 
   it('reports a missing start step and a missing target', () => {
-    const text = json(sequence([{ id: 0, type: 'script', x: 0, y: 0, parameters: { file: 'a.R' } }]));
+    const text = json(sequence([{ uuid: 1, type: 'rscript', x: 0, y: 0, file: 'a.R' }]));
     const messages = validator.validate('pseq', text).problems.map(p => p.message);
     expect(messages).toContain('steps: a sequence needs a step of type "start".');
-    expect(messages).toContain('steps[0].parameters: missing required property "target".');
+    expect(messages).toContain('steps[0]: missing required property "target".');
+  });
+
+  it('reports the 1.0.x sequence format with a single explanation', () => {
+    const text = json({ _version: 4, steps: [{ id: 1, type: 'start', x: 0, y: 0, parameters: {} }] });
+    const { problems } = validator.validate('pseq', text);
+    expect(problems).toHaveLength(1);
+    expect(problems[0].message).toContain('format of Apleno Designer 1.0.x');
+    expect(underlined(text, problems[0])).toBe('"_version"');
   });
 
   it('returns the files referenced by a project', () => {

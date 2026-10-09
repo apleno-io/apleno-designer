@@ -101,23 +101,34 @@ describe('pgui schema', () => {
 
 describe('pseq schema', () => {
   const sequence = () => ({
-    _version: 4,
     cameraX: 0,
     cameraY: 0,
     cameraZoom: 1,
     steps: [
-      { id: 0, type: 'start', x: 0, y: 0, parameters: { target: 1 } },
-      { id: 1, type: 'script', x: 0, y: 150, customId: 'load', customName: 'Load data', parameters: { file: 'scripts/load.R', target: 2 } },
-      { id: 2, type: 'gui', x: 0, y: 300, customId: 'form', customName: 'Form', parameters: { file: 'form.pgui', target: 3 } },
-      { id: 3, type: 'condition', x: 0, y: 450, parameters: { language: 'r', code: 'isTRUE(ok)', target: 4, targetOnFalse: 2 } },
-      { id: 4, type: 'sequence', x: 0, y: 600, parameters: { file: 'sub.pseq', target: 5 } },
-      { id: 5, type: 'end', x: 0, y: 750, parameters: {} }
+      { uuid: 1, type: 'start', x: 0, y: 0, target: 2 } as any,
+      { uuid: 2, id: 'load', name: 'Load data', type: 'rscript', x: 0, y: 150, file: 'scripts/load.R', target: 3 },
+      { uuid: 3, id: 'form', name: 'Form', type: 'gui', x: 0, y: 300, file: 'form.pgui', target: 4 },
+      { uuid: 4, id: 'check', name: 'Check', type: 'condition', x: 0, y: 450, r: 'isTRUE(ok)', language: 'r', target: 5, falsetarget: 3 },
+      { uuid: 5, id: 'sub', name: 'Sub', type: 'sequence', x: 0, y: 600, file: 'sub.pseq', target: 6 },
+      { uuid: 6, type: 'end', x: 0, y: 750 }
     ]
   });
 
-  it('accepts a complete sequence, also after sanitization', () => {
+  it('accepts a complete sequence, also as saved by the editor', () => {
     expect(validatePseq(sequence()), errorsOf(validatePseq)).toBe(true);
-    expect(validatePseq(asSaved(SequenceFileUtils.sanitize(sequence()))), errorsOf(validatePseq)).toBe(true);
+    const saved = SequenceFileUtils.toV3(SequenceFileUtils.sanitize(sequence())!);
+    expect(validatePseq(asSaved(saved)), errorsOf(validatePseq)).toBe(true);
+    expect(saved).toEqual(sequence());
+  });
+
+  it('accepts "script" as an alias of "rscript"', () => {
+    const seq = sequence();
+    seq.steps[1].type = 'script';
+    expect(validatePseq(seq), errorsOf(validatePseq)).toBe(true);
+  });
+
+  it('rejects the 1.0.x format', () => {
+    expect(validatePseq({ _version: 4, ...sequence() })).toBe(false);
   });
 
   it('rejects a sequence without start step', () => {
@@ -128,15 +139,15 @@ describe('pseq schema', () => {
 
   it('rejects steps with missing exits, files or condition code', () => {
     const noTarget = sequence();
-    delete (noTarget.steps[1].parameters as any).target;
+    delete noTarget.steps[1].target;
     expect(validatePseq(noTarget)).toBe(false);
 
     const wrongFile = sequence();
-    wrongFile.steps[2].parameters.file = 'form.R';
+    wrongFile.steps[2].file = 'form.R';
     expect(validatePseq(wrongFile)).toBe(false);
 
     const noCode = sequence();
-    noCode.steps[3].parameters.code = '';
+    noCode.steps[3].r = '';
     expect(validatePseq(noCode)).toBe(false);
   });
 });

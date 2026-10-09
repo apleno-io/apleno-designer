@@ -141,6 +141,12 @@ export class AplenoValidator {
     const data = getNodeValue(root);
     const validation = new FileValidation(root);
 
+    // Sequence format of the extension 1.0.x, unknown to the runtime: one clear error instead of many
+    if (kind === 'pseq' && isObject(data) && '_version' in data) {
+      validation.add(['_version'], 'this sequence uses the format of Apleno Designer 1.0.x, which the Apleno runtime cannot read. Rewrite it in the current format: steps with "uuid", "id", "type" ("rscript" for scripts), "file", "target", and "r"/"language"/"falsetarget" for conditions.', 'error', true);
+      return { problems: validation.problems, references: [] };
+    }
+
     // Schema
     const validate = this.validators[kind];
     if (!validate(data)) {
@@ -263,9 +269,9 @@ export class AplenoValidator {
   }
 
   private checkSequence(validation: FileValidation, steps: unknown[]) {
-    const stepIds = new Set(steps.filter(isObject).map(s => s.id).filter(id => typeof id === 'number'));
-    const ids = new Set<number>();
-    const customIds = new Set<string>();
+    const uuids = new Set(steps.filter(isObject).map(s => s.uuid).filter(uuid => typeof uuid === 'number'));
+    const seenUuids = new Set<number>();
+    const ids = new Set<string>();
     let hasStart = false;
 
     steps.forEach((step, i) => {
@@ -274,11 +280,11 @@ export class AplenoValidator {
       }
       const stepPath: JSONPath = ['steps', i];
 
-      if (typeof step.id === 'number') {
-        if (ids.has(step.id)) {
-          validation.add([...stepPath, 'id'], `duplicate step id ${step.id}. Step ids must be unique (next free id: ${Math.max(...stepIds) + 1}).`);
+      if (typeof step.uuid === 'number') {
+        if (seenUuids.has(step.uuid)) {
+          validation.add([...stepPath, 'uuid'], `duplicate step uuid ${step.uuid}. Step uuids must be unique (next free uuid: ${Math.max(...uuids) + 1}).`);
         }
-        ids.add(step.id);
+        seenUuids.add(step.uuid);
       }
 
       if (step.type === 'start') {
@@ -288,31 +294,28 @@ export class AplenoValidator {
         hasStart = true;
       }
 
-      if (step.type !== 'start' && step.type !== 'end' && typeof step.customId === 'string' && step.customId.length > 0) {
-        if (customIds.has(step.customId)) {
-          validation.add([...stepPath, 'customId'], `customId "${step.customId}" is already used by another step.`);
+      if (step.type !== 'start' && step.type !== 'end' && typeof step.id === 'string' && step.id.length > 0) {
+        if (ids.has(step.id)) {
+          validation.add([...stepPath, 'id'], `id "${step.id}" is already used by another step.`);
         }
-        customIds.add(step.customId);
+        ids.add(step.id);
       }
 
-      if (!isObject(step.parameters)) {
-        return;
-      }
-      for (const key of ['target', 'targetOnFalse']) {
-        const target = step.parameters[key];
+      for (const key of ['target', 'falsetarget']) {
+        const target = step[key];
         if (typeof target !== 'number') {
           continue;
         }
-        if (target === step.id) {
-          validation.add([...stepPath, 'parameters', key], `${key} points to the step itself.`);
+        if (target === step.uuid) {
+          validation.add([...stepPath, key], `${key} points to the step itself.`);
         }
-        else if (!stepIds.has(target)) {
-          validation.add([...stepPath, 'parameters', key], `${key} points to step ${target}, which does not exist.`);
+        else if (!uuids.has(target)) {
+          validation.add([...stepPath, key], `${key} points to uuid ${target}, which does not exist.`);
         }
       }
 
-      if (['script', 'gui', 'sequence'].includes(step.type)) {
-        validation.addReference([...stepPath, 'parameters', 'file'], step.parameters.file);
+      if (['rscript', 'script', 'gui', 'sequence'].includes(step.type)) {
+        validation.addReference([...stepPath, 'file'], step.file);
       }
     });
   }

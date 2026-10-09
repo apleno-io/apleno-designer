@@ -282,11 +282,9 @@ class SequenceEditor extends EventTarget {
   }
 
   public setState(state: any) {
-    // Sanitize
-    try {
-      state = SequenceFileUtils.sanitize(state);
-    }
-    catch (err) {
+    // The state is the internal model, already read from the file by the
+    // extension (SequenceFileUtils.sanitize). New untitled files have no steps.
+    if (typeof state !== 'object' || state === null || !Array.isArray(state.steps) || state.steps.length === 0) {
       state = SequenceFileUtils.getDefaultFile();
     }
 
@@ -304,7 +302,6 @@ class SequenceEditor extends EventTarget {
 
   public getState(): any {
     return {
-      _version: 4,
       cameraX: this.cameraX,
       cameraY: this.cameraY,
       cameraZoom: this.cameraZoom,

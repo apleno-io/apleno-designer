@@ -1,72 +1,60 @@
 {
-	"_version": 4,
 	"cameraX": 0,
 	"cameraY": 0,
 	"cameraZoom": 1,
 	"steps": [
 		{
-			"id": 1,
-			"type": "start",
+			"uuid": 1,
 			"x": 70,
 			"y": 10,
-			"parameters": {
-				"target": 4
-			}
+			"type": "start",
+			"target": 4
 		},
 		{
-			"id": 2,
-			"type": "gui",
+			"id": "dashboard",
+			"name": "dashboard",
+			"uuid": 2,
 			"x": 70,
 			"y": 370,
-			"customId": "dashboard",
-			"customName": "dashboard",
-			"parameters": {
-				"file": "dashboard.pgui",
-				"target": 3
-			}
+			"type": "gui",
+			"file": "dashboard.pgui",
+			"target": 3
 		},
 		{
-			"id": 3,
-			"type": "end",
+			"uuid": 3,
 			"x": 70,
 			"y": 460,
-			"parameters": {}
+			"type": "end"
 		},
 		{
-			"id": 4,
-			"type": "script",
+			"id": "heston-edp",
+			"name": "heston-edp",
+			"uuid": 4,
 			"x": 70,
 			"y": 70,
-			"customId": "heston-edp",
-			"customName": "heston-edp",
-			"parameters": {
-				"file": "heston-edp.py",
-				"target": 5
-			}
+			"type": "rscript",
+			"file": "heston-edp.py",
+			"target": 5
 		},
 		{
-			"id": 5,
-			"type": "script",
+			"id": "heston-mc",
+			"name": "heston-mc",
+			"uuid": 5,
 			"x": 70,
 			"y": 170,
-			"customId": "heston-mc",
-			"customName": "heston-mc",
-			"parameters": {
-				"file": "heston-mc.py",
-				"target": 6
-			}
+			"type": "rscript",
+			"file": "heston-mc.py",
+			"target": 6
 		},
 		{
-			"id": 6,
-			"type": "script",
+			"id": "graph",
+			"name": "graph",
+			"uuid": 6,
 			"x": 70,
 			"y": 270,
-			"customId": "graph",
-			"customName": "graph",
-			"parameters": {
-				"file": "graph.py",
-				"target": 2
-			}
+			"type": "rscript",
+			"file": "graph.py",
+			"target": 2
 		}
 	]
 }

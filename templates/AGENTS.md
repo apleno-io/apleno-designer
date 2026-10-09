@@ -27,12 +27,25 @@ The extension checks these files and reports errors in the VS Code Problems pane
 
 ## Sequences (`.pseq`)
 
-- Exactly one `start` step. Execution follows `parameters.target` from step to step until an `end` step.
-- Step types: `script` (runs `parameters.file`, a `.R` or `.py` file), `gui` (shows `parameters.file`, a `.pgui`), `condition` (evaluates `parameters.code` in `parameters.language`, then goes to `target` if true or `targetOnFalse` if false), `sequence` (runs another `.pseq`), `end`.
-- Every step except `end` needs a `target`. Step `id`s are unique integers; a new step gets the highest existing id + 1.
-- `customId` lets code refer to a step; `customName` is shown to the user in the steps list.
+- Exactly one `start` step. Execution follows `target` from step to step until an `end` step.
+- Each step has a numeric `uuid`, unique in the file (a new step gets the highest existing uuid + 1); `target` and `falsetarget` contain uuids.
+- Step `type`s: `rscript` (runs `file`, a `.R` or `.py` script; `script` is accepted as an alias), `gui` (shows `file`, a `.pgui`), `condition` (evaluates the expression `r` in `language`, `"r"` or `"python"`, then goes to `target` if true or `falsetarget` if false; the key is `r` even for Python), `sequence` (runs another `.pseq` given in `file`, then continues), `end`.
+- Every step except `end` needs a `target`.
+- `id` is the step identifier used from code (`rpgm.step("main", "form")`), `name` is shown to the user in the steps list. Start and end steps don't need them.
 - File paths are relative to the project root.
 - `x`/`y` only position the step in the visual editor: put steps on a 50-unit grid, about 150 apart vertically.
+- Write only the keys meaningful for each step type:
+
+```json
+{
+	"steps": [
+		{ "uuid": 1, "type": "start", "x": 0, "y": 0, "target": 2 },
+		{ "uuid": 2, "id": "form", "name": "Form", "type": "gui", "x": 0, "y": 150, "file": "form.pgui", "target": 3 },
+		{ "uuid": 3, "id": "check", "name": "Check", "type": "condition", "x": 0, "y": 300, "r": "age >= 18", "language": "r", "target": 4, "falsetarget": 2 },
+		{ "uuid": 4, "type": "end", "x": 0, "y": 450 }
+	]
+}
+```
 
 ## Interfaces (`.pgui`)
 

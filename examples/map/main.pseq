@@ -1,72 +1,60 @@
 {
-	"_version": 4,
 	"cameraX": 0,
 	"cameraY": 0,
 	"cameraZoom": 1,
 	"steps": [
 		{
-			"id": 1,
-			"type": "start",
+			"uuid": 1,
 			"x": 60,
 			"y": 50,
-			"parameters": {
-				"target": 6
-			}
+			"type": "start",
+			"target": 6
 		},
 		{
-			"id": 2,
-			"type": "gui",
+			"id": "leaflet",
+			"name": "main",
+			"uuid": 2,
 			"x": 340,
 			"y": 80,
-			"customId": "leaflet",
-			"customName": "main",
-			"parameters": {
-				"file": "main.pgui",
-				"target": 3
-			}
+			"type": "gui",
+			"file": "main.pgui",
+			"target": 3
 		},
 		{
-			"id": 3,
-			"type": "end",
+			"uuid": 3,
 			"x": 340,
 			"y": 190,
-			"parameters": {}
+			"type": "end"
 		},
 		{
-			"id": 4,
-			"type": "script",
+			"id": "main.R",
+			"name": "main.R",
+			"uuid": 4,
 			"x": 60,
 			"y": 270,
-			"customId": "main.R",
-			"customName": "main.R",
-			"parameters": {
-				"file": "main.R",
-				"target": 2
-			}
+			"type": "rscript",
+			"file": "main.R",
+			"target": 2
 		},
 		{
-			"id": 5,
-			"type": "script",
+			"id": "chargement.R",
+			"name": "chargement.R",
+			"uuid": 5,
 			"x": 60,
 			"y": 190,
-			"customId": "chargement.R",
-			"customName": "chargement.R",
-			"parameters": {
-				"file": "chargement.R",
-				"target": 4
-			}
+			"type": "rscript",
+			"file": "chargement.R",
+			"target": 4
 		},
 		{
-			"id": 6,
-			"type": "script",
+			"id": "interpCol",
+			"name": "interpCol",
+			"uuid": 6,
 			"x": 60,
 			"y": 110,
-			"customId": "interpCol",
-			"customName": "interpCol",
-			"parameters": {
-				"file": "interpCol.r",
-				"target": 5
-			}
+			"type": "rscript",
+			"file": "interpCol.r",
+			"target": 5
 		}
 	]
 }
