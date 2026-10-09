@@ -8,6 +8,7 @@ import { Exporter } from './export/export';
 import { ExecutionStatusItemManager } from './execution/ui-status-item';
 import { Services } from './services';
 import { logger } from './utils/logger';
+import { FileDiagnostics } from './diagnostics/diagnostics';
 
 export function activate(context: vscode.ExtensionContext) {
 	// Services
@@ -22,6 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(PGMProjectFileEditorProvider.register(context));
 	context.subscriptions.push(PGMSequenceFileEditorProvider.register(context));
 	context.subscriptions.push(PGMInterfaceFileEditorProvider.register(context));
+	FileDiagnostics.initialize(context);
 
 	// Run / Debug
 	Services.LanguageChooser.initialize(context);

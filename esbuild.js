@@ -37,6 +37,10 @@ async function main() {
 		platform: 'node',
 		outdir: 'dist',
 		external: ['vscode'],
+		alias: {
+			// the default UMD build of jsonc-parser breaks when bundled (unresolved internal requires)
+			'jsonc-parser': './node_modules/jsonc-parser/lib/esm/main.js'
+		},
 		logLevel: 'silent',
 		loader: {
 			'.html': 'text'

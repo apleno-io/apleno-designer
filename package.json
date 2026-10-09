@@ -21,7 +21,8 @@
     "Extension Packs"
   ],
   "activationEvents": [
-    "onDebugResolve:apleno"
+    "onDebugResolve:apleno",
+    "workspaceContains:**/*.ppro"
   ],
   "main": "./dist/extension.js",
   "contributes": {
