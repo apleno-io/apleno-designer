@@ -1,0 +1,50 @@
+{
+	"cameraX": 0,
+	"cameraY": 0,
+	"cameraZoom": 1,
+	"steps": [
+		{
+			"uuid": 1,
+			"x": 130,
+			"y": 40,
+			"type": "start",
+			"target": 7
+		},
+		{
+			"id": "main",
+			"name": "main",
+			"uuid": 5,
+			"x": 130,
+			"y": 290,
+			"type": "gui",
+			"file": "main.pgui",
+			"target": 9
+		},
+		{
+			"id": "interface",
+			"name": "interface",
+			"uuid": 7,
+			"x": 130,
+			"y": 110,
+			"type": "rscript",
+			"file": "sources/interface.py",
+			"target": 10
+		},
+		{
+			"uuid": 9,
+			"x": 130,
+			"y": 380,
+			"type": "end"
+		},
+		{
+			"id": "main-py",
+			"name": "main-py",
+			"uuid": 10,
+			"x": 130,
+			"y": 200,
+			"type": "rscript",
+			"file": "main.py",
+			"target": 5
+		}
+	]
+}

@@ -1,0 +1,28 @@
+{
+	"name": "Dataset explorer",
+	"company": "PGM Solutions",
+	"description": "Explore a variable of an R dataset: statistics, chart and CSV export.",
+	"changelog": [
+		{
+			"date": "2026-10-09",
+			"author": "PGM Solutions",
+			"version": "1.0.0",
+			"message": "First version"
+		}
+	],
+	"icon": "",
+	"sequenceStart": "main.pseq",
+	"defaultWorkingDirectory": "app",
+	"outputFolderName": "{{name}}_{{datetime}}",
+	"sidebarLogo": "",
+	"customCSSLightCode": "",
+	"customCSSDarkCode": "",
+	"customCSSLightFile": "",
+	"customCSSDarkFile": "",
+	"customFiles": [
+		"style.css"
+	],
+	"stepListType": "hidden",
+	"consoleAccess": "enabled",
+	"dateCreated": 1791532800
+}

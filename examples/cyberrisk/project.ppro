@@ -1,0 +1,30 @@
+{
+	"changelog": [
+		{
+			"date": "21/02/2024",
+			"version": "1.0",
+			"author": "Nicolas",
+			"message": "Calcul contrôle optimal avec interface"
+		}
+	],
+	"company": "",
+	"consoleAccess": "enabled",
+	"customCSSDarkCode": "",
+	"customCSSDarkFile": "",
+	"customCSSLightCode": "",
+	"customCSSLightFile": "",
+	"customFiles": [
+		"modules/mathjax.js",
+		"modules/mathjax-init.js",
+		"style.css"
+	],
+	"dateCreated": 1708525,
+	"defaultWorkingDirectory": "app",
+	"description": "Avec processus de Hawkes controlés",
+	"icon": "",
+	"name": "Contrôle Optimal pour Risque Cyber",
+	"outputFolderName": "{{name}}_{{datetime}}",
+	"sequenceStart": "main.pseq",
+	"sidebarLogo": "",
+	"stepListType": "hidden"
+}

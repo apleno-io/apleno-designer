@@ -1,4 +1,8 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
+import { type ProjectFile, ProjectFileUtils } from '../../common/project';
+import { SequenceFileUtils } from '../../common/sequence';
+import { writeAIFiles } from './ai-files';
 
 /**
  * Class for bootstraping a new Apleno project.
@@ -31,18 +35,13 @@ export class ProjectCreator {
           }
         }
 
-        // create project.ppro, main.pseq, start.pgui, launch.json and apleno.json
-        await this.writeFile(targetFolder, 'project.ppro', JSON.stringify({ start: 'main.pseq' }, null, '\t'));
-        await this.writeFile(targetFolder, 'main.pseq', JSON.stringify({
-          steps: [{
-            id: 'start',
-            name: 'Start',
-            type: 'start',
-            x: 0,
-            y: 0,
-            uuid: 1
-          }]
-        }, null, '\t'));
+        // create project.ppro, main.pseq, launch.json and apleno.json
+        const project: ProjectFile = {
+          ...ProjectFileUtils.sanitize({ name: path.posix.basename(targetFolder.path) }),
+          dateCreated: Math.floor(Date.now() * 0.001)
+        };
+        await this.writeFile(targetFolder, 'project.ppro', JSON.stringify(project, null, '\t'));
+        await this.writeFile(targetFolder, 'main.pseq', JSON.stringify(SequenceFileUtils.toV3(SequenceFileUtils.getDefaultFile()), null, '\t'));
         await this.writeFile(targetFolder, '.vscode/launch.json', JSON.stringify({
           "version": "0.2.0",
           "configurations": [
@@ -54,6 +53,9 @@ export class ProjectCreator {
           ]
         }, null, '\t'));
         await this.writeFile(targetFolder, '.vscode/apleno.json', JSON.stringify({}, null, '\t'));
+
+        // instructions and file schemas for AI assistants
+        await writeAIFiles(context, targetFolder);
 
         // open project if different
         if (!vscode.workspace.getWorkspaceFolder(targetFolder)) {

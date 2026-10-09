@@ -1,0 +1,89 @@
+@import url("https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap");
+
+:root {
+    --cfont: 'Spline Sans', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+#pgm {
+    background-color: #ecf0f1;
+    font-family: var(--cfont);
+    font-size: 16px;
+}
+
+.pgm-gui {
+    margin: 0 auto;
+    max-width: 1078px;
+}
+
+.title {
+    background-color:white;
+    border-radius:10px;
+    padding: 2px;
+    text-align:center;
+}
+
+.ch1 {
+    font-family: var(--cfont);
+    font-size: 30px !important;
+    color: rgb(20, 27, 34) !important;
+    margin-top: 30px;
+}
+
+.ch2 {
+    font-family: var(--cfont);
+    font-size: 20px !important;
+    color: rgb(20, 27, 34) !important;
+    margin-bottom: 50px;
+}
+
+.ch3 {
+    font-family: var(--cfont);
+    font-size: 25px !important;
+    color: rgb(20, 27, 34) !important;
+    margin: 50px 0 20px;
+    font-weight: 600;
+}
+
+.cbox {
+    background-color: #fff;
+    box-shadow: 0 30px 30px -25px rgb(65 51 183 / 25%);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.ch4 {
+    border-radius: 16px;
+    font-size: 26px !important;
+    font-family: var(--cfont);
+    color: rgb(20, 27, 34) !important;
+    font-weight: 400;
+}
+
+input.pgm-widget-input {
+    font-family: var(--cfont);
+    background-color: #ecf0f1;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.pgm-widget-label-top {
+    font-size: 19px;
+    font-weight: 600;
+}
+
+.pgm-widget-help {
+    font-size: 1rem;
+    font-family: var(--cfont);
+    margin-top: 3px;
+}
+
+.pgm-widget-progressbar {
+    background-color: #eaeaea;
+    font-size: 1.25rem;
+    line-height: 1.5;
+}
+
+.pgm-widget-progressbar-inner {
+    font-family: var(--cfont);
+}

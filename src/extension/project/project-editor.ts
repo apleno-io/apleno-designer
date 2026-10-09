@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
 import { type ProjectFile, ProjectFileUtils } from '../../common/project';
+import { type ExternallyEditableDocument, watchExternalChanges } from '../utils/external-changes';
 
 /**
  * Define the type of edits used in ppro files.
@@ -17,28 +18,29 @@ interface PGMProDocumentDelegate {
 /**
  * Define the document (the data model) used in ppro files.
  */
-class PGMProDocument extends Disposable implements vscode.CustomDocument {
+class PGMProDocument extends Disposable implements vscode.CustomDocument, ExternallyEditableDocument {
 	static async create(uri: vscode.Uri, backupId: string | undefined, delegate: PGMProDocumentDelegate): Promise<PGMProDocument | PromiseLike<PGMProDocument>> {
 		// If we have a backup, read that. Otherwise read the resource from the workspace
-		const dataFile = typeof backupId === 'string' ? vscode.Uri.parse(backupId) : uri;
-		const fileData = await PGMProDocument.readFile(dataFile);
-		return new PGMProDocument(uri, fileData, delegate);
+		const isBackup = typeof backupId === 'string';
+		const dataFile = isBackup ? vscode.Uri.parse(backupId) : uri;
+		const file = await PGMProDocument.readFile(dataFile);
+		return new PGMProDocument(uri, file.data, isBackup ? null : file.raw, delegate);
 	}
 
-	private static async readFile(uri: vscode.Uri): Promise<ProjectFile> {
+	private static async readFile(uri: vscode.Uri): Promise<{ data: ProjectFile, raw: Uint8Array | null }> {
 		if (uri.scheme === 'untitled') {
-			return ProjectFileUtils.sanitize({});
+			return { data: ProjectFileUtils.sanitize({}), raw: null };
 		}
 		const readData: Uint8Array = await vscode.workspace.fs.readFile(uri);
 		try {
 			const content = Buffer.from(readData).toString('utf8');
 			if (content.trim().length === 0) {
-				return ProjectFileUtils.sanitize({});
+				return { data: ProjectFileUtils.sanitize({}), raw: readData };
 			}
-			return ProjectFileUtils.sanitize(JSON.parse(content));
+			return { data: ProjectFileUtils.sanitize(JSON.parse(content)), raw: readData };
 		} catch (e) {
 			vscode.window.showErrorMessage('Could not load the project file. It is not a valid JSON file.');
-			return ProjectFileUtils.sanitize({});
+			return { data: ProjectFileUtils.sanitize({}), raw: readData };
 		}
 	}
 
@@ -48,12 +50,18 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 	private _edits: PGMProDocumentEdit[] = [];
 	private _savedEdits: PGMProDocumentEdit[] = [];
 
+	/** Content last read from or written to disk, null if unknown (untitled or restored from a backup) */
+	private _diskContent: Uint8Array | null;
+	/** Incremented when the content is reloaded from disk, to invalidate the older undo/redo entries */
+	private _generation = 0;
+
 	private readonly _delegate: PGMProDocumentDelegate;
 
-	private constructor(uri: vscode.Uri, initialContent: ProjectFile, delegate: PGMProDocumentDelegate) {
+	private constructor(uri: vscode.Uri, initialContent: ProjectFile, diskContent: Uint8Array | null, delegate: PGMProDocumentDelegate) {
 		super();
 		this._uri = uri;
 		this._documentData = initialContent;
+		this._diskContent = diskContent;
 		this._delegate = delegate;
 	}
 
@@ -63,6 +71,16 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 
 	public get documentData(): ProjectFile {
 		return this._documentData;
+	}
+
+	public get isDirty(): boolean {
+		return this._diskContent === null
+			|| this._edits.length !== this._savedEdits.length
+			|| this._edits.some((edit, i) => edit !== this._savedEdits[i]);
+	}
+
+	public isSameAsDisk(content: Uint8Array): boolean {
+		return this._diskContent !== null && Buffer.from(content).equals(this._diskContent);
 	}
 
 	private readonly _onDidDispose = this._register(new vscode.EventEmitter<void>());
@@ -112,16 +130,23 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 	 */
 	makeEdit(edit: PGMProDocumentEdit) {
 		this._edits.push(edit);
+		const generation = this._generation;
 
 		this._onDidChange.fire({
 			label: 'Edit',
 			undo: async () => {
+				if (generation !== this._generation) {
+					return;
+				}
 				this._edits.pop();
 				this._onDidChangeDocument.fire({
 					edits: this._edits,
 				});
 			},
 			redo: async () => {
+				if (generation !== this._generation) {
+					return;
+				}
 				this._edits.push(edit);
 				this._onDidChangeDocument.fire({
 					edits: this._edits,
@@ -146,6 +171,9 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 		if (cancellation.isCancellationRequested) {
 			return;
 		}
+		if (targetResource.toString() === this.uri.toString()) {
+			this._diskContent = fileData;
+		}
 		await vscode.workspace.fs.writeFile(targetResource, fileData);
 	}
 
@@ -153,11 +181,22 @@ class PGMProDocument extends Disposable implements vscode.CustomDocument {
 	 * Called by VS Code when the user calls `revert` on a document.
 	 */
 	async revert(_cancellation: vscode.CancellationToken): Promise<void> {
-		const diskContent = await PGMProDocument.readFile(this.uri);
-		this._documentData = diskContent;
-		this._edits = this._savedEdits;
+		await this.reloadFromDisk();
+	}
+
+	/**
+	 * Replace the content by the file content. The reloaded content becomes the
+	 * new initial state: older undo/redo entries are ignored.
+	 */
+	async reloadFromDisk(): Promise<void> {
+		const file = await PGMProDocument.readFile(this.uri);
+		this._documentData = file.data;
+		this._diskContent = file.raw;
+		this._generation++;
+		this._edits = [];
+		this._savedEdits = [];
 		this._onDidChangeDocument.fire({
-			content: diskContent,
+			content: file.data,
 			edits: this._edits,
 		});
 	}
@@ -260,6 +299,8 @@ export class PGMProjectFileEditorProvider implements vscode.CustomEditorProvider
 				});
 			}
 		}));
+
+		listeners.push(watchExternalChanges(document));
 
 		document.onDidDispose(() => disposeAll(listeners));
 

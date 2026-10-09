@@ -161,7 +161,7 @@ const WidgetPropertiesDefaults: any = {
   helpText: '',
   helpPosition: 'bottom',
 
-  textSize: '14',
+  textSize: 14,
   textFamily: 'default',
   textColor: '#000000',
 
@@ -207,6 +207,11 @@ const WidgetPropertiesDefaults: any = {
   repeaterCode: '',
   repeaterTimeMS: 1000
 };
+
+/**
+ * Numeric properties. Older files can store them as strings.
+ */
+const NumberProperties: string[] = ['marginTop', 'textSize', 'gridHeight', 'columnsPadding', 'tabsSelected', 'graphWidth', 'graphHeight', 'repeaterTimeMS'];
 
 export const WidgetProperties: { [key: string]: string[] } = {
   label: ['value', 'language', 'css', 'marginTop', 'labelText', 'labelPosition', 'helpText', 'helpPosition', 'textSize', 'textFamily', 'textColor'],
@@ -362,9 +367,26 @@ export function fixContainers(widgets: GUIWidget[], nextCreateId: { value: numbe
 export function normalizeWidget(infos: any): GUIWidget {
   const isOld: boolean = 'position' in infos;
 
+  // Internal model: numeric `id` and user `customId`. Apleno 2.x: numeric `uid`
+  // and user `id`. Apleno 3.x (v3 files): only the user `id`, the numeric id is
+  // assigned later by fixIds().
+  let id: any = null;
+  let customId: string = '';
+  if ('customId' in infos) {
+    id = infos.id ?? null;
+    customId = infos.customId || '';
+  }
+  else if ('uid' in infos) {
+    id = infos.uid;
+    customId = typeof infos.id === 'string' ? infos.id : '';
+  }
+  else {
+    customId = typeof infos.id === 'string' ? infos.id : '';
+  }
+
   infos = {
-    id: infos.uid ? infos.uid : (infos.id || null),
-    customId: infos.uid ? (infos.id || '') : (infos.customId || ''),
+    id,
+    customId,
     type: infos.type ? infos.type : 'text',
     data: infos.data ? { ...infos.data } : {},
     widgets: infos.widgets ? infos.widgets : infos.elements ? infos.elements : []
@@ -390,7 +412,8 @@ export function normalizeWidget(infos: any): GUIWidget {
   for (const key of Object.keys(WidgetLegacyConversionTable)) {
     for (let i = 0; i < WidgetLegacyConversionTable[key].length; ++i) {
       const keyNameToConvert: string = WidgetLegacyConversionTable[key][i];
-      if (keyNameToConvert in infos.data) {
+      // Some old names are the same as the current one (gridType): nothing to convert
+      if (keyNameToConvert !== key && keyNameToConvert in infos.data) {
         infos.data[key] = infos.data[keyNameToConvert];
         delete infos.data[keyNameToConvert];
       }
@@ -481,6 +504,14 @@ export function normalizeWidget(infos: any): GUIWidget {
     infos.data[prop] = prop in infos.data ? infos.data[prop] : (Array.isArray(def) ? [...def] : def);
   });
 
+  // LEGACY: numbers stored as strings ("10"), empty strings meaning the default value
+  for (const prop of NumberProperties) {
+    const value = infos.data[prop];
+    if (typeof value === 'string') {
+      infos.data[prop] = value.trim().length === 0 || isNaN(Number(value)) ? Number(WidgetPropertiesDefaults[prop]) : Number(value);
+    }
+  }
+
   // Subtypes verification
   if (('subType' in infos.data) && !WidgetSubTypes[infos.type].includes(infos.data.subType)) {
     infos.data.subType = WidgetSubTypes[infos.type][0];
@@ -547,4 +578,73 @@ export function normalizeGUI(infos: any): GUIInterface {
 
   result.version = GUI_SCHEMA_VERSION;
   return result;
+}
+/**
+ * Interface files (.pgui).
+ *
+ * The runtime reads the v3 format: `elements`, `submitbutton` and `language`
+ * at the top level; each widget has its user `id`, its `type`, its `data` with
+ * the Apleno 3.x property names (`labeltext`, `isr`...) and its children in
+ * `elements`. The editor works on its own internal model (GUIInterface, with
+ * numeric ids and the current property names), converted from the file when
+ * reading (GUIFileUtils.read) and back to v3 when saving (GUIFileUtils.toV3).
+ */
+export interface GUIFileWidgetV3 {
+  id: string;
+  type: string;
+  data: { [key: string]: any };
+  elements?: GUIFileWidgetV3[];
+}
+
+export interface GUIFileV3 {
+  language: 'r' | 'python';
+  submitbutton: boolean;
+  elements: GUIFileWidgetV3[];
+}
+
+/**
+ * Name of a property in v3 files: the last (Apleno 3.x) name of the conversion
+ * table, or the same name.
+ */
+export function getV3PropertyName(property: string): string {
+  const names = WidgetLegacyConversionTable[property];
+  return names && names.length > 0 ? names[names.length - 1] : property;
+}
+
+export class GUIFileUtils {
+  /**
+   * Read the content of an interface file (v2 or v3 format) into the internal model.
+   */
+  public static read(file: any): GUIInterface {
+    if (typeof file === 'object' && file !== null && ('version' in file || 'widgets' in file || 'displaySubmitButton' in file)) {
+      throw new Error('This interface file uses the format of Apleno Designer 1.0.x, which the Apleno runtime cannot read. Please recreate it.');
+    }
+    const gui = normalizeGUI(file);
+    fixIds(gui.widgets);
+    fixContainers(gui.widgets, { value: getMaxId(gui.widgets) + 1 });
+    return gui;
+  }
+
+  /**
+   * Convert the internal model to the v3 file format.
+   */
+  public static toV3(gui: GUIInterface): GUIFileV3 {
+    const convert = (widget: GUIWidget): GUIFileWidgetV3 => {
+      const data: { [key: string]: any } = {};
+      for (const [property, value] of Object.entries(widget.data)) {
+        data[getV3PropertyName(property)] = value;
+      }
+      return {
+        id: widget.customId ?? '',
+        type: widget.type,
+        data,
+        ...(isContainerWidget(widget.type) ? { elements: (widget.widgets ?? []).map(convert) } : {})
+      };
+    };
+    return {
+      language: gui.language === 'python' ? 'python' : 'r',
+      submitbutton: gui.displaySubmitButton !== false,
+      elements: gui.widgets.map(convert)
+    };
+  }
 }

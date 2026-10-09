@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { type GUIInterface, normalizeGUI } from '../../common/gui';
+import { type GUIInterface, GUIFileUtils } from '../../common/gui';
 import { GUICommands } from './gui-commands';
+import { type ExternallyEditableDocument, watchExternalChanges } from '../utils/external-changes';
 
 /**
  * Define the type of edits used in pgui files.
@@ -18,15 +19,16 @@ interface PGMInterfaceDocumentDelegate {
 /**
  * Define the document (the data model) used in pgui files.
  */
-class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
+class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument, ExternallyEditableDocument {
   static async create(uri: vscode.Uri, backupId: string | undefined, delegate: PGMInterfaceDocumentDelegate): Promise<PGMInterfaceDocument | PromiseLike<PGMInterfaceDocument>> {
     // If we have a backup, read that. Otherwise read the resource from the workspace
-    const dataFile = typeof backupId === 'string' ? vscode.Uri.parse(backupId) : uri;
-    const fileData = await PGMInterfaceDocument.readFile(dataFile);
-    return new PGMInterfaceDocument(uri, fileData, delegate);
+    const isBackup = typeof backupId === 'string';
+    const dataFile = isBackup ? vscode.Uri.parse(backupId) : uri;
+    const file = await PGMInterfaceDocument.readFile(dataFile);
+    return new PGMInterfaceDocument(uri, file.data, isBackup ? null : file.raw, delegate);
   }
 
-  private static async readFile(uri: vscode.Uri): Promise<GUIInterface> {
+  private static async readFile(uri: vscode.Uri): Promise<{ data: GUIInterface, raw: Uint8Array | null }> {
     const defaultFile: GUIInterface = {
       widgets: [],
       displaySubmitButton: true,
@@ -34,20 +36,21 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
     };
 
     if (uri.scheme === 'untitled') {
-      return defaultFile;
+      return { data: defaultFile, raw: null };
     }
 
+    let raw: Uint8Array;
     let content = null;
     try {
-      const readData: Uint8Array = await vscode.workspace.fs.readFile(uri);
-      content = Buffer.from(readData).toString('utf8');
+      raw = await vscode.workspace.fs.readFile(uri);
+      content = Buffer.from(raw).toString('utf8');
     } catch (e) {
       vscode.window.showErrorMessage('Could not load the UI file.');
-      return defaultFile;
+      return { data: defaultFile, raw: null };
     }
 
     if (content.trim().length === 0) {
-      return defaultFile;
+      return { data: defaultFile, raw };
     }
 
     let JSONContent = null;
@@ -55,18 +58,18 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
       JSONContent = JSON.parse(content);
     } catch (e) {
       vscode.window.showErrorMessage('Could not load the UI file. It is not a valid JSON file.');
-      return defaultFile;
+      return { data: defaultFile, raw };
     }
 
     try {
-      const sanitized: GUIInterface | null = normalizeGUI(JSONContent);
+      const sanitized: GUIInterface | null = GUIFileUtils.read(JSONContent);
       if (sanitized === null) {
-        return defaultFile;
+        return { data: defaultFile, raw };
       }
-      return sanitized;
+      return { data: sanitized, raw };
     } catch (e: any) {
       vscode.window.showErrorMessage(`Could not load the UI file: ${e.message}`);
-      return defaultFile;
+      return { data: defaultFile, raw };
     }
   }
 
@@ -76,12 +79,18 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
   private _edits: PGMInterfaceDocumentEdit[] = [];
   private _savedEdits: PGMInterfaceDocumentEdit[] = [];
 
+  /** Content last read from or written to disk, null if unknown (untitled or restored from a backup) */
+  private _diskContent: Uint8Array | null;
+  /** Incremented when the content is reloaded from disk, to invalidate the older undo/redo entries */
+  private _generation = 0;
+
   private readonly _delegate: PGMInterfaceDocumentDelegate;
 
-  private constructor(uri: vscode.Uri, initialContent: GUIInterface, delegate: PGMInterfaceDocumentDelegate) {
+  private constructor(uri: vscode.Uri, initialContent: GUIInterface, diskContent: Uint8Array | null, delegate: PGMInterfaceDocumentDelegate) {
     super();
     this._uri = uri;
     this._documentData = initialContent;
+    this._diskContent = diskContent;
     this._delegate = delegate;
   }
 
@@ -91,6 +100,16 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
 
   public get documentData(): GUIInterface {
     return this._documentData;
+  }
+
+  public get isDirty(): boolean {
+    return this._diskContent === null
+      || this._edits.length !== this._savedEdits.length
+      || this._edits.some((edit, i) => edit !== this._savedEdits[i]);
+  }
+
+  public isSameAsDisk(content: Uint8Array): boolean {
+    return this._diskContent !== null && Buffer.from(content).equals(this._diskContent);
   }
 
   private readonly _onDidDispose = this._register(new vscode.EventEmitter<void>());
@@ -140,16 +159,23 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
    */
   makeEdit(edit: PGMInterfaceDocumentEdit) {
     this._edits.push(edit);
+    const generation = this._generation;
 
     this._onDidChange.fire({
       label: 'Edit',
       undo: async () => {
+        if (generation !== this._generation) {
+          return;
+        }
         this._edits.pop();
         this._onDidChangeDocument.fire({
           edits: this._edits,
         });
       },
       redo: async () => {
+        if (generation !== this._generation) {
+          return;
+        }
         this._edits.push(edit);
         this._onDidChangeDocument.fire({
           edits: this._edits,
@@ -174,6 +200,9 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
     if (cancellation.isCancellationRequested) {
       return;
     }
+    if (targetResource.toString() === this.uri.toString()) {
+      this._diskContent = fileData;
+    }
     await vscode.workspace.fs.writeFile(targetResource, fileData);
   }
 
@@ -181,11 +210,22 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument {
    * Called by VS Code when the user calls `revert` on a document.
    */
   async revert(_cancellation: vscode.CancellationToken): Promise<void> {
-    const diskContent = await PGMInterfaceDocument.readFile(this.uri);
-    this._documentData = diskContent;
-    this._edits = this._savedEdits;
+    await this.reloadFromDisk();
+  }
+
+  /**
+   * Replace the content by the file content. The reloaded content becomes the
+   * new initial state: older undo/redo entries are ignored.
+   */
+  async reloadFromDisk(): Promise<void> {
+    const file = await PGMInterfaceDocument.readFile(this.uri);
+    this._documentData = file.data;
+    this._diskContent = file.raw;
+    this._generation++;
+    this._edits = [];
+    this._savedEdits = [];
     this._onDidChangeDocument.fire({
-      content: diskContent,
+      content: file.data,
       edits: this._edits,
     });
   }
@@ -263,7 +303,8 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
         const panel = webviewsForDocument[0];
         const response = await this.postMessageWithResponse<GUIInterface>(panel, 'getFileData', {});
 
-        return Buffer.from(JSON.stringify(response, null, '\t'), 'utf8');
+        // The runtime reads the v3 format
+        return Buffer.from(JSON.stringify(GUIFileUtils.toV3(response), null, '\t'), 'utf8');
       }
     });
 
@@ -286,6 +327,8 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
         });
       }
     }));
+
+    listeners.push(watchExternalChanges(document));
 
     document.onDidDispose(() => disposeAll(listeners));
 

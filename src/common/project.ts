@@ -73,7 +73,8 @@ export class ProjectFileUtils {
       result.consoleAccess = ['r', 'enabled'].includes(manifest.rconsole) ? 'enabled' : 'disabled';
       result.customCSSDarkCode = manifest.css || '';
       result.customCSSLightCode = manifest.css || '';
-      result.dateCreated = manifest.created || Date.now();
+      const created = typeof manifest.created === 'string' ? Date.parse(manifest.created) : manifest.created;
+      result.dateCreated = typeof created === 'number' && !isNaN(created) ? created : Date.now();
       result.defaultWorkingDirectory = ['app', 'program'].includes(manifest.wd) ? 'app' : 'output';
       result.outputFolderName = manifest.outputfolder || '';
       result.sequenceStart = manifest.start || '';
@@ -81,9 +82,15 @@ export class ProjectFileUtils {
       result.stepListType = !('list' in manifest) || ['shown', 'sidebar'].includes(manifest.list) ? 'shown' : 'hidden';
     }
 
-    // history => changelog
-    if (manifest.history) {
-      result.changelog = manifest.history;
+    // history => changelog (Apleno 3.x entries have a 'changelog' key instead of 'message')
+    if (Array.isArray(manifest.history)) {
+      result.changelog = manifest.history.map((entry: any) => {
+        if (typeof entry !== 'object' || entry === null || !('changelog' in entry)) {
+          return entry;
+        }
+        const { changelog, ...rest } = entry;
+        return 'message' in rest ? rest : { ...rest, message: changelog };
+      });
     }
 
     // All keys

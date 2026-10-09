@@ -1,0 +1,48 @@
+{
+	"changelog": [
+		{
+			"date": "21/12/2023",
+			"version": "1.0.3",
+			"author": "Nicolas",
+			"message": "CSS màj"
+		},
+		{
+			"date": "21/12/2023",
+			"version": "1.0.2",
+			"author": "William",
+			"message": "CSS màj"
+		},
+		{
+			"date": "20/12/2023",
+			"version": "1.0.1",
+			"author": "Nicolas",
+			"message": "Formules avec Mathjax"
+		},
+		{
+			"date": "21/06/2023",
+			"version": "1.0.0",
+			"author": "Nicolas",
+			"message": "Version partageable LinkedIn"
+		}
+	],
+	"company": "PGM Solutions",
+	"consoleAccess": "enabled",
+	"customCSSDarkCode": "",
+	"customCSSDarkFile": "",
+	"customCSSLightCode": "",
+	"customCSSLightFile": "",
+	"customFiles": [
+		"mathjax.js",
+		"mathjax-init.js",
+		"style.css"
+	],
+	"dateCreated": 1686841,
+	"defaultWorkingDirectory": "app",
+	"description": "",
+	"icon": "",
+	"name": "Contrôle Optimal en Gestion de Portefeuille avec Heston",
+	"outputFolderName": "{{name}}_{{datetime}}",
+	"sequenceStart": "main.pseq",
+	"sidebarLogo": "",
+	"stepListType": "hidden"
+}

@@ -1,0 +1,138 @@
+{
+	"language": "r",
+	"submitbutton": true,
+	"elements": [
+		{
+			"id": "summary_text",
+			"type": "label",
+			"data": {
+				"value": "summary_html",
+				"isr": true,
+				"labelposition": "hidden",
+				"css": "",
+				"margintop": 10,
+				"labeltext": "",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": 14,
+				"fontfamily": "default",
+				"fontcolor": "#000000"
+			}
+		},
+		{
+			"id": "",
+			"type": "columns",
+			"data": {
+				"labelposition": "hidden",
+				"columnswidths": [
+					5,
+					7
+				],
+				"columnspadding": 20,
+				"css": "",
+				"margintop": 10,
+				"labeltext": "",
+				"helptext": "",
+				"helpposition": "bottom"
+			},
+			"elements": [
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"labelposition": "hidden",
+						"margintop": 0,
+						"boxdesign": "none",
+						"boxheader": "",
+						"css": "",
+						"labeltext": "",
+						"helptext": "",
+						"helpposition": "bottom"
+					},
+					"elements": [
+						{
+							"id": "stats_view",
+							"type": "table",
+							"data": {
+								"value": "stats_table",
+								"isr": true,
+								"labeltext": "Statistics",
+								"labelposition": "top",
+								"css": "",
+								"margintop": 10,
+								"helptext": "",
+								"helpposition": "bottom"
+							}
+						},
+						{
+							"id": "copy",
+							"type": "button",
+							"data": {
+								"value": "<i class=\"fa-solid fa-copy\"></i> Copy",
+								"labelposition": "hidden",
+								"onpress": "rpgm.sendToClipboard(stats_table, headers = TRUE); rpgm.notification('success', 'Statistics copied to the clipboard.')",
+								"buttonsize": "sm",
+								"buttondesign": "outline-primary",
+								"isr": false,
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"helptext": "",
+								"helpposition": "bottom"
+							}
+						}
+					]
+				},
+				{
+					"id": "",
+					"type": "box",
+					"data": {
+						"labelposition": "hidden",
+						"margintop": 0,
+						"boxdesign": "none",
+						"boxheader": "",
+						"css": "",
+						"labeltext": "",
+						"helptext": "",
+						"helpposition": "bottom"
+					},
+					"elements": [
+						{
+							"id": "chart_graph",
+							"type": "graph",
+							"data": {
+								"labelposition": "hidden",
+								"graph": "make_plot(values, variable, bins, chart, chart_title)",
+								"graphheight": 400,
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"helptext": "",
+								"helpposition": "bottom",
+								"graphwidth": 100
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "again",
+			"type": "onoff",
+			"data": {
+				"subtype": "switch",
+				"value": false,
+				"labeltext": "Run another analysis",
+				"helptext": "Leave it off to finish and get the exported files.",
+				"margintop": 30,
+				"isr": false,
+				"css": "",
+				"labelposition": "left",
+				"helpposition": "bottom",
+				"required": false,
+				"onchange": "",
+				"condition": ""
+			}
+		}
+	]
+}

@@ -1,0 +1,60 @@
+{
+	"cameraX": 0,
+	"cameraY": 0,
+	"cameraZoom": 1,
+	"steps": [
+		{
+			"uuid": 1,
+			"x": 70,
+			"y": 10,
+			"type": "start",
+			"target": 4
+		},
+		{
+			"id": "dashboard",
+			"name": "dashboard",
+			"uuid": 2,
+			"x": 70,
+			"y": 370,
+			"type": "gui",
+			"file": "dashboard.pgui",
+			"target": 3
+		},
+		{
+			"uuid": 3,
+			"x": 70,
+			"y": 460,
+			"type": "end"
+		},
+		{
+			"id": "heston-edp",
+			"name": "heston-edp",
+			"uuid": 4,
+			"x": 70,
+			"y": 70,
+			"type": "rscript",
+			"file": "heston-edp.py",
+			"target": 5
+		},
+		{
+			"id": "heston-mc",
+			"name": "heston-mc",
+			"uuid": 5,
+			"x": 70,
+			"y": 170,
+			"type": "rscript",
+			"file": "heston-mc.py",
+			"target": 6
+		},
+		{
+			"id": "graph",
+			"name": "graph",
+			"uuid": 6,
+			"x": 70,
+			"y": 270,
+			"type": "rscript",
+			"file": "graph.py",
+			"target": 2
+		}
+	]
+}

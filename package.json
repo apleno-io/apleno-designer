@@ -21,7 +21,8 @@
     "Extension Packs"
   ],
   "activationEvents": [
-    "onDebugResolve:apleno"
+    "onDebugResolve:apleno",
+    "workspaceContains:**/*.ppro"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -62,6 +63,10 @@
       {
         "command": "apleno.initialize",
         "title": "Apleno: Create new project"
+      },
+      {
+        "command": "apleno.ai.setup",
+        "title": "Apleno: Set up AI assistant files"
       },
       {
         "command": "apleno.language.choose.r",
@@ -178,7 +183,8 @@
     "check-types": "tsc --noEmit --project src/extension/tsconfig.json",
     "lint": "eslint src",
     "test": "vscode-test",
-    "test:unit": "vitest"
+    "test:unit": "vitest",
+    "vscode:uninstall": "node ./dist/uninstall.js"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
@@ -200,6 +206,8 @@
   "dependencies": {
     "@vscode/debugadapter": "^1.68.0",
     "adm-zip": "^0.5.16",
+    "ajv": "^8.20.0",
+    "jsonc-parser": "^3.3.1",
     "micromatch": "^4.0.8",
     "semver": "^7.7.3"
   }

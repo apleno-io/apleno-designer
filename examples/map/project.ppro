@@ -1,0 +1,50 @@
+{
+	"changelog": [
+		{
+			"date": "20/11/2023",
+			"version": "1.0.3",
+			"author": "Nicolas",
+			"message": "Optimisation et divers modifs mineures"
+		},
+		{
+			"date": "17/11/2023",
+			"version": "1.0.2",
+			"author": "Nicolas",
+			"message": "Optimisation de la vitesse de chargement"
+		},
+		{
+			"date": "16/11/2023",
+			"version": "1.0.1",
+			"author": "Nicolas",
+			"message": "Amélioration des performances d'affichage"
+		},
+		{
+			"date": "16/11/2023",
+			"version": "1.0.0",
+			"author": "Nicolas",
+			"message": "Complètement fonctionnelle"
+		}
+	],
+	"company": "PGM Solutions",
+	"consoleAccess": "enabled",
+	"customCSSDarkCode": "",
+	"customCSSDarkFile": "",
+	"customCSSLightCode": "",
+	"customCSSLightFile": "",
+	"customFiles": [
+		"leaflet/leaflet.js",
+		"leaflet/leaflet.css",
+		"main.js",
+		"main.css",
+		"style.css"
+	],
+	"dateCreated": 1695282,
+	"defaultWorkingDirectory": "app",
+	"description": "Une carte Leaflet pilotée par R via RPGM",
+	"icon": "",
+	"name": "Cartographie de l'Exposition et Emprunte Cat Nat",
+	"outputFolderName": "{{name}}_{{datetime}}",
+	"sequenceStart": "main.pseq",
+	"sidebarLogo": "",
+	"stepListType": "hidden"
+}

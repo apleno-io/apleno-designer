@@ -1,0 +1,30 @@
+{
+	"cameraX": 0,
+	"cameraY": 0,
+	"cameraZoom": 1,
+	"steps": [
+		{
+			"uuid": 1,
+			"x": 0,
+			"y": 0,
+			"type": "start",
+			"target": 2
+		},
+		{
+			"id": "html-report",
+			"name": "HTML report",
+			"uuid": 2,
+			"x": 0,
+			"y": 150,
+			"type": "rscript",
+			"file": "report.R",
+			"target": 3
+		},
+		{
+			"uuid": 3,
+			"x": 0,
+			"y": 300,
+			"type": "end"
+		}
+	]
+}

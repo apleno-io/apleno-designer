@@ -116,7 +116,7 @@ export class CanvasStep {
         return 'bottom';
       }
     }
-    else if (['gui', 'script', 'sequence'].includes(this.type)) {
+    else if (['gui', 'script'].includes(this.type)) {
       if (CanvasStep.isPointInCircle(point, this.getHandlePosition('top'), CanvasStep.HANDLE_RADIUS)) {
         return 'top';
       }
@@ -135,7 +135,8 @@ export class CanvasStep {
         return 'bottom';
       }
     }
-    else if (this.type === 'end') {
+    // Entering a sequence is definitive: no exit, like the end step
+    else if (this.type === 'end' || this.type === 'sequence') {
       if (CanvasStep.isPointInCircle(point, this.getHandlePosition('top'), CanvasStep.HANDLE_RADIUS)) {
         return 'top';
       }
@@ -282,11 +283,9 @@ class SequenceEditor extends EventTarget {
   }
 
   public setState(state: any) {
-    // Sanitize
-    try {
-      state = SequenceFileUtils.sanitize(state);
-    }
-    catch (err) {
+    // The state is the internal model, already read from the file by the
+    // extension (SequenceFileUtils.sanitize). New untitled files have no steps.
+    if (typeof state !== 'object' || state === null || !Array.isArray(state.steps) || state.steps.length === 0) {
       state = SequenceFileUtils.getDefaultFile();
     }
 
@@ -304,7 +303,6 @@ class SequenceEditor extends EventTarget {
 
   public getState(): any {
     return {
-      _version: 4,
       cameraX: this.cameraX,
       cameraY: this.cameraY,
       cameraZoom: this.cameraZoom,
@@ -556,11 +554,7 @@ class SequenceEditor extends EventTarget {
       this.drawHandle(this.worldToScreen(step.getHandlePosition('bottom')), 'start');
       this.drawHandle(this.worldToScreen(step.getHandlePosition('right')), 'start');
     }
-    else if (step.type === 'sequence') {
-      this.drawHandle(this.worldToScreen(step.getHandlePosition('top')), 'end');
-      this.drawHandle(this.worldToScreen(step.getHandlePosition('bottom')), 'start');
-    }
-    else if (step.type === 'end') {
+    else if (step.type === 'end' || step.type === 'sequence') {
       this.drawHandle(this.worldToScreen(step.getHandlePosition('top')), 'end');
     }
 
@@ -604,7 +598,8 @@ class SequenceEditor extends EventTarget {
   private drawConnections(): void {
     this.steps.forEach((step: CanvasStep) => {
       // Target
-      const target = step.parameters.target;
+      // End and sequence steps have no exit
+      const target = ['end', 'sequence'].includes(step.type) ? undefined : step.parameters.target;
       const targetOnFalse = step.parameters.targetOnFalse;
       if (typeof target === 'number') {
         const targetStep = this.steps.find((s: any) => s.id === target);
@@ -1043,12 +1038,13 @@ class SequenceEditor extends EventTarget {
       editor.setState(initialState);
     }
     else if (type === 'update') {
-      if (body.edits.length > 0) {
-        editor.setState(body.edits[body.edits.length - 1].state);
+      // content is sent when the file is reloaded from disk: it is the new initial state
+      if (body.content) {
+        initialState = structuredClone(body.content);
       }
-      else {
-        editor.setState(initialState);
-      }
+      const state = body.edits.length > 0 ? body.edits[body.edits.length - 1].state : initialState;
+      lastState = structuredClone(state);
+      editor.setState(state);
     }
     else if (type === 'getFileData') {
       vscode.postMessage({ type: 'response', requestId, body: editor.getState() });

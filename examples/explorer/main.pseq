@@ -1,0 +1,75 @@
+{
+	"cameraX": 79,
+	"cameraY": 270,
+	"cameraZoom": 5,
+	"steps": [
+		{
+			"uuid": 1,
+			"x": 0,
+			"y": 0,
+			"type": "start",
+			"target": 2
+		},
+		{
+			"id": "init",
+			"name": "Initialization",
+			"uuid": 2,
+			"x": 0,
+			"y": 150,
+			"type": "rscript",
+			"file": "init.R",
+			"target": 3
+		},
+		{
+			"id": "form",
+			"name": "Choose a variable",
+			"uuid": 3,
+			"x": 0,
+			"y": 300,
+			"type": "gui",
+			"file": "form.pgui",
+			"target": 4
+		},
+		{
+			"id": "analysis",
+			"name": "Analysis",
+			"uuid": 4,
+			"x": 0,
+			"y": 450,
+			"type": "rscript",
+			"file": "analysis.R",
+			"target": 5
+		},
+		{
+			"id": "results",
+			"name": "Results",
+			"uuid": 5,
+			"x": 0,
+			"y": 600,
+			"type": "gui",
+			"file": "results.pgui",
+			"target": 6
+		},
+		{
+			"id": "again",
+			"name": "Another analysis?",
+			"uuid": 6,
+			"x": 0,
+			"y": 750,
+			"type": "condition",
+			"r": "isTRUE(again)",
+			"language": "r",
+			"target": 3,
+			"falsetarget": 7
+		},
+		{
+			"id": "report",
+			"name": "Report",
+			"uuid": 7,
+			"x": 300,
+			"y": 900,
+			"type": "sequence",
+			"file": "report.pseq"
+		}
+	]
+}

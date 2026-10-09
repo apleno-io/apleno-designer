@@ -27,7 +27,7 @@ const SequenceChecker = new class {
       }
 
       // Check if unbind exit
-      if (['start', 'gui', 'script', 'condition', 'sequence'].includes(step.type)) {
+      if (['start', 'gui', 'script', 'condition'].includes(step.type)) {
         if (!('target' in step.parameters) || step.parameters.target === undefined || steps.find(s => s.id === step.parameters.target) === undefined || step.parameters.target === step.id) {
           errors.push({ stepId: step.id, error: 'StepNoExit' });
         }
