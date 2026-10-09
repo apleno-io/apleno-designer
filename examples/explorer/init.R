@@ -27,8 +27,8 @@ update_variables <- function(name)
 {
     columns <- numeric_columns(name)
     gui.clearChoices("this", "variable")
-    #gui.addChoices("this", "variable", columns, columns)
-    #gui.setValue("this", "variable", columns[1])
+    gui.addChoices("this", "variable", columns, columns)
+    gui.setValue("this", "variable", columns[1])
 }
 
 # Plotly figure of the "chart_graph" widget (graphVariable of results.pgui).
