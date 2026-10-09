@@ -1,53 +1,60 @@
 {
+	"_version": 4,
+	"cameraX": 0,
+	"cameraY": 0,
+	"cameraZoom": 1,
 	"steps": [
 		{
-			"id": "start",
-			"name": "Start",
+			"id": 1,
 			"type": "start",
 			"x": 130,
 			"y": 40,
-			"uuid": 1,
-			"target": 7
+			"parameters": {
+				"target": 7
+			}
 		},
 		{
-			"uuid": 5,
-			"file": "main.pgui",
-			"id": "main",
-			"name": "main",
+			"id": 5,
 			"type": "gui",
 			"x": 130,
 			"y": 290,
-			"target": 9
+			"customId": "main",
+			"customName": "main",
+			"parameters": {
+				"file": "main.pgui",
+				"target": 9
+			}
 		},
 		{
-			"uuid": 7,
-			"file": "sources\\interface.py",
-			"id": "interface",
-			"name": "interface",
-			"type": "rscript",
+			"id": 7,
+			"type": "script",
 			"x": 130,
 			"y": 110,
-			"target": 10
+			"customId": "interface",
+			"customName": "interface",
+			"parameters": {
+				"file": "sources/interface.py",
+				"target": 10
+			}
 		},
 		{
+			"id": 9,
+			"type": "end",
 			"x": 130,
 			"y": 380,
-			"uuid": 9,
-			"file": "",
-			"id": "",
-			"name": "",
-			"target": "",
-			"type": "end"
+			"parameters": {}
 		},
 		{
-			"uuid": 10,
-			"file": "main.py",
-			"id": "main-py",
-			"name": "main-py",
-			"type": "rscript",
+			"id": 10,
+			"type": "script",
 			"x": 130,
 			"y": 200,
-			"target": 5
+			"customId": "main-py",
+			"customName": "main-py",
+			"parameters": {
+				"file": "main.py",
+				"target": 5
+			}
 		}
 	]
 }

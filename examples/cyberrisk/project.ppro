@@ -1,26 +1,30 @@
 {
-	"start": "main.pseq",
-	"name": "Contrôle Optimal pour Risque Cyber",
-	"company": "",
-	"description": "Avec processus de Hawkes controlés",
-	"wd": "program",
-	"logo": "",
-	"css": ".test .pgm-widget-progressbar-inner {\r\n    color:white;\r\n}\r\n\r\n.bluebox {\r\n    color: #333;\r\n    background-color: #FFF;\r\n    border-radius: 6px 6px 0 0;\r\n    box-shadow: 0 1px 3px rgba(0.2, 0.2, 0.2, 0.5);\r\n}\r\n\r\n/* modifies an RPGM sub element of a custom class */\r\n.bluebox .pgm-widget-box-header\r\n{\r\n    background-color: #005782;\r\n    border-radius: 6px 6px 0 0;\r\n    color: #EFEFEF;\r\n}\r\n",
-	"list": "hide",
-	"rconsole": "r",
-	"outputfolder": "{{name}}_{{datetime}}",
-	"history": [
+	"changelog": [
 		{
 			"date": "21/02/2024",
 			"version": "1.0",
 			"author": "Nicolas",
-			"changelog": "Calcul contrôle optimal avec interface"
+			"message": "Calcul contrôle optimal avec interface"
 		}
 	],
-	"created": "2024-02-21T15:29:20+01:00",
-	"version": "4.6.0",
+	"company": "",
+	"consoleAccess": "enabled",
+	"customCSSDarkCode": "",
+	"customCSSDarkFile": "",
+	"customCSSLightCode": "",
+	"customCSSLightFile": "",
 	"customFiles": [
 		"modules/mathjax.js",
-		"modules/mathjax-init.js"
-	]
+		"modules/mathjax-init.js",
+		"style.css"
+	],
+	"dateCreated": 1708525,
+	"defaultWorkingDirectory": "app",
+	"description": "Avec processus de Hawkes controlés",
+	"icon": "",
+	"name": "Contrôle Optimal pour Risque Cyber",
+	"outputFolderName": "{{name}}_{{datetime}}",
+	"sequenceStart": "main.pseq",
+	"sidebarLogo": "",
+	"stepListType": "hidden"
 }
