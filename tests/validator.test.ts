@@ -126,6 +126,18 @@ describe('AplenoValidator', () => {
     expect(messages).toContain('steps[0]: missing required property "target".');
   });
 
+  it('explains that a sequence step has no exit', () => {
+    const text = json(sequence([
+      { uuid: 1, type: 'start', x: 0, y: 0, target: 2 },
+      { uuid: 2, id: 'next', type: 'sequence', file: 'next.pseq', x: 0, y: 150, target: 3 },
+      { uuid: 3, type: 'end', x: 0, y: 300 }
+    ]));
+    const { problems } = validator.validate('pseq', text);
+    expect(problems).toHaveLength(1);
+    expect(problems[0].message).toContain('steps[1].target: end and sequence steps have no exit');
+    expect(underlined(text, problems[0])).toBe('"target"');
+  });
+
   it('reports the 1.0.x sequence format with a single explanation', () => {
     const text = json({ _version: 4, steps: [{ id: 1, type: 'start', x: 0, y: 0, parameters: {} }] });
     const { problems } = validator.validate('pseq', text);

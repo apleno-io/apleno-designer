@@ -210,7 +210,12 @@ export class AplenoValidator {
         validation.add(path, kind === 'pseq' ? 'a sequence needs a step of type "start".' : (error.message ?? 'invalid value.'));
         return;
       case 'not':
-        validation.add([...path, 'elements'], 'only container widgets (box, columns, tabs) can have child widgets.', 'error', true);
+        if (kind === 'pseq') {
+          validation.add([...path, 'target'], 'end and sequence steps have no exit: remove "target". Entering a sequence is definitive, the app never comes back to this sequence.', 'error', true);
+        }
+        else {
+          validation.add([...path, 'elements'], 'only container widgets (box, columns, tabs) can have child widgets.', 'error', true);
+        }
         return;
       default:
         validation.add(path, `${error.message ?? 'invalid value'}.`);

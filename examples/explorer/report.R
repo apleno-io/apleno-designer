@@ -1,5 +1,6 @@
-# Script of the report.pseq sub-sequence. It shares the R session of the main
-# sequence: the variables of the previous steps are available.
+# Script of report.pseq. The app jumped to this sequence for good (a sequence
+# step has no exit): its end step ends the app. It still shares the R session of
+# main.pseq, so the variables of the last analysis are available.
 
 rows <- paste0("<tr><td>", stats_table$Statistic, "</td><td>", stats_table$Value, "</td></tr>", collapse = "\n")
 html <- paste0(

@@ -48,6 +48,18 @@ describe('SequenceFileUtils', () => {
     ]);
   });
 
+  it('drops the exit of sequence steps: entering a sequence is definitive', () => {
+    const file = { steps: [
+      { uuid: 1, type: 'start', x: 0, y: 0, target: 2 },
+      { uuid: 2, id: 'next', name: 'Next', type: 'sequence', file: 'next.pseq', x: 0, y: 150, target: 3 },
+      { uuid: 3, type: 'end', x: 0, y: 300 }
+    ] };
+    const state = SequenceFileUtils.sanitize(file)!;
+    expect(state.steps[1].parameters).toEqual({ file: 'next.pseq' });
+    state.steps[1].parameters.target = 3;
+    expect(SequenceFileUtils.toV3(state).steps[1]).not.toHaveProperty('target');
+  });
+
   it('rejects the 1.0.x format', () => {
     expect(() => SequenceFileUtils.sanitize({ _version: 4, steps: [] })).toThrow(/1\.0\.x/);
   });

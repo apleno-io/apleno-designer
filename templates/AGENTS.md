@@ -9,7 +9,7 @@ Full documentation: https://docs.apleno.io
 | File | Role |
 |------|------|
 | `*.ppro` | Project manifest (one per app, at the root): name, starting sequence, display settings. |
-| `*.pseq` | Sequence: the flowchart of steps (scripts, interfaces, conditions, sub-sequences). |
+| `*.pseq` | Sequence: the flowchart of steps (scripts, interfaces, conditions, jumps to other sequences). |
 | `*.pgui` | Interface: a form of widgets shown to the user during a `gui` step. |
 | `*.R`, `*.py` | Scripts run by `script` steps, or code referenced from interfaces. |
 
@@ -29,8 +29,8 @@ The extension checks these files and reports errors in the VS Code Problems pane
 
 - Exactly one `start` step. Execution follows `target` from step to step until an `end` step.
 - Each step has a numeric `uuid`, unique in the file (a new step gets the highest existing uuid + 1); `target` and `falsetarget` contain uuids.
-- Step `type`s: `rscript` (runs `file`, a `.R` or `.py` script; `script` is accepted as an alias), `gui` (shows `file`, a `.pgui`), `condition` (evaluates the expression `r` in `language`, `"r"` or `"python"`, then goes to `target` if true or `falsetarget` if false; the key is `r` even for Python), `sequence` (runs another `.pseq` given in `file`, then continues), `end`.
-- Every step except `end` needs a `target`.
+- Step `type`s: `rscript` (runs `file`, a `.R` or `.py` script; `script` is accepted as an alias), `gui` (shows `file`, a `.pgui`), `condition` (evaluates the expression `r` in `language`, `"r"` or `"python"`, then goes to `target` if true or `falsetarget` if false; the key is `r` even for Python), `sequence` (jumps for good to another `.pseq` given in `file`: it has no `target`, the app never comes back), `end` (ends the app).
+- Every step except `end` and `sequence` needs a `target`.
 - `id` is the step identifier used from code (`rpgm.step("main", "form")`), `name` is shown to the user in the steps list. Start and end steps don't need them.
 - File paths are relative to the project root.
 - `x`/`y` only position the step in the visual editor: put steps on a 50-unit grid, about 150 apart vertically.

@@ -139,7 +139,7 @@ export class SequenceFileUtils {
           result.r = p.code ?? '';
           result.language = p.language === 'python' ? 'python' : 'r';
         }
-        if (step.type !== 'end' && typeof p.target === 'number') {
+        if (step.type !== 'end' && step.type !== 'sequence' && typeof p.target === 'number') {
           result.target = p.target;
         }
         if (step.type === 'condition' && typeof p.targetOnFalse === 'number') {
@@ -240,7 +240,8 @@ export class SequenceFileUtils {
         if (typeof step.r === 'string' && step.r.length > 0) {
           parameters.code = step.r;
         }
-        if (typeof step.target === 'number') {
+        // End and sequence steps have no exit: entering a sequence is definitive
+        if (typeof step.target === 'number' && type !== 'end' && type !== 'sequence') {
           parameters.target = step.target;
         }
         if (typeof step.falsetarget === 'number') {

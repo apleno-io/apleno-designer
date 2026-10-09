@@ -3,7 +3,9 @@
   "title": "Apleno sequence file (.pseq)",
   "description": "A sequence is the flowchart of an Apleno app: a graph of steps executed one after another, starting from the single 'start' step and following each step's 'target'. The file is JSON, edited visually by the Apleno Sequence Editor.",
   "type": "object",
-  "required": ["steps"],
+  "required": [
+    "steps"
+  ],
   "additionalProperties": false,
   "properties": {
     "cameraX": {
@@ -26,17 +28,26 @@
       "description": "All steps of the sequence. Exactly one step must have type 'start'. Step uuids must be unique.",
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/definitions/step" },
+      "items": {
+        "$ref": "#/definitions/step"
+      },
       "contains": {
         "type": "object",
-        "properties": { "type": { "const": "start" } }
+        "properties": {
+          "type": {
+            "const": "start"
+          }
+        }
       }
     }
   },
   "definitions": {
     "step": {
       "type": "object",
-      "required": ["uuid", "type"],
+      "required": [
+        "uuid",
+        "type"
+      ],
       "additionalProperties": false,
       "properties": {
         "uuid": {
@@ -53,8 +64,16 @@
           "type": "string"
         },
         "type": {
-          "description": "'start': entry point of the sequence (exactly one). 'rscript' (or its alias 'script'): runs an R (.R) or Python (.py) script file, the language depends on the file extension. 'gui': displays an interface (.pgui file) and waits for the user to submit it. 'condition': evaluates the R/Python expression 'r' and goes to 'target' if true, 'falsetarget' if false. 'sequence': runs another sequence (.pseq file), then continues. 'end': ends the sequence.",
-          "enum": ["start", "rscript", "script", "gui", "condition", "sequence", "end"]
+          "description": "'start': entry point of the sequence (exactly one). 'rscript' (or its alias 'script'): runs an R (.R) or Python (.py) script file, the language depends on the file extension. 'gui': displays an interface (.pgui file) and waits for the user to submit it. 'condition': evaluates the R/Python expression 'r' and goes to 'target' if true, 'falsetarget' if false. 'sequence': jumps to another sequence (.pseq file) for good: it has no 'target', the app continues in that sequence and never comes back. 'end': ends the app.",
+          "enum": [
+            "start",
+            "rscript",
+            "script",
+            "gui",
+            "condition",
+            "sequence",
+            "end"
+          ]
         },
         "x": {
           "description": "Horizontal position of the step center in the visual editor. Steps are 200x50 and snap to a 50-unit grid; lay them out top to bottom about 150 units apart, with condition branches offset horizontally (e.g. 300 units).",
@@ -74,10 +93,13 @@
         },
         "language": {
           "description": "For 'condition' steps: language of 'r'.",
-          "enum": ["r", "python"]
+          "enum": [
+            "r",
+            "python"
+          ]
         },
         "target": {
-          "description": "uuid of the next step (for a condition: the step to go to when the expression is true). Required for every step type except 'end'.",
+          "description": "uuid of the next step (for a condition: the step to go to when the expression is true). Required for every step type except 'end' and 'sequence', which have no exit.",
           "type": "integer",
           "minimum": 0
         },
@@ -89,26 +111,123 @@
       },
       "allOf": [
         {
-          "if": { "properties": { "type": { "enum": ["start", "rscript", "script", "gui", "condition", "sequence"] } } },
-          "then": { "required": ["target"] }
-        },
-        {
-          "if": { "properties": { "type": { "enum": ["rscript", "script"] } } },
-          "then": { "required": ["file"], "properties": { "file": { "pattern": "\\.(R|r|py)$" } } }
-        },
-        {
-          "if": { "properties": { "type": { "const": "gui" } } },
-          "then": { "required": ["file"], "properties": { "file": { "pattern": "\\.pgui$" } } }
-        },
-        {
-          "if": { "properties": { "type": { "const": "sequence" } } },
-          "then": { "required": ["file"], "properties": { "file": { "pattern": "\\.pseq$" } } }
-        },
-        {
-          "if": { "properties": { "type": { "const": "condition" } } },
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "start",
+                  "rscript",
+                  "script",
+                  "gui",
+                  "condition"
+                ]
+              }
+            }
+          },
           "then": {
-            "required": ["r", "language", "falsetarget"],
-            "properties": { "r": { "minLength": 1 } }
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "end",
+                  "sequence"
+                ]
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "target"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "rscript",
+                  "script"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "file"
+            ],
+            "properties": {
+              "file": {
+                "pattern": "\\.(R|r|py)$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "gui"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "file"
+            ],
+            "properties": {
+              "file": {
+                "pattern": "\\.pgui$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "sequence"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "file"
+            ],
+            "properties": {
+              "file": {
+                "pattern": "\\.pseq$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "condition"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "r",
+              "language",
+              "falsetarget"
+            ],
+            "properties": {
+              "r": {
+                "minLength": 1
+              }
+            }
           }
         }
       ]

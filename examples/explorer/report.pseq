@@ -4,24 +4,24 @@
 	"cameraZoom": 1,
 	"steps": [
 		{
-			"uuid": 0,
+			"uuid": 1,
 			"x": 0,
 			"y": 0,
 			"type": "start",
-			"target": 1
+			"target": 2
 		},
 		{
 			"id": "html-report",
 			"name": "HTML report",
-			"uuid": 1,
+			"uuid": 2,
 			"x": 0,
 			"y": 150,
 			"type": "rscript",
 			"file": "report.R",
-			"target": 2
+			"target": 3
 		},
 		{
-			"uuid": 2,
+			"uuid": 3,
 			"x": 0,
 			"y": 300,
 			"type": "end"

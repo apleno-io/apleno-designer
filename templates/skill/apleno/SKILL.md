@@ -41,7 +41,7 @@ Complete real apps, in the current file format. Start with their `README.md`. La
 
 | Example | Language | Shows |
 |---|---|---|
-| [examples/explorer](examples/explorer/README.md) | R | **Start here for step-by-step apps**: form with validation → script → sub-sequence → results → "run again?" condition looping back; dynamic select options, output files on the end screen |
+| [examples/explorer](examples/explorer/README.md) | R | **Start here for step-by-step apps**: form with validation → script → results → "run again?" condition looping back, then a final jump to another sequence; dynamic select options, output files on the end screen |
 | [examples/portfolio](examples/portfolio/README.md) | Python | Styled dashboard, Plotly graphs from expressions, compute button with progress, show/hide results, validation |
 | [examples/cyberrisk](examples/cyberrisk/README.md) | Python | Parameters + tabs of computations, matplotlib images, progress from loops, grid with a data frame, MathJax formulas |
 | [examples/map](examples/map/README.md) | R | Custom Leaflet map in a label, R ↔ JavaScript messages, Plotly charts set from code, interval loading, script progress |

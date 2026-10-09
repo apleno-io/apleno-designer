@@ -116,7 +116,7 @@ export class CanvasStep {
         return 'bottom';
       }
     }
-    else if (['gui', 'script', 'sequence'].includes(this.type)) {
+    else if (['gui', 'script'].includes(this.type)) {
       if (CanvasStep.isPointInCircle(point, this.getHandlePosition('top'), CanvasStep.HANDLE_RADIUS)) {
         return 'top';
       }
@@ -135,7 +135,8 @@ export class CanvasStep {
         return 'bottom';
       }
     }
-    else if (this.type === 'end') {
+    // Entering a sequence is definitive: no exit, like the end step
+    else if (this.type === 'end' || this.type === 'sequence') {
       if (CanvasStep.isPointInCircle(point, this.getHandlePosition('top'), CanvasStep.HANDLE_RADIUS)) {
         return 'top';
       }
@@ -553,11 +554,7 @@ class SequenceEditor extends EventTarget {
       this.drawHandle(this.worldToScreen(step.getHandlePosition('bottom')), 'start');
       this.drawHandle(this.worldToScreen(step.getHandlePosition('right')), 'start');
     }
-    else if (step.type === 'sequence') {
-      this.drawHandle(this.worldToScreen(step.getHandlePosition('top')), 'end');
-      this.drawHandle(this.worldToScreen(step.getHandlePosition('bottom')), 'start');
-    }
-    else if (step.type === 'end') {
+    else if (step.type === 'end' || step.type === 'sequence') {
       this.drawHandle(this.worldToScreen(step.getHandlePosition('top')), 'end');
     }
 
@@ -601,7 +598,8 @@ class SequenceEditor extends EventTarget {
   private drawConnections(): void {
     this.steps.forEach((step: CanvasStep) => {
       // Target
-      const target = step.parameters.target;
+      // End and sequence steps have no exit
+      const target = ['end', 'sequence'].includes(step.type) ? undefined : step.parameters.target;
       const targetOnFalse = step.parameters.targetOnFalse;
       if (typeof target === 'number') {
         const targetStep = this.steps.find((s: any) => s.id === target);

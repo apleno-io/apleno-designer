@@ -115,7 +115,7 @@ describe('pseq schema', () => {
       { uuid: 2, id: 'load', name: 'Load data', type: 'rscript', x: 0, y: 150, file: 'scripts/load.R', target: 3 },
       { uuid: 3, id: 'form', name: 'Form', type: 'gui', x: 0, y: 300, file: 'form.pgui', target: 4 },
       { uuid: 4, id: 'check', name: 'Check', type: 'condition', x: 0, y: 450, r: 'isTRUE(ok)', language: 'r', target: 5, falsetarget: 3 },
-      { uuid: 5, id: 'sub', name: 'Sub', type: 'sequence', x: 0, y: 600, file: 'sub.pseq', target: 6 },
+      { uuid: 5, id: 'sub', name: 'Sub', type: 'sequence', x: 0, y: 600, file: 'sub.pseq' },
       { uuid: 6, type: 'end', x: 0, y: 750 }
     ]
   });
@@ -155,6 +155,16 @@ describe('pseq schema', () => {
     const noCode = sequence();
     noCode.steps[3].r = '';
     expect(validatePseq(noCode)).toBe(false);
+  });
+
+  it('rejects an exit on sequence and end steps', () => {
+    const fromSequence = sequence();
+    fromSequence.steps[4].target = 6;
+    expect(validatePseq(fromSequence)).toBe(false);
+
+    const fromEnd = sequence();
+    fromEnd.steps[5].target = 1;
+    expect(validatePseq(fromEnd)).toBe(false);
   });
 });
 
