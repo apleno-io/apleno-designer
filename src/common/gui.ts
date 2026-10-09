@@ -161,7 +161,7 @@ const WidgetPropertiesDefaults: any = {
   helpText: '',
   helpPosition: 'bottom',
 
-  textSize: '14',
+  textSize: 14,
   textFamily: 'default',
   textColor: '#000000',
 
@@ -207,6 +207,11 @@ const WidgetPropertiesDefaults: any = {
   repeaterCode: '',
   repeaterTimeMS: 1000
 };
+
+/**
+ * Numeric properties. Older files can store them as strings.
+ */
+const NumberProperties: string[] = ['marginTop', 'textSize', 'gridHeight', 'columnsPadding', 'tabsSelected', 'graphWidth', 'graphHeight', 'repeaterTimeMS'];
 
 export const WidgetProperties: { [key: string]: string[] } = {
   label: ['value', 'language', 'css', 'marginTop', 'labelText', 'labelPosition', 'helpText', 'helpPosition', 'textSize', 'textFamily', 'textColor'],
@@ -480,6 +485,14 @@ export function normalizeWidget(infos: any): GUIWidget {
     const def = WidgetPropertiesDefaults[prop];
     infos.data[prop] = prop in infos.data ? infos.data[prop] : (Array.isArray(def) ? [...def] : def);
   });
+
+  // LEGACY: numbers stored as strings ("10"), empty strings meaning the default value
+  for (const prop of NumberProperties) {
+    const value = infos.data[prop];
+    if (typeof value === 'string') {
+      infos.data[prop] = value.trim().length === 0 || isNaN(Number(value)) ? Number(WidgetPropertiesDefaults[prop]) : Number(value);
+    }
+  }
 
   // Subtypes verification
   if (('subType' in infos.data) && !WidgetSubTypes[infos.type].includes(infos.data.subType)) {
