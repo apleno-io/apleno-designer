@@ -58,6 +58,13 @@ describe('AplenoValidator', () => {
     expect(underlined(text, problems[0])).toBe('"xl"');
   });
 
+  it('explains numbers stored as strings by older files', () => {
+    const text = json({ widgets: [{ id: 1, type: 'label', data: { marginTop: '10' } }] });
+    const { problems } = validator.validate('pgui', text);
+    expect(problems).toHaveLength(1);
+    expect(problems[0].message).toBe('widgets[0].data.marginTop: must be of type integer or null. Use the number 10, not the string "10" (opening and saving the file in the Apleno editor fixes this).');
+  });
+
   it('reports duplicate widget ids, also in nested widgets', () => {
     const text = json({
       widgets: [

@@ -66,6 +66,13 @@ describe('pgui schema', () => {
     expect(validatePgui(asSaved(gui)), errorsOf(validatePgui)).toBe(true);
   });
 
+  it('accepts legacy files once normalized, with numbers stored as strings', () => {
+    const gui = normalizeGUI({ elements: [{ type: 'label', uid: 1, data: { margintop: '20', fontsize: '', value: 'Hi' } }] });
+    expect(gui.widgets[0].data.marginTop).toBe(20);
+    expect(gui.widgets[0].data.textSize).toBe(14);
+    expect(validatePgui(asSaved(gui)), errorsOf(validatePgui)).toBe(true);
+  });
+
   it('rejects unknown types, properties and subtypes', () => {
     const base = () => ({ widgets: [{ id: 1, customId: '', type: 'text', data: { subType: 'text' } as any }] });
 
