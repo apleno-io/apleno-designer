@@ -524,12 +524,13 @@ class UIEditor extends EventTarget {
       editor.setState(initialState as GUIInterface);
     }
     else if (type === 'update') {
-      if (body.edits.length > 0) {
-        editor.setState(body.edits[body.edits.length - 1].state);
+      // content is sent when the file is reloaded from disk: it is the new initial state
+      if (body.content) {
+        initialState = structuredClone(body.content);
       }
-      else {
-        editor.setState(initialState as GUIInterface);
-      }
+      const state = body.edits.length > 0 ? body.edits[body.edits.length - 1].state : initialState;
+      lastState = structuredClone(state);
+      editor.setState(state as GUIInterface);
     }
     else if (type === 'getFileData') {
       vscode.postMessage({ type: 'response', requestId, body: editor.getState() });
