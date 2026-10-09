@@ -1,6 +1,6 @@
 # Widgets
 
-The exact properties and allowed values of each widget type are in `.apleno/schemas/pgui.schema.json`. This page explains how the widgets behave and how code works with them.
+The exact properties and allowed values of each widget type are in `schemas/pgui.schema.json` of this skill. This page explains how the widgets behave and how code works with them.
 
 ## Common behavior
 

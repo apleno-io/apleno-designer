@@ -13,17 +13,17 @@ Full documentation: https://docs.apleno.io
 | `*.pgui` | Interface: a form of widgets shown to the user during a `gui` step. |
 | `*.R`, `*.py` | Scripts run by `script` steps, or code referenced from interfaces. |
 
-`.ppro`, `.pseq` and `.pgui` files are JSON. Their JSON Schemas, with a description of every property, are in `.apleno/schemas/`:
+The **`apleno` skill**, installed by the Apleno extension in `~/.claude/skills/apleno/` (the user's home folder), has the JSON Schemas of these files, detailed references (all API functions, widget behavior, Plotly graphs, custom JavaScript/CSS, Excel, Leaflet and Handsontable modules) and complete example apps. Use it for anything beyond simple edits.
 
-- `.apleno/schemas/ppro.schema.json`
-- `.apleno/schemas/pseq.schema.json`
-- `.apleno/schemas/pgui.schema.json`
+`.ppro`, `.pseq` and `.pgui` files are JSON. Their JSON Schemas, with a description of every property, are in the skill:
+
+- `~/.claude/skills/apleno/schemas/ppro.schema.json`
+- `~/.claude/skills/apleno/schemas/pseq.schema.json`
+- `~/.claude/skills/apleno/schemas/pgui.schema.json`
 
 **Before creating or editing one of these files, read its schema.** Only use properties, widget types, subtypes and enum values that the schema defines: the visual editors silently drop anything else. Write files with tab indentation, like the editors do.
 
 The extension checks these files and reports errors in the VS Code Problems panel (source "Apleno"): fix them after editing.
-
-The **`apleno` skill** (`.claude/skills/apleno/`) has the detailed references (all API functions, widget behavior, Plotly graphs, custom JavaScript/CSS, Excel, Leaflet and Handsontable modules) and complete example apps. Use it for anything beyond simple edits.
 
 ## Sequences (`.pseq`)
 
@@ -40,7 +40,7 @@ The **`apleno` skill** (`.claude/skills/apleno/`) has the detailed references (a
 - Each widget has a numeric `id` unique in the whole file (nested widgets included: use highest id + 1), a `customId` used to reference it from code, a `type` and a `data` object.
 - Containers: `box` holds a vertical list of widgets. `columns` and `tabs` must have exactly one child per entry of `columnsWidths` / `tabsNames`, and each child must be a `box`, usually `{"labelPosition": "hidden", "marginTop": 0, "boxDesign": "none", "boxHeader": ""}`. Column widths use a 12-unit grid.
 - `"language": true` makes `value` an R/Python expression evaluated when the interface is displayed, e.g. `"value": "nrow(data)", "language": true`.
-- Each widget's value is available in R/Python as a variable named after its `customId`: in the interface code while it is displayed, and in the next steps after it is submitted. Give input widgets short, valid variable names as `customId` (e.g. `age`, `input_file`).
+- Each widget's value is available in R/Python as a variable named after its `customId`: in the interface code while it is displayed, and in the next steps after it is submitted. Give input widgets short, valid variable names as `customId` (e.g. `age`, `input_file`), never an R/Python built-in name (`title`, `plot`, `summary`, `c`, `t`, `sum`, `type`...).
 - `graph` widgets display Plotly figures: `graphVariable` is an expression returning `list(data = ..., layout = ...)` (R) or `{'data': ..., 'layout': ...}` (Python).
 - With `"displaySubmitButton": false`, the interface is a dashboard driven by buttons (`buttonCode`); `gui.submit()` moves to the next step.
 

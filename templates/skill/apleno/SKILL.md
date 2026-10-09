@@ -10,14 +10,14 @@ description: Build and modify Apleno apps, R/Python applications made of .ppro, 
 ## Workflow
 
 1. **Plan the flow**: which interfaces (`gui` steps), which scripts, which conditions. Prefer a few rich interfaces with buttons over many small steps.
-2. **Write the files** following the schemas in `.apleno/schemas/` (read the schema of a file type before writing one). Write JSON with tab indentation.
+2. **Write the files** following the JSON Schemas in [schemas/](schemas/) (`ppro.schema.json`, `pseq.schema.json`, `pgui.schema.json`: read the schema of a file type before writing one). Write JSON with tab indentation.
 3. **Write the scripts**: initialization scripts before the interfaces, functions called from the interfaces.
 4. **Check the Problems panel**: the Apleno extension validates `.ppro`/`.pseq`/`.pgui` files on save (source "Apleno"): unknown properties, wrong values, duplicate ids, broken step targets, missing files. Fix every error.
 5. **Ask the user to run the app** (F5 in VS Code). You cannot run it yourself; R/Python errors appear in the app and in the "Apleno" output channel.
 
 ## Key facts
 
-- Widgets with a `customId` are R/Python variables named after it; interface code (`buttonCode`, `codeOnChange`, code values) uses them directly.
+- Widgets with a `customId` are R/Python variables named after it; interface code (`buttonCode`, `codeOnChange`, code values) uses them directly. Never use an R/Python built-in name as `customId` (`title`, `plot`, `summary`, `c`, `t`, `sum`, `max`, `type`, `list`...).
 - `'this'` is the current interface in GUI functions: `gui.setValue('this', 'result', 42)`. From script steps, use `rpgm.step('main', 'formStepId')`.
 - Graphs are Plotly figures: `list(data = ..., layout = ...)` in R, `{'data': ..., 'layout': ...}` in Python.
 - Write generated files with `rpgm.outputFile(name)`; show them with `rpgm.addToEndScreen()`, an `image` widget or `rpgm.open()`.

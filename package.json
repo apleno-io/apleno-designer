@@ -183,7 +183,8 @@
     "check-types": "tsc --noEmit --project src/extension/tsconfig.json",
     "lint": "eslint src",
     "test": "vscode-test",
-    "test:unit": "vitest"
+    "test:unit": "vitest",
+    "vscode:uninstall": "node ./dist/uninstall.js"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",

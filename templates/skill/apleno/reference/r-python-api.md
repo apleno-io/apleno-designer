@@ -6,7 +6,7 @@ Every R and Python session run by Apleno has the functions below predefined. Nev
 
 - **Script steps** run a whole `.R`/`.py` file. All script steps share one session per language: variables and functions defined in a script are available to the next steps and to interface code.
 - **Interface code** runs inside a `gui` step, in the interface `language`: `value` with `"language": true` (evaluated when the interface is displayed), `codeOnChange`, `buttonCode`, `repeaterCode`, `conditionOnSubmit`, and the graph `graphVariable` expression.
-- **Widget values are variables.** Each widget with a non-empty `customId` is a variable named after it: interface code sees the current values while the interface is displayed, and the values stay available to the next steps after it is submitted. A widget without `customId` creates no variable.
+- **Widget values are variables.** Each widget with a non-empty `customId` is a variable named after it: interface code sees the current values while the interface is displayed, and the values stay available to the next steps after it is submitted. A widget without `customId` creates no variable. A `customId` must be a valid variable name in the interface language and must not reuse a built-in name: in R, a widget named `title`, `plot` or `summary` hides the function of the same name (and assigning `title` can even fail with "cannot change value of locked binding").
 - An empty number input is `None` in Python (check before using it: `if eta is None: eta = 0.1`).
 - Usual pattern: a script step defines functions and initial values; the interface calls them from `buttonCode` / `codeOnChange` with widget variables as arguments.
 
@@ -56,7 +56,7 @@ Deprecated, don't use: `gui.showError`, `gui.showWarning`, `gui.showSuccess`, `g
 
 ### Property names
 
-`gui.setProperty` / `gui.setProperties` accept the property names of the `.pgui` files (`helpText`, `labelText`, `progressBarColor`, see `.apleno/schemas/pgui.schema.json`) plus runtime-only properties:
+`gui.setProperty` / `gui.setProperties` accept the property names of the `.pgui` files (`helpText`, `labelText`, `progressBarColor`, see `schemas/pgui.schema.json` in this skill) plus runtime-only properties:
 
 | Property | Description |
 |----------|-------------|

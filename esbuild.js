@@ -27,8 +27,8 @@ const esbuildProblemMatcherPlugin = {
 
 /**
  * Assemble the AI assistant skill in dist/skill/apleno: the files of
- * templates/skill/apleno plus the source files of the example apps
- * (no data files nor third-party libraries).
+ * templates/skill/apleno, the JSON schemas, and the source files of the
+ * example apps (no data files nor third-party libraries).
  */
 const SKILL_EXAMPLE_EXTENSIONS = ['.ppro', '.pseq', '.pgui', '.r', '.py', '.js', '.css', '.md'];
 const SKILL_EXAMPLE_EXCLUDE = [
@@ -44,6 +44,7 @@ function buildSkill() {
 	const target = path.join('dist', 'skill', 'apleno');
 	fs.rmSync(target, { recursive: true, force: true });
 	fs.cpSync(path.join('templates', 'skill', 'apleno'), target, { recursive: true });
+	fs.cpSync('schemas', path.join(target, 'schemas'), { recursive: true });
 	fs.cpSync('examples', path.join(target, 'examples'), {
 		recursive: true,
 		filter: (source) => {
@@ -69,7 +70,8 @@ async function main() {
 	const ctx = await esbuild.context({
 		entryPoints: [
 			{ out: 'extension', in: 'src/extension/extension.ts' },
-			{ out: 'debug-adapter', in: 'src/debug-adapter/debug-adapter.ts' }
+			{ out: 'debug-adapter', in: 'src/debug-adapter/debug-adapter.ts' },
+			{ out: 'uninstall', in: 'src/extension/uninstall.ts' }
 		],
 		bundle: true,
 		format: 'cjs',

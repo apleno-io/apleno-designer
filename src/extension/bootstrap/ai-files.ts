@@ -1,22 +1,19 @@
 import * as vscode from 'vscode';
 import { logger } from '../utils/logger';
+import { getSkillFolders, mirrorFolder } from './skill-files';
 
 /**
- * Files helping AI assistants (Claude, Copilot...) to work on an Apleno project:
- * - .apleno/schemas/*.schema.json: JSON Schemas of the Apleno files, and
- * - .claude/skills/apleno/: the Apleno skill (references and example apps,
- *   read by Claude Code and Copilot). Both belong to the extension and are
- *   refreshed when the extension is updated.
- * - AGENTS.md and CLAUDE.md: instructions. They belong to the user once created
- *   and are never modified.
+ * Files helping AI assistants (Claude, Copilot...) to work on Apleno apps:
+ * - The Apleno skill (references, JSON schemas and example apps), installed for
+ *   the user in ~/.claude/skills/apleno where Claude Code and Copilot find it.
+ *   It belongs to the extension: it is synchronized on each activation and
+ *   removed when the extension is uninstalled (see uninstall.ts).
+ * - AGENTS.md and CLAUDE.md in each project: instructions. They belong to the
+ *   user once created and are never modified.
  */
 
-const SCHEMAS = ['ppro', 'pseq', 'pgui'];
-const SCHEMAS_FOLDER = '.apleno/schemas';
-const SKILL_FOLDER = '.claude/skills/apleno';
-
 export interface AIFilesResult {
-  /** Files created or updated */
+  /** Files created */
   written: string[];
   /** Existing files left untouched */
   kept: string[];
@@ -34,74 +31,23 @@ async function readFileOrNull(uri: vscode.Uri): Promise<Uint8Array | null> {
 }
 
 /**
- * Write a file only if its content changed, to not create useless changes in
- * the user's version control. Return true if written.
+ * Install or update the Apleno skill in the user's skill folders.
  */
-async function writeIfChanged(uri: vscode.Uri, content: Uint8Array): Promise<boolean> {
-  const current = await readFileOrNull(uri);
-  if (current !== null && Buffer.from(current).equals(content)) {
-    return false;
-  }
-  await vscode.workspace.fs.writeFile(uri, content);
-  return true;
-}
-
-/**
- * Copy the schemas shipped with the extension into the project.
- */
-async function writeSchemas(context: vscode.ExtensionContext, projectFolder: vscode.Uri): Promise<string[]> {
-  const written: string[] = [];
-  for (const kind of SCHEMAS) {
-    const fileName = `${SCHEMAS_FOLDER}/${kind}.schema.json`;
-    const content = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(context.extensionUri, 'schemas', `${kind}.schema.json`));
-    if (await writeIfChanged(vscode.Uri.joinPath(projectFolder, fileName), content)) {
-      written.push(fileName);
+async function syncSkill(context: vscode.ExtensionContext): Promise<void> {
+  const source = vscode.Uri.joinPath(context.extensionUri, 'dist', 'skill', 'apleno').fsPath;
+  for (const folder of getSkillFolders()) {
+    const changes = await mirrorFolder(source, folder);
+    if (changes > 0) {
+      logger.info(`Apleno: updated the AI assistant skill in ${folder} (${changes} files)`);
     }
   }
-  return written;
 }
 
 /**
- * Copy the skill built in dist/skill/apleno into the project.
- */
-async function writeSkill(context: vscode.ExtensionContext, projectFolder: vscode.Uri): Promise<string[]> {
-  const written: string[] = [];
-  const copy = async (relative: string) => {
-    const source = vscode.Uri.joinPath(context.extensionUri, 'dist', 'skill', 'apleno', relative);
-    for (const [name, type] of await vscode.workspace.fs.readDirectory(source)) {
-      const child = relative.length > 0 ? `${relative}/${name}` : name;
-      if (type === vscode.FileType.Directory) {
-        await copy(child);
-      }
-      else if (await writeIfChanged(vscode.Uri.joinPath(projectFolder, SKILL_FOLDER, child), await vscode.workspace.fs.readFile(vscode.Uri.joinPath(source, name)))) {
-        written.push(`${SKILL_FOLDER}/${child}`);
-      }
-    }
-  };
-  await copy('');
-  return written;
-}
-
-/**
- * Write the files belonging to the extension: schemas and skill.
- */
-async function writeExtensionFiles(context: vscode.ExtensionContext, projectFolder: vscode.Uri): Promise<string[]> {
-  return [...await writeSchemas(context, projectFolder), ...await writeSkill(context, projectFolder)];
-}
-
-/**
- * Summarize written files for messages: the skill files are listed as one folder.
- */
-function summarize(files: string[]): string[] {
-  const others = files.filter(f => !f.startsWith(`${SKILL_FOLDER}/`));
-  return others.length < files.length ? [...others, `${SKILL_FOLDER}/`] : others;
-}
-
-/**
- * Create or update the AI assistant files of a project.
+ * Create the AI assistant instructions of a project, if they don't exist.
  */
 export async function writeAIFiles(context: vscode.ExtensionContext, projectFolder: vscode.Uri): Promise<AIFilesResult> {
-  const result: AIFilesResult = { written: await writeExtensionFiles(context, projectFolder), kept: [], claudeMissingImport: false };
+  const result: AIFilesResult = { written: [], kept: [], claudeMissingImport: false };
 
   const agentsUri = vscode.Uri.joinPath(projectFolder, 'AGENTS.md');
   if (await readFileOrNull(agentsUri) === null) {
@@ -148,31 +94,11 @@ async function getProjectFolders(): Promise<vscode.WorkspaceFolder[]> {
 export class AIFiles {
   public initialize(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('apleno.ai.setup', () => this.setup(context)));
-    this.refresh(context).catch(e => logger.error(`Apleno: could not refresh the AI assistant files: ${e}`));
+    syncSkill(context).catch(e => logger.error(`Apleno: could not install the AI assistant skill: ${e}`));
   }
 
   /**
-   * Keep the schemas and the skill of the projects up to date with the
-   * installed extension. Only projects already set up (with schemas) are
-   * updated: nothing is created in other projects.
-   */
-  private async refresh(context: vscode.ExtensionContext): Promise<void> {
-    for (const folder of await getProjectFolders()) {
-      try {
-        await vscode.workspace.fs.stat(vscode.Uri.joinPath(folder.uri, SCHEMAS_FOLDER));
-      }
-      catch {
-        continue;
-      }
-      const written = await writeExtensionFiles(context, folder.uri);
-      if (written.length > 0) {
-        logger.info(`Apleno: updated ${summarize(written).join(', ')} in ${folder.name}`);
-      }
-    }
-  }
-
-  /**
-   * Command: set up the AI assistant files in an existing project.
+   * Command: create the AI assistant instructions in an existing project.
    */
   private async setup(context: vscode.ExtensionContext): Promise<void> {
     const projects = await getProjectFolders();
@@ -194,7 +120,7 @@ export class AIFiles {
 
     const result = await writeAIFiles(context, project.uri);
     const messages: string[] = [
-      result.written.length > 0 ? `AI assistant files written: ${summarize(result.written).join(', ')}.` : 'AI assistant files are already up to date.'
+      result.written.length > 0 ? `AI assistant files written: ${result.written.join(', ')}.` : 'AI assistant files are already set up.'
     ];
     if (result.kept.length > 0) {
       messages.push(`Existing ${result.kept.join(' and ')} kept unchanged.`);
