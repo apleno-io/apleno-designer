@@ -189,9 +189,16 @@ export class AplenoValidator {
       case 'const':
         validation.add(path, `must be ${JSON.stringify(error.params.allowedValue)}.`);
         return;
-      case 'type':
-        validation.add(path, `must be of type ${[error.params.type].flat().join(' or ')}.`);
+      case 'type': {
+        const types = [error.params.type].flat();
+        // Older files store numbers as strings, which the editor converts on load
+        const isNumericString = typeof error.data === 'string' && error.data.trim().length > 0 && !isNaN(Number(error.data));
+        const hint = isNumericString && (types.includes('integer') || types.includes('number'))
+          ? ` Use the number ${Number(error.data)}, not the string "${error.data}" (opening and saving the file in the Apleno editor fixes this).`
+          : '';
+        validation.add(path, `must be of type ${types.join(' or ')}.${hint}`);
         return;
+      }
       case 'pattern':
         validation.add(path, `must match the pattern ${error.params.pattern} (wrong file extension?).`);
         return;
