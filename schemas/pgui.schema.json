@@ -525,7 +525,7 @@
       }
     },
     "data-graph": {
-      "description": "Interactive graph area. The graph is drawn from R/Python code using the Apleno API, referencing this widget by its customId.",
+      "description": "Interactive Plotly graph. The figure comes from the 'graphVariable' expression, or from gui.setValue(step, customId, figure) in R/Python code.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -536,7 +536,7 @@
         "helpText": { "$ref": "#/definitions/prop-helpText" },
         "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
         "graphVariable": {
-          "description": "Name of the R/Python variable containing the graph to display.",
+          "description": "R/Python expression (in the interface language) returning the Plotly figure to display: a named list (R) or dict (Python) with 'data' (a trace or a list of traces) and 'layout', e.g. \"graph_sales(df)\". Re-evaluated by gui.update(step, id). The figure can also be set with gui.setValue(step, id, figure).",
           "type": "string",
           "default": ""
         },
