@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../dispose';
 import { getNonce } from '../util';
-import { type GUIInterface, normalizeGUI } from '../../common/gui';
+import { type GUIInterface, GUIFileUtils } from '../../common/gui';
 import { GUICommands } from './gui-commands';
 import { type ExternallyEditableDocument, watchExternalChanges } from '../utils/external-changes';
 
@@ -62,7 +62,7 @@ class PGMInterfaceDocument extends Disposable implements vscode.CustomDocument, 
     }
 
     try {
-      const sanitized: GUIInterface | null = normalizeGUI(JSONContent);
+      const sanitized: GUIInterface | null = GUIFileUtils.read(JSONContent);
       if (sanitized === null) {
         return { data: defaultFile, raw };
       }
@@ -303,7 +303,8 @@ export class PGMInterfaceFileEditorProvider implements vscode.CustomEditorProvid
         const panel = webviewsForDocument[0];
         const response = await this.postMessageWithResponse<GUIInterface>(panel, 'getFileData', {});
 
-        return Buffer.from(JSON.stringify(response, null, '\t'), 'utf8');
+        // The runtime reads the v3 format
+        return Buffer.from(JSON.stringify(GUIFileUtils.toV3(response), null, '\t'), 'utf8');
       }
     });
 

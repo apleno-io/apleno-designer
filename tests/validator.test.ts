@@ -42,52 +42,52 @@ describe('AplenoValidator', () => {
   });
 
   it('reports unknown widget properties with the widget type and the allowed properties', () => {
-    const text = json({ widgets: [{ id: 1, customId: 'name', type: 'text', data: { subType: 'text', buttonCode: 'x' } }] });
+    const text = json({ elements: [{ id: 'name', type: 'text', data: { subtype: 'text', onpress: 'x' } }] });
     const { problems } = validator.validate('pgui', text);
     expect(problems).toHaveLength(1);
-    expect(problems[0].message).toContain('widgets[0].data.buttonCode: unknown property "buttonCode" for a "text" widget');
-    expect(problems[0].message).toContain('Allowed properties: subType, value,');
-    expect(underlined(text, problems[0])).toBe('"buttonCode"');
+    expect(problems[0].message).toContain('elements[0].data.onpress: unknown property "onpress" for a "text" widget');
+    expect(problems[0].message).toContain('Allowed properties: subtype, value,');
+    expect(underlined(text, problems[0])).toBe('"onpress"');
   });
 
   it('reports invalid enum values with the allowed values', () => {
-    const text = json({ widgets: [{ id: 1, type: 'button', data: { buttonSize: 'xl' } }] });
+    const text = json({ elements: [{ id: '', type: 'button', data: { buttonsize: 'xl' } }] });
     const { problems } = validator.validate('pgui', text);
     expect(problems).toHaveLength(1);
-    expect(problems[0].message).toBe('widgets[0].data.buttonSize: must be one of: "sm", "md", "lg", "fw".');
+    expect(problems[0].message).toBe('elements[0].data.buttonsize: must be one of: "sm", "md", "lg", "fw".');
     expect(underlined(text, problems[0])).toBe('"xl"');
-  });
-
-  it('explains numbers stored as strings by older files', () => {
-    const text = json({ widgets: [{ id: 1, type: 'label', data: { marginTop: '10' } }] });
-    const { problems } = validator.validate('pgui', text);
-    expect(problems).toHaveLength(1);
-    expect(problems[0].message).toBe('widgets[0].data.marginTop: must be of type integer or null. Use the number 10, not the string "10" (opening and saving the file in the Apleno editor fixes this).');
   });
 
   it('reports duplicate widget ids, also in nested widgets', () => {
     const text = json({
-      widgets: [
-        { id: 1, type: 'box', data: {}, widgets: [{ id: 2, type: 'label', data: {} }] },
-        { id: 2, type: 'label', data: {} }
+      elements: [
+        { id: '', type: 'box', data: {}, elements: [{ id: 'age', type: 'number', data: {} }] },
+        { id: 'age', type: 'text', data: {} }
       ]
     });
     const { problems } = validator.validate('pgui', text);
     expect(problems).toHaveLength(1);
-    expect(problems[0].message).toContain('widgets[1].id: duplicate widget id 2');
-    expect(problems[0].message).toContain('next free id: 3');
+    expect(problems[0].message).toBe('elements[1].id: id "age" is already used by another widget.');
+    expect(problems[0].severity).toBe('warning');
   });
 
   it('reports children on non-container widgets and wrong children count', () => {
     const text = json({
-      widgets: [
-        { id: 1, type: 'text', data: {}, widgets: [] },
-        { id: 2, type: 'tabs', data: { tabsNames: ['A', 'B'] }, widgets: [{ id: 3, type: 'box', data: {}, widgets: [] }] }
+      elements: [
+        { id: '', type: 'text', data: {}, elements: [] },
+        { id: '', type: 'tabs', data: { tabsnames: ['A', 'B'] }, elements: [{ id: '', type: 'box', data: {}, elements: [] }] }
       ]
     });
     const messages = validator.validate('pgui', text).problems.map(p => p.message);
-    expect(messages).toContain('widgets[0].widgets: only container widgets (box, columns, tabs) can have child widgets.');
-    expect(messages).toContain('widgets[1].widgets: a "tabs" widget needs exactly one child "box" widget per entry of data.tabsNames (2), found 1.');
+    expect(messages).toContain('elements[0].elements: only container widgets (box, columns, tabs) can have child widgets.');
+    expect(messages).toContain('elements[1].elements: a "tabs" widget needs exactly one child "box" widget per entry of data.tabsnames (2), found 1.');
+  });
+
+  it('reports the 1.0.x interface format with a single explanation', () => {
+    const text = json({ version: 50000, language: 'r', displaySubmitButton: true, widgets: [{ id: 1, customId: '', type: 'label', data: {} }] });
+    const { problems } = validator.validate('pgui', text);
+    expect(problems).toHaveLength(1);
+    expect(problems[0].message).toContain('format of Apleno Designer 1.0.x');
   });
 
   it('accepts a valid sequence and returns its file references', () => {

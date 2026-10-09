@@ -1,432 +1,411 @@
 {
-	"widgets": [
+	"language": "python",
+	"submitbutton": false,
+	"elements": [
 		{
-			"id": 1,
-			"customId": "",
+			"id": "",
 			"type": "box",
 			"data": {
 				"css": "title",
-				"marginTop": 20,
-				"labelText": "",
-				"labelPosition": "hidden",
-				"helpText": "",
-				"helpPosition": "bottom",
-				"boxDesign": "none",
-				"boxHeader": ""
+				"margintop": 20,
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"boxdesign": "none",
+				"boxheader": ""
 			},
-			"widgets": [
+			"elements": [
 				{
-					"id": 2,
-					"customId": "",
+					"id": "",
 					"type": "label",
 					"data": {
 						"value": "Contrôle Optimal en Gestion de Portefeuille",
 						"css": "ch1",
-						"language": false,
-						"marginTop": 10,
-						"labelText": "",
-						"labelPosition": "hidden",
-						"helpText": "",
-						"helpPosition": "bottom",
-						"textSize": 14,
-						"textFamily": "default",
-						"textColor": "#000000"
+						"isr": false,
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"fontsize": 14,
+						"fontfamily": "default",
+						"fontcolor": "#000000"
 					}
 				},
 				{
-					"id": 3,
-					"customId": "",
+					"id": "",
 					"type": "label",
 					"data": {
 						"value": "Modèle de Heston",
 						"css": "ch2",
-						"language": false,
-						"marginTop": 8,
-						"labelText": "",
-						"labelPosition": "hidden",
-						"helpText": "",
-						"helpPosition": "bottom",
-						"textSize": 14,
-						"textFamily": "default",
-						"textColor": "#000000"
+						"isr": false,
+						"margintop": 8,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"fontsize": 14,
+						"fontfamily": "default",
+						"fontcolor": "#000000"
 					}
 				}
 			]
 		},
 		{
-			"id": 4,
-			"customId": "",
+			"id": "",
 			"type": "label",
 			"data": {
 				"value": "1. Paramètres",
 				"css": "ch3",
-				"language": false,
-				"marginTop": 10,
-				"labelText": "",
-				"labelPosition": "hidden",
-				"helpText": "",
-				"helpPosition": "bottom",
-				"textSize": 14,
-				"textFamily": "default",
-				"textColor": "#000000"
+				"isr": false,
+				"margintop": 10,
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": 14,
+				"fontfamily": "default",
+				"fontcolor": "#000000"
 			}
 		},
 		{
-			"id": 5,
-			"customId": "",
+			"id": "",
 			"type": "columns",
 			"data": {
 				"css": "cbox",
-				"marginTop": 0,
-				"labelText": "",
-				"labelPosition": "hidden",
-				"helpText": "",
-				"helpPosition": "bottom",
-				"columnsWidths": [
+				"margintop": 0,
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"columnswidths": [
 					6,
 					6
 				],
-				"columnsPadding": 20
+				"columnspadding": 20
 			},
-			"widgets": [
+			"elements": [
 				{
-					"id": 6,
-					"customId": "",
+					"id": "",
 					"type": "box",
 					"data": {
 						"css": "ocbox bluebox",
-						"marginTop": 0,
-						"labelText": "",
-						"labelPosition": "hidden",
-						"helpText": "",
-						"helpPosition": "bottom",
-						"boxDesign": "none",
-						"boxHeader": ""
+						"margintop": 0,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "none",
+						"boxheader": ""
 					},
-					"widgets": [
+					"elements": [
 						{
-							"id": 7,
-							"customId": "",
+							"id": "",
 							"type": "label",
 							"data": {
 								"value": "Objectif",
 								"css": "ch4",
-								"language": false,
-								"marginTop": 0,
-								"labelText": "",
-								"labelPosition": "hidden",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"textSize": 14,
-								"textFamily": "default",
-								"textColor": "#000000"
+								"isr": false,
+								"margintop": 0,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"fontsize": 14,
+								"fontfamily": "default",
+								"fontcolor": "#000000"
 							}
 						},
 						{
-							"id": 8,
-							"customId": "",
+							"id": "",
 							"type": "label",
 							"data": {
 								"value": "\\(\\sup_{α} \\mathbb{E}[U(X_{T}^{\\alpha}) | X_{t}^{\\alpha} = x]\\)",
 								"css": "font-weight: bold;",
-								"language": false,
-								"marginTop": 10,
-								"labelText": "Objectif :",
-								"labelPosition": "top",
-								"helpText": "\\(U(x) = -\\exp(-\\eta x)\\), fonction d'utilité concave avec aversion au risque \\(\\eta\\).",
-								"helpPosition": "bottom",
-								"textSize": 16,
-								"textFamily": "default",
-								"textColor": "#000000"
+								"isr": false,
+								"margintop": 10,
+								"labeltext": "Objectif :",
+								"labelposition": "top",
+								"helptext": "\\(U(x) = -\\exp(-\\eta x)\\), fonction d'utilité concave avec aversion au risque \\(\\eta\\).",
+								"helpposition": "bottom",
+								"fontsize": 16,
+								"fontfamily": "default",
+								"fontcolor": "#000000"
 							}
 						},
 						{
-							"id": 9,
-							"customId": "",
+							"id": "eta",
 							"type": "number",
 							"data": {
 								"value": "0.1",
 								"css": "",
-								"subType": "float",
-								"language": false,
-								"isRequired": false,
-								"codeOnChange": "",
-								"conditionOnSubmit": "eta > 0",
-								"marginTop": 10,
-								"labelText": "Aversion au risque (\\(\\eta\\) ) :",
-								"labelPosition": "top",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"numberMinValue": "",
-								"numberMaxValue": "",
-								"numberStepChange": ""
+								"subtype": "float",
+								"isr": false,
+								"required": false,
+								"onchange": "",
+								"condition": "eta > 0",
+								"margintop": 10,
+								"labeltext": "Aversion au risque (\\(\\eta\\) ) :",
+								"labelposition": "top",
+								"helptext": "",
+								"helpposition": "bottom",
+								"min": "",
+								"max": "",
+								"step": ""
 							}
 						}
 					]
 				},
 				{
-					"id": 10,
-					"customId": "",
+					"id": "",
 					"type": "box",
 					"data": {
 						"css": "ocbox bluebox",
-						"marginTop": 0,
-						"labelText": "",
-						"labelPosition": "hidden",
-						"helpText": "",
-						"helpPosition": "bottom",
-						"boxDesign": "none",
-						"boxHeader": ""
+						"margintop": 0,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "none",
+						"boxheader": ""
 					},
-					"widgets": [
+					"elements": [
 						{
-							"id": 11,
-							"customId": "",
+							"id": "",
 							"type": "label",
 							"data": {
 								"value": "Processus",
 								"css": "ch4",
-								"language": false,
-								"marginTop": 0,
-								"labelText": "",
-								"labelPosition": "hidden",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"textSize": 14,
-								"textFamily": "default",
-								"textColor": "#000000"
+								"isr": false,
+								"margintop": 0,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"fontsize": 14,
+								"fontfamily": "default",
+								"fontcolor": "#000000"
 							}
 						},
 						{
-							"id": 12,
-							"customId": "",
+							"id": "",
 							"type": "label",
 							"data": {
 								"value": "\\(dX_{t}^{\\alpha} = \\alpha_{t}\\mu dt + \\alpha_{s}\\sqrt{V_s}dW_s\\)",
 								"css": "font-weight: bold;",
-								"language": false,
-								"marginTop": 10,
-								"labelText": "Processus de richesse :",
-								"labelPosition": "top",
-								"helpText": "\\(X^{\\alpha}\\) est la richesse en €, \\(\\alpha_s\\) est la quantité en € investie, \\(W\\) est un mouvement brownien.",
-								"helpPosition": "bottom",
-								"textSize": 16,
-								"textFamily": "default",
-								"textColor": "#000000"
+								"isr": false,
+								"margintop": 10,
+								"labeltext": "Processus de richesse :",
+								"labelposition": "top",
+								"helptext": "\\(X^{\\alpha}\\) est la richesse en €, \\(\\alpha_s\\) est la quantité en € investie, \\(W\\) est un mouvement brownien.",
+								"helpposition": "bottom",
+								"fontsize": 16,
+								"fontfamily": "default",
+								"fontcolor": "#000000"
 							}
 						},
 						{
-							"id": 13,
-							"customId": "",
+							"id": "mu",
 							"type": "number",
 							"data": {
 								"value": "0.07",
 								"css": "",
-								"subType": "float",
-								"language": false,
-								"isRequired": false,
-								"codeOnChange": "",
-								"conditionOnSubmit": "",
-								"marginTop": 10,
-								"labelText": "Performance action (μ) :",
-								"labelPosition": "top",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"numberMinValue": "",
-								"numberMaxValue": "",
-								"numberStepChange": "0.01"
+								"subtype": "float",
+								"isr": false,
+								"required": false,
+								"onchange": "",
+								"condition": "",
+								"margintop": 10,
+								"labeltext": "Performance action (μ) :",
+								"labelposition": "top",
+								"helptext": "",
+								"helpposition": "bottom",
+								"min": "",
+								"max": "",
+								"step": "0.01"
 							}
 						},
 						{
-							"id": 14,
-							"customId": "",
+							"id": "",
 							"type": "label",
 							"data": {
 								"value": "\\(dV_s = -\\beta(V_s-\\sigma^2)ds + \\xi\\sqrt{V_s}dB_s\\)",
 								"css": "font-weight: bold;",
-								"language": false,
-								"marginTop": 10,
-								"labelText": "Processus de variance :",
-								"labelPosition": "top",
-								"helpText": "\\(V_s\\) suit un processus CIR et \\(\\sqrt{V_s}\\) est la volatilité instantanée, \\(B\\) est un mouvement brownien avec \\(cor(B, W) = \\rho\\)",
-								"helpPosition": "bottom",
-								"textSize": 18,
-								"textFamily": "default",
-								"textColor": "#000000"
+								"isr": false,
+								"margintop": 10,
+								"labeltext": "Processus de variance :",
+								"labelposition": "top",
+								"helptext": "\\(V_s\\) suit un processus CIR et \\(\\sqrt{V_s}\\) est la volatilité instantanée, \\(B\\) est un mouvement brownien avec \\(cor(B, W) = \\rho\\)",
+								"helpposition": "bottom",
+								"fontsize": 18,
+								"fontfamily": "default",
+								"fontcolor": "#000000"
 							}
 						},
 						{
-							"id": 15,
-							"customId": "",
+							"id": "",
 							"type": "columns",
 							"data": {
 								"css": "",
-								"marginTop": 10,
-								"labelText": "",
-								"labelPosition": "hidden",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"columnsWidths": [
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"columnswidths": [
 									3,
 									3,
 									3,
 									3
 								],
-								"columnsPadding": 10
+								"columnspadding": 10
 							},
-							"widgets": [
+							"elements": [
 								{
-									"id": 42,
-									"customId": "",
+									"id": "",
 									"type": "box",
 									"data": {
-										"labelPosition": "hidden",
-										"marginTop": 0,
-										"boxDesign": "none",
-										"boxHeader": "",
+										"labelposition": "hidden",
+										"margintop": 0,
+										"boxdesign": "none",
+										"boxheader": "",
 										"css": "",
-										"labelText": "",
-										"helpText": "",
-										"helpPosition": "bottom"
+										"labeltext": "",
+										"helptext": "",
+										"helpposition": "bottom"
 									},
-									"widgets": [
+									"elements": [
 										{
-											"id": 16,
-											"customId": "",
+											"id": "beta",
 											"type": "number",
 											"data": {
 												"value": "2.",
 												"css": "",
-												"subType": "float",
-												"language": false,
-												"isRequired": false,
-												"codeOnChange": "",
-												"conditionOnSubmit": "",
-												"marginTop": 10,
-												"labelText": "\\(\\beta\\)",
-												"labelPosition": "top",
-												"helpText": "Vitesse retour à la moyenne ",
-												"helpPosition": "label",
-												"numberMinValue": "",
-												"numberMaxValue": "",
-												"numberStepChange": "0.1"
+												"subtype": "float",
+												"isr": false,
+												"required": false,
+												"onchange": "",
+												"condition": "",
+												"margintop": 10,
+												"labeltext": "\\(\\beta\\)",
+												"labelposition": "top",
+												"helptext": "Vitesse retour à la moyenne ",
+												"helpposition": "label",
+												"min": "",
+												"max": "",
+												"step": "0.1"
 											}
 										}
 									]
 								},
 								{
-									"id": 43,
-									"customId": "",
+									"id": "",
 									"type": "box",
 									"data": {
-										"labelPosition": "hidden",
-										"marginTop": 0,
-										"boxDesign": "none",
-										"boxHeader": "",
+										"labelposition": "hidden",
+										"margintop": 0,
+										"boxdesign": "none",
+										"boxheader": "",
 										"css": "",
-										"labelText": "",
-										"helpText": "",
-										"helpPosition": "bottom"
+										"labeltext": "",
+										"helptext": "",
+										"helpposition": "bottom"
 									},
-									"widgets": [
+									"elements": [
 										{
-											"id": 17,
-											"customId": "",
+											"id": "s2",
 											"type": "number",
 											"data": {
 												"value": "0.04",
 												"css": "",
-												"subType": "float",
-												"language": false,
-												"isRequired": false,
-												"codeOnChange": "",
-												"conditionOnSubmit": "",
-												"marginTop": 10,
-												"labelText": "\\(\\sigma^2\\)",
-												"labelPosition": "top",
-												"helpText": "Variance moyenne",
-												"helpPosition": "label",
-												"numberMinValue": "",
-												"numberMaxValue": "",
-												"numberStepChange": "0.01"
+												"subtype": "float",
+												"isr": false,
+												"required": false,
+												"onchange": "",
+												"condition": "",
+												"margintop": 10,
+												"labeltext": "\\(\\sigma^2\\)",
+												"labelposition": "top",
+												"helptext": "Variance moyenne",
+												"helpposition": "label",
+												"min": "",
+												"max": "",
+												"step": "0.01"
 											}
 										}
 									]
 								},
 								{
-									"id": 44,
-									"customId": "",
+									"id": "",
 									"type": "box",
 									"data": {
-										"labelPosition": "hidden",
-										"marginTop": 0,
-										"boxDesign": "none",
-										"boxHeader": "",
+										"labelposition": "hidden",
+										"margintop": 0,
+										"boxdesign": "none",
+										"boxheader": "",
 										"css": "",
-										"labelText": "",
-										"helpText": "",
-										"helpPosition": "bottom"
+										"labeltext": "",
+										"helptext": "",
+										"helpposition": "bottom"
 									},
-									"widgets": [
+									"elements": [
 										{
-											"id": 18,
-											"customId": "",
+											"id": "xi",
 											"type": "number",
 											"data": {
 												"value": "0.25",
 												"css": "",
-												"subType": "float",
-												"language": false,
-												"isRequired": false,
-												"codeOnChange": "",
-												"conditionOnSubmit": "",
-												"marginTop": 10,
-												"labelText": "\\(\\xi\\)",
-												"labelPosition": "top",
-												"helpText": "Variance de la variance",
-												"helpPosition": "label",
-												"numberMinValue": "",
-												"numberMaxValue": "",
-												"numberStepChange": "0.01"
+												"subtype": "float",
+												"isr": false,
+												"required": false,
+												"onchange": "",
+												"condition": "",
+												"margintop": 10,
+												"labeltext": "\\(\\xi\\)",
+												"labelposition": "top",
+												"helptext": "Variance de la variance",
+												"helpposition": "label",
+												"min": "",
+												"max": "",
+												"step": "0.01"
 											}
 										}
 									]
 								},
 								{
-									"id": 45,
-									"customId": "",
+									"id": "",
 									"type": "box",
 									"data": {
-										"labelPosition": "hidden",
-										"marginTop": 0,
-										"boxDesign": "none",
-										"boxHeader": "",
+										"labelposition": "hidden",
+										"margintop": 0,
+										"boxdesign": "none",
+										"boxheader": "",
 										"css": "",
-										"labelText": "",
-										"helpText": "",
-										"helpPosition": "bottom"
+										"labeltext": "",
+										"helptext": "",
+										"helpposition": "bottom"
 									},
-									"widgets": [
+									"elements": [
 										{
-											"id": 19,
-											"customId": "",
+											"id": "rho",
 											"type": "number",
 											"data": {
 												"value": "-0.7",
 												"css": "",
-												"subType": "float",
-												"language": false,
-												"isRequired": false,
-												"codeOnChange": "",
-												"conditionOnSubmit": "",
-												"marginTop": 10,
-												"labelText": "\\(\\rho\\)",
-												"labelPosition": "top",
-												"helpText": "Correlation actif / volatilité",
-												"helpPosition": "label",
-												"numberMinValue": "",
-												"numberMaxValue": "",
-												"numberStepChange": "0.01"
+												"subtype": "float",
+												"isr": false,
+												"required": false,
+												"onchange": "",
+												"condition": "",
+												"margintop": 10,
+												"labeltext": "\\(\\rho\\)",
+												"labelposition": "top",
+												"helptext": "Correlation actif / volatilité",
+												"helpposition": "label",
+												"min": "",
+												"max": "",
+												"step": "0.01"
 											}
 										}
 									]
@@ -438,56 +417,53 @@
 			]
 		},
 		{
-			"id": 20,
-			"customId": "",
+			"id": "",
 			"type": "label",
 			"data": {
 				"value": "2. Calcul",
 				"css": "ch3",
-				"language": false,
-				"marginTop": 10,
-				"labelText": "",
-				"labelPosition": "hidden",
-				"helpText": "",
-				"helpPosition": "bottom",
-				"textSize": 14,
-				"textFamily": "default",
-				"textColor": "#000000"
+				"isr": false,
+				"margintop": 10,
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": 14,
+				"fontfamily": "default",
+				"fontcolor": "#000000"
 			}
 		},
 		{
-			"id": 21,
-			"customId": "",
+			"id": "",
 			"type": "box",
 			"data": {
 				"css": "cbox",
-				"marginTop": 10,
-				"labelText": "",
-				"labelPosition": "hidden",
-				"helpText": "",
-				"helpPosition": "bottom",
-				"boxDesign": "none",
-				"boxHeader": "Résolution numérique"
+				"margintop": 10,
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"boxdesign": "none",
+				"boxheader": "Résolution numérique"
 			},
-			"widgets": [
+			"elements": [
 				{
-					"id": 22,
-					"customId": "",
+					"id": "methode",
 					"type": "select",
 					"data": {
 						"value": "edp",
 						"css": "",
-						"subType": "select",
-						"language": false,
-						"isRequired": false,
-						"codeOnChange": "",
-						"conditionOnSubmit": "",
-						"marginTop": 0,
-						"labelText": "<span style='font-size:95%'>Méthode</span>",
-						"labelPosition": "top",
-						"helpText": "",
-						"helpPosition": "bottom",
-						"choicesEntries": [
+						"subtype": "select",
+						"isr": false,
+						"required": false,
+						"onchange": "",
+						"condition": "",
+						"margintop": 0,
+						"labeltext": "<span style='font-size:95%'>Méthode</span>",
+						"labelposition": "top",
+						"helptext": "",
+						"helpposition": "bottom",
+						"choices": [
 							{
 								"value": "edp",
 								"text": "Différences finies (EDP)"
@@ -497,94 +473,89 @@
 								"text": "Monte Carlo (PPD)"
 							}
 						],
-						"choicesLanguageValues": "",
-						"choicesLanguageTexts": ""
+						"choicesvalues": "",
+						"choicestexts": ""
 					}
 				},
 				{
-					"id": 23,
-					"customId": "",
+					"id": "",
 					"type": "columns",
 					"data": {
 						"css": "",
-						"marginTop": 10,
-						"labelText": "",
-						"labelPosition": "hidden",
-						"helpText": "Cliquez sur calculer pour calculer le contrôle optimal en fonction des paramètres choisis et générer les graphiques.",
-						"helpPosition": "bottom",
-						"columnsWidths": [
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "Cliquez sur calculer pour calculer le contrôle optimal en fonction des paramètres choisis et générer les graphiques.",
+						"helpposition": "bottom",
+						"columnswidths": [
 							4,
 							8
 						],
-						"columnsPadding": 10
+						"columnspadding": 10
 					},
-					"widgets": [
+					"elements": [
 						{
-							"id": 46,
-							"customId": "",
+							"id": "",
 							"type": "box",
 							"data": {
-								"labelPosition": "hidden",
-								"marginTop": 0,
-								"boxDesign": "none",
-								"boxHeader": "",
+								"labelposition": "hidden",
+								"margintop": 0,
+								"boxdesign": "none",
+								"boxheader": "",
 								"css": "",
-								"labelText": "",
-								"helpText": "",
-								"helpPosition": "bottom"
+								"labeltext": "",
+								"helptext": "",
+								"helpposition": "bottom"
 							},
-							"widgets": [
+							"elements": [
 								{
-									"id": 24,
-									"customId": "",
+									"id": "oc_calcul",
 									"type": "button",
 									"data": {
 										"value": "👉 Calculer",
 										"css": "",
-										"language": false,
-										"marginTop": 10,
-										"labelText": "",
-										"labelPosition": "hidden",
-										"helpText": "   ",
-										"helpPosition": "bottom",
-										"buttonCode": "alpha = (oc_edp(eta, mu, s2, beta, xi, rho) if methode == 'edp' else oc_mc(eta, mu, s2, beta, xi, rho)); gui.update('this', 'plotly_oc'); gui.show(rpgm.step('main', 'dashboard'), 'tab')",
-										"buttonSize": "fw",
-										"buttonDesign": "primary"
+										"isr": false,
+										"margintop": 10,
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "   ",
+										"helpposition": "bottom",
+										"onpress": "alpha = (oc_edp(eta, mu, s2, beta, xi, rho) if methode == 'edp' else oc_mc(eta, mu, s2, beta, xi, rho)); gui.update('this', 'plotly_oc'); gui.show(rpgm.step('main', 'dashboard'), 'tab')",
+										"buttonsize": "fw",
+										"buttondesign": "primary"
 									}
 								}
 							]
 						},
 						{
-							"id": 47,
-							"customId": "",
+							"id": "",
 							"type": "box",
 							"data": {
-								"labelPosition": "hidden",
-								"marginTop": 0,
-								"boxDesign": "none",
-								"boxHeader": "",
+								"labelposition": "hidden",
+								"margintop": 0,
+								"boxdesign": "none",
+								"boxheader": "",
 								"css": "",
-								"labelText": "",
-								"helpText": "",
-								"helpPosition": "bottom"
+								"labeltext": "",
+								"helptext": "",
+								"helpposition": "bottom"
 							},
-							"widgets": [
+							"elements": [
 								{
-									"id": 25,
-									"customId": "",
+									"id": "oc_progress",
 									"type": "progress",
 									"data": {
 										"value": "",
 										"css": "",
-										"subType": "progressbar",
-										"language": false,
-										"marginTop": 12,
-										"labelText": "",
-										"labelPosition": "hidden",
-										"helpText": "",
-										"helpPosition": "bottom",
-										"progressBarColor": "#27ae60",
-										"progressBarDescription": "%"
+										"subtype": "progressbar",
+										"isr": false,
+										"margintop": 12,
+										"labeltext": "",
+										"labelposition": "hidden",
+										"helptext": "",
+										"helpposition": "bottom",
+										"progresscolor": "#27ae60",
+										"progressdescription": "%"
 									}
 								}
 							]
@@ -594,143 +565,135 @@
 			]
 		},
 		{
-			"id": 26,
-			"customId": "",
+			"id": "",
 			"type": "label",
 			"data": {
 				"value": "3. Résultats",
 				"css": "ch3",
-				"language": false,
-				"marginTop": 10,
-				"labelText": "",
-				"labelPosition": "hidden",
-				"helpText": "",
-				"helpPosition": "bottom",
-				"textSize": 14,
-				"textFamily": "default",
-				"textColor": "#000000"
+				"isr": false,
+				"margintop": 10,
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": 14,
+				"fontfamily": "default",
+				"fontcolor": "#000000"
 			}
 		},
 		{
-			"id": 27,
-			"customId": "",
+			"id": "waiting",
 			"type": "box",
 			"data": {
 				"css": "cbox",
-				"marginTop": 10,
-				"labelText": "",
-				"labelPosition": "hidden",
-				"helpText": "",
-				"helpPosition": "bottom",
-				"boxDesign": "none",
-				"boxHeader": ""
+				"margintop": 10,
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"boxdesign": "none",
+				"boxheader": ""
 			},
-			"widgets": [
+			"elements": [
 				{
-					"id": 28,
-					"customId": "",
+					"id": "",
 					"type": "label",
 					"data": {
 						"value": "Les résultats s'afficheront ici.",
 						"css": "text-align: center",
-						"language": false,
-						"marginTop": 0,
-						"labelText": "",
-						"labelPosition": "hidden",
-						"helpText": "",
-						"helpPosition": "bottom",
-						"textSize": 14,
-						"textFamily": "default",
-						"textColor": "#000000"
+						"isr": false,
+						"margintop": 0,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"fontsize": 14,
+						"fontfamily": "default",
+						"fontcolor": "#000000"
 					}
 				}
 			]
 		},
 		{
-			"id": 29,
-			"customId": "",
+			"id": "tab",
 			"type": "tabs",
 			"data": {
 				"css": "cbox",
-				"marginTop": 10,
-				"labelText": "",
-				"labelPosition": "hidden",
-				"helpText": "",
-				"helpPosition": "bottom",
-				"tabsNames": [
+				"margintop": 10,
+				"labeltext": "",
+				"labelposition": "hidden",
+				"helptext": "",
+				"helpposition": "bottom",
+				"tabsnames": [
 					"🏃‍♂️ Afficher le contrôle optimal",
 					"📈 Analyse de trajectoire",
 					"📊 Analyse du P&L"
 				],
-				"tabsSelected": 1
+				"tabscurrent": 1
 			},
-			"widgets": [
+			"elements": [
 				{
-					"id": 30,
-					"customId": "",
+					"id": "",
 					"type": "box",
 					"data": {
 						"css": "",
-						"marginTop": 10,
-						"labelText": "",
-						"labelPosition": "hidden",
-						"helpText": "",
-						"helpPosition": "bottom",
-						"boxDesign": "none",
-						"boxHeader": ""
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "none",
+						"boxheader": ""
 					},
-					"widgets": [
+					"elements": [
 						{
-							"id": 31,
-							"customId": "",
+							"id": "",
 							"type": "columns",
 							"data": {
 								"css": "",
-								"marginTop": 10,
-								"labelText": "",
-								"labelPosition": "hidden",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"columnsWidths": [
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"columnswidths": [
 									6,
 									6
 								],
-								"columnsPadding": 10
+								"columnspadding": 10
 							},
-							"widgets": [
+							"elements": [
 								{
-									"id": 48,
-									"customId": "",
+									"id": "",
 									"type": "box",
 									"data": {
-										"labelPosition": "hidden",
-										"marginTop": 0,
-										"boxDesign": "none",
-										"boxHeader": "",
+										"labelposition": "hidden",
+										"margintop": 0,
+										"boxdesign": "none",
+										"boxheader": "",
 										"css": "",
-										"labelText": "",
-										"helpText": "",
-										"helpPosition": "bottom"
+										"labeltext": "",
+										"helptext": "",
+										"helpposition": "bottom"
 									},
-									"widgets": [
+									"elements": [
 										{
-											"id": 32,
-											"customId": "",
+											"id": "plotly_x",
 											"type": "select",
 											"data": {
 												"value": "",
 												"css": "",
-												"subType": "select",
-												"language": false,
-												"isRequired": false,
-												"codeOnChange": "plotly_x_value = (0 if plotly_x == 'x_v' else np.sqrt(s2));gui.update('this', 'plotly_oc');gui.setProperties('this', 'plotly_x_value', {'labeltext': 's₀' if plotly_x == 'x_v' else '√v₀', 'value': plotly_x_value}); rpgm.sendToJavascript('refreshMathjax')",
-												"conditionOnSubmit": "",
-												"marginTop": 10,
-												"labelText": "Contrôle optimal",
-												"labelPosition": "top",
-												"helpText": "Afficher le contrôle en fonction du temps ou de la vol.",
-												"helpPosition": "bottom",
-												"choicesEntries": [
+												"subtype": "select",
+												"isr": false,
+												"required": false,
+												"onchange": "plotly_x_value = (0 if plotly_x == 'x_v' else np.sqrt(s2));gui.update('this', 'plotly_oc');gui.setProperties('this', 'plotly_x_value', {'labeltext': 's₀' if plotly_x == 'x_v' else '√v₀', 'value': plotly_x_value}); rpgm.sendToJavascript('refreshMathjax')",
+												"condition": "",
+												"margintop": 10,
+												"labeltext": "Contrôle optimal",
+												"labelposition": "top",
+												"helptext": "Afficher le contrôle en fonction du temps ou de la vol.",
+												"helpposition": "bottom",
+												"choices": [
 													{
 														"value": "x_v",
 														"text": "\\(\\sqrt{v} \\mapsto \\alpha[s_0, \\sqrt{v}]\\)"
@@ -740,193 +703,180 @@
 														"text": "\\(s \\mapsto \\alpha[s, \\sqrt{v_0}]\\)"
 													}
 												],
-												"choicesLanguageValues": "",
-												"choicesLanguageTexts": ""
+												"choicesvalues": "",
+												"choicestexts": ""
 											}
 										}
 									]
 								},
 								{
-									"id": 49,
-									"customId": "",
+									"id": "",
 									"type": "box",
 									"data": {
-										"labelPosition": "hidden",
-										"marginTop": 0,
-										"boxDesign": "none",
-										"boxHeader": "",
+										"labelposition": "hidden",
+										"margintop": 0,
+										"boxdesign": "none",
+										"boxheader": "",
 										"css": "",
-										"labelText": "",
-										"helpText": "",
-										"helpPosition": "bottom"
+										"labeltext": "",
+										"helptext": "",
+										"helpposition": "bottom"
 									},
-									"widgets": [
+									"elements": [
 										{
-											"id": 33,
-											"customId": "",
+											"id": "plotly_x_value",
 											"type": "number",
 											"data": {
 												"value": "0",
 												"css": "",
-												"subType": "float",
-												"language": false,
-												"isRequired": false,
-												"codeOnChange": "gui.update('this', 'plotly_oc')",
-												"conditionOnSubmit": "",
-												"marginTop": 10,
-												"labelText": "\\(s_0\\)",
-												"labelPosition": "top",
-												"helpText": "Valeur fixée pour l'affichage du contrôle.",
-												"helpPosition": "bottom",
-												"numberMinValue": "",
-												"numberMaxValue": "",
-												"numberStepChange": "0.05"
+												"subtype": "float",
+												"isr": false,
+												"required": false,
+												"onchange": "gui.update('this', 'plotly_oc')",
+												"condition": "",
+												"margintop": 10,
+												"labeltext": "\\(s_0\\)",
+												"labelposition": "top",
+												"helptext": "Valeur fixée pour l'affichage du contrôle.",
+												"helpposition": "bottom",
+												"min": "",
+												"max": "",
+												"step": "0.05"
 											}
 										},
 										{
-											"id": 34,
-											"customId": "",
+											"id": "",
 											"type": "box",
 											"data": {
 												"css": "",
-												"marginTop": 10,
-												"labelText": "",
-												"labelPosition": "hidden",
-												"helpText": "",
-												"helpPosition": "bottom",
-												"boxDesign": "none",
-												"boxHeader": ""
+												"margintop": 10,
+												"labeltext": "",
+												"labelposition": "hidden",
+												"helptext": "",
+												"helpposition": "bottom",
+												"boxdesign": "none",
+												"boxheader": ""
 											},
-											"widgets": []
+											"elements": []
 										}
 									]
 								}
 							]
 						},
 						{
-							"id": 35,
-							"customId": "",
+							"id": "plotly_oc",
 							"type": "graph",
 							"data": {
 								"css": "",
-								"marginTop": 10,
-								"labelText": "",
-								"labelPosition": "hidden",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"graphVariable": "graph_oc(alpha)",
-								"graphWidth": 100,
-								"graphHeight": 500
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"graph": "graph_oc(alpha)",
+								"graphwidth": 100,
+								"graphheight": 500
 							}
 						}
 					]
 				},
 				{
-					"id": 36,
-					"customId": "",
+					"id": "",
 					"type": "box",
 					"data": {
 						"css": "",
-						"marginTop": 10,
-						"labelText": "",
-						"labelPosition": "hidden",
-						"helpText": "",
-						"helpPosition": "bottom",
-						"boxDesign": "light",
-						"boxHeader": ""
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "light",
+						"boxheader": ""
 					},
-					"widgets": [
+					"elements": [
 						{
-							"id": 37,
-							"customId": "",
+							"id": "",
 							"type": "button",
 							"data": {
 								"value": "Générer",
 								"css": "",
-								"language": false,
-								"marginTop": 10,
-								"labelText": "",
-								"labelPosition": "hidden",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"buttonCode": "A, V, X = trajectoires_AVX(alpha); gui.update('this', 'plotly_traj'); gui.update('this', 'plotly_pnl')",
-								"buttonSize": "fw",
-								"buttonDesign": "primary"
+								"isr": false,
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"onpress": "A, V, X = trajectoires_AVX(alpha); gui.update('this', 'plotly_traj'); gui.update('this', 'plotly_pnl')",
+								"buttonsize": "fw",
+								"buttondesign": "primary"
 							}
 						},
 						{
-							"id": 38,
-							"customId": "",
+							"id": "plotly_traj",
 							"type": "graph",
 							"data": {
 								"css": "",
-								"marginTop": 10,
-								"labelText": "",
-								"labelPosition": "hidden",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"graphVariable": "graph_trajectoire(A, V, X)",
-								"graphWidth": 100,
-								"graphHeight": 500
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"graph": "graph_trajectoire(A, V, X)",
+								"graphwidth": 100,
+								"graphheight": 500
 							}
 						}
 					]
 				},
 				{
-					"id": 39,
-					"customId": "",
+					"id": "",
 					"type": "box",
 					"data": {
 						"css": "",
-						"marginTop": 10,
-						"labelText": "",
-						"labelPosition": "hidden",
-						"helpText": "",
-						"helpPosition": "bottom",
-						"boxDesign": "light",
-						"boxHeader": ""
+						"margintop": 10,
+						"labeltext": "",
+						"labelposition": "hidden",
+						"helptext": "",
+						"helpposition": "bottom",
+						"boxdesign": "light",
+						"boxheader": ""
 					},
-					"widgets": [
+					"elements": [
 						{
-							"id": 40,
-							"customId": "",
+							"id": "",
 							"type": "button",
 							"data": {
 								"value": "Générer",
 								"css": "",
-								"language": false,
-								"marginTop": 10,
-								"labelText": "",
-								"labelPosition": "hidden",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"buttonCode": "A, V, X = trajectoires_AVX(alpha); gui.update('this', 'plotly_traj'); gui.update('this', 'plotly_pnl')",
-								"buttonSize": "fw",
-								"buttonDesign": "primary"
+								"isr": false,
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"onpress": "A, V, X = trajectoires_AVX(alpha); gui.update('this', 'plotly_traj'); gui.update('this', 'plotly_pnl')",
+								"buttonsize": "fw",
+								"buttondesign": "primary"
 							}
 						},
 						{
-							"id": 41,
-							"customId": "",
+							"id": "plotly_pnl",
 							"type": "graph",
 							"data": {
 								"css": "",
-								"marginTop": 10,
-								"labelText": "",
-								"labelPosition": "hidden",
-								"helpText": "",
-								"helpPosition": "bottom",
-								"graphVariable": "graph_PNL(A, V, X)",
-								"graphWidth": 100,
-								"graphHeight": 500
+								"margintop": 10,
+								"labeltext": "",
+								"labelposition": "hidden",
+								"helptext": "",
+								"helpposition": "bottom",
+								"graph": "graph_PNL(A, V, X)",
+								"graphwidth": 100,
+								"graphheight": 500
 							}
 						}
 					]
 				}
 			]
 		}
-	],
-	"displaySubmitButton": false,
-	"language": "python",
-	"version": 50000
+	]
 }

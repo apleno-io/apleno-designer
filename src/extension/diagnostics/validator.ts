@@ -146,6 +146,11 @@ export class AplenoValidator {
       validation.add(['_version'], 'this sequence uses the format of Apleno Designer 1.0.x, which the Apleno runtime cannot read. Rewrite it in the current format: steps with "uuid", "id", "type" ("rscript" for scripts), "file", "target", and "r"/"language"/"falsetarget" for conditions.', 'error', true);
       return { problems: validation.problems, references: [] };
     }
+    const v4Key = ['version', 'widgets', 'displaySubmitButton'].find(key => isObject(data) && key in data);
+    if (kind === 'pgui' && v4Key !== undefined) {
+      validation.add([v4Key], 'this interface uses the format of Apleno Designer 1.0.x, which the Apleno runtime cannot read. Rewrite it in the current format: "language", "submitbutton" and "elements" at the top level; widgets with "id", "type", "data" (Apleno 3.x property names like "labeltext", "isr") and "elements" for children.', 'error', true);
+      return { problems: validation.problems, references: [] };
+    }
 
     // Schema
     const validate = this.validators[kind];
@@ -156,8 +161,8 @@ export class AplenoValidator {
     }
 
     // Checks not expressible in the schema
-    if (kind === 'pgui' && isObject(data) && Array.isArray(data.widgets)) {
-      this.checkInterface(validation, data.widgets);
+    if (kind === 'pgui' && isObject(data) && Array.isArray(data.elements)) {
+      this.checkInterface(validation, data.elements);
     }
     else if (kind === 'pseq' && isObject(data) && Array.isArray(data.steps)) {
       this.checkSequence(validation, data.steps);
@@ -195,16 +200,9 @@ export class AplenoValidator {
       case 'const':
         validation.add(path, `must be ${JSON.stringify(error.params.allowedValue)}.`);
         return;
-      case 'type': {
-        const types = [error.params.type].flat();
-        // Older files store numbers as strings, which the editor converts on load
-        const isNumericString = typeof error.data === 'string' && error.data.trim().length > 0 && !isNaN(Number(error.data));
-        const hint = isNumericString && (types.includes('integer') || types.includes('number'))
-          ? ` Use the number ${Number(error.data)}, not the string "${error.data}" (opening and saving the file in the Apleno editor fixes this).`
-          : '';
-        validation.add(path, `must be of type ${types.join(' or ')}.${hint}`);
+      case 'type':
+        validation.add(path, `must be of type ${[error.params.type].flat().join(' or ')}.`);
         return;
-      }
       case 'pattern':
         validation.add(path, `must match the pattern ${error.params.pattern} (wrong file extension?).`);
         return;
@@ -212,26 +210,15 @@ export class AplenoValidator {
         validation.add(path, kind === 'pseq' ? 'a sequence needs a step of type "start".' : (error.message ?? 'invalid value.'));
         return;
       case 'not':
-        validation.add([...path, 'widgets'], 'only container widgets (box, columns, tabs) can have child widgets.', 'error', true);
+        validation.add([...path, 'elements'], 'only container widgets (box, columns, tabs) can have child widgets.', 'error', true);
         return;
       default:
         validation.add(path, `${error.message ?? 'invalid value'}.`);
     }
   }
 
-  private checkInterface(validation: FileValidation, widgets: unknown[]) {
-    const ids = new Set<number>();
-    const customIds = new Set<string>();
-    let maxId = 0;
-    const collectMax = (list: unknown[]) => list.forEach(w => {
-      if (isObject(w)) {
-        maxId = typeof w.id === 'number' ? Math.max(maxId, w.id) : maxId;
-        if (Array.isArray(w.widgets)) {
-          collectMax(w.widgets);
-        }
-      }
-    });
-    collectMax(widgets);
+  private checkInterface(validation: FileValidation, elements: unknown[]) {
+    const ids = new Set<string>();
 
     const walk = (list: unknown[], path: JSONPath) => list.forEach((widget, i) => {
       if (!isObject(widget)) {
@@ -239,33 +226,26 @@ export class AplenoValidator {
       }
       const widgetPath = [...path, i];
 
-      if (typeof widget.id === 'number') {
+      if (typeof widget.id === 'string' && widget.id.length > 0) {
         if (ids.has(widget.id)) {
-          validation.add([...widgetPath, 'id'], `duplicate widget id ${widget.id}. Ids must be unique in the whole file, including nested widgets (next free id: ${maxId + 1}).`);
+          validation.add([...widgetPath, 'id'], `id "${widget.id}" is already used by another widget.`, 'warning');
         }
         ids.add(widget.id);
       }
 
-      if (typeof widget.customId === 'string' && widget.customId.length > 0) {
-        if (customIds.has(widget.customId)) {
-          validation.add([...widgetPath, 'customId'], `customId "${widget.customId}" is already used by another widget.`, 'warning');
-        }
-        customIds.add(widget.customId);
-      }
-
-      if ((widget.type === 'columns' || widget.type === 'tabs') && Array.isArray(widget.widgets) && isObject(widget.data)) {
-        const property = widget.type === 'columns' ? 'columnsWidths' : 'tabsNames';
+      if ((widget.type === 'columns' || widget.type === 'tabs') && Array.isArray(widget.elements) && isObject(widget.data)) {
+        const property = widget.type === 'columns' ? 'columnswidths' : 'tabsnames';
         const expected = widget.data[property];
-        if (Array.isArray(expected) && expected.length !== widget.widgets.length) {
-          validation.add([...widgetPath, 'widgets'], `a "${widget.type}" widget needs exactly one child "box" widget per entry of data.${property} (${expected.length}), found ${widget.widgets.length}.`, 'error', true);
+        if (Array.isArray(expected) && expected.length !== widget.elements.length) {
+          validation.add([...widgetPath, 'elements'], `a "${widget.type}" widget needs exactly one child "box" widget per entry of data.${property} (${expected.length}), found ${widget.elements.length}.`, 'error', true);
         }
       }
 
-      if (Array.isArray(widget.widgets)) {
-        walk(widget.widgets, [...widgetPath, 'widgets']);
+      if (Array.isArray(widget.elements)) {
+        walk(widget.elements, [...widgetPath, 'elements']);
       }
     });
-    walk(widgets, ['widgets']);
+    walk(elements, ['elements']);
   }
 
   private checkSequence(validation: FileValidation, steps: unknown[]) {

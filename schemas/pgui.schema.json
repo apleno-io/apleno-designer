@@ -3,123 +3,432 @@
   "title": "Apleno interface file (.pgui)",
   "description": "A user interface (a form) shown to the end user during one 'gui' step of a sequence. The file is JSON, edited visually by the Apleno Interface Editor. It contains a tree of widgets; container widgets (box, columns, tabs) hold child widgets.",
   "type": "object",
-  "required": ["widgets"],
+  "required": [
+    "elements"
+  ],
   "additionalProperties": false,
   "properties": {
-    "version": {
-      "description": "Format version written by the editor. The current version is 50000.",
-      "type": "integer",
-      "const": 50000
-    },
     "language": {
-      "description": "Language used by every code property of this interface (widget values with 'language: true', codeOnChange, conditionOnSubmit, buttonCode, repeaterCode, ...).",
-      "enum": ["r", "python"],
+      "description": "Language used by every code property of this interface (widget values with 'isr: true', onchange, condition, onpress, intervalcode, ...).",
+      "enum": [
+        "r",
+        "python"
+      ],
       "default": "r"
     },
-    "displaySubmitButton": {
+    "submitbutton": {
       "description": "Show the 'Submit' button at the bottom of the interface. Submitting validates the widgets and moves the sequence to the next step.",
       "type": "boolean",
       "default": true
     },
-    "widgets": {
+    "elements": {
       "description": "Top-level widgets, displayed from top to bottom.",
       "type": "array",
-      "items": { "$ref": "#/definitions/widget" }
+      "items": {
+        "$ref": "#/definitions/widget"
+      }
     }
   },
   "definitions": {
     "widget": {
       "description": "A widget. 'data' holds the widget properties; the allowed properties depend on 'type'.",
       "type": "object",
-      "required": ["id", "type", "data"],
+      "required": [
+        "id",
+        "type",
+        "data"
+      ],
       "additionalProperties": false,
       "properties": {
         "id": {
-          "description": "Internal numeric identifier, unique among ALL widgets of the file (including nested ones). Use increasing integers starting at 1.",
-          "type": "integer",
-          "minimum": 0
-        },
-        "customId": {
-          "description": "Identifier used to reference this widget from R/Python code (e.g. to read or change its value). Empty string if the widget is never referenced from code. Should be unique in the file.",
-          "type": "string",
-          "default": ""
+          "description": "Identifier of the widget, used from R/Python code: the widget value is a variable with this name, and GUI functions use it (gui.setValue('this', 'age', 42)). Must be a valid variable name, unique in the file, and not an R/Python built-in name. Empty string for widgets never used from code.",
+          "type": "string"
         },
         "type": {
           "description": "Widget type. Display: label, image, iframe, table, graph, progress. Data input: text, number, path, select, onoff, date, grid. Actions: button, interval. Layout containers: box, columns, tabs.",
-          "enum": ["label", "image", "iframe", "table", "text", "number", "path", "select", "onoff", "date", "grid", "button", "box", "columns", "tabs", "graph", "progress", "interval"]
+          "enum": [
+            "label",
+            "image",
+            "iframe",
+            "table",
+            "text",
+            "number",
+            "path",
+            "select",
+            "onoff",
+            "date",
+            "grid",
+            "button",
+            "box",
+            "columns",
+            "tabs",
+            "graph",
+            "progress",
+            "interval"
+          ]
         },
         "data": {
           "description": "Widget properties. See the definition matching the widget type.",
           "type": "object"
         },
-        "widgets": {
+        "elements": {
           "description": "Child widgets. Only allowed for container widgets (box, columns, tabs).",
           "type": "array",
-          "items": { "$ref": "#/definitions/widget" }
+          "items": {
+            "$ref": "#/definitions/widget"
+          }
         }
       },
       "allOf": [
-        { "if": { "properties": { "type": { "const": "label" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-label" } } } },
-        { "if": { "properties": { "type": { "const": "image" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-image" } } } },
-        { "if": { "properties": { "type": { "const": "iframe" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-iframe" } } } },
-        { "if": { "properties": { "type": { "const": "table" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-table" } } } },
-        { "if": { "properties": { "type": { "const": "text" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-text" } } } },
-        { "if": { "properties": { "type": { "const": "number" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-number" } } } },
-        { "if": { "properties": { "type": { "const": "path" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-path" } } } },
-        { "if": { "properties": { "type": { "const": "select" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-select" } } } },
-        { "if": { "properties": { "type": { "const": "onoff" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-onoff" } } } },
-        { "if": { "properties": { "type": { "const": "date" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-date" } } } },
-        { "if": { "properties": { "type": { "const": "grid" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-grid" } } } },
-        { "if": { "properties": { "type": { "const": "button" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-button" } } } },
-        { "if": { "properties": { "type": { "const": "graph" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-graph" } } } },
-        { "if": { "properties": { "type": { "const": "progress" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-progress" } } } },
-        { "if": { "properties": { "type": { "const": "interval" } } }, "then": { "properties": { "data": { "$ref": "#/definitions/data-interval" } } } },
         {
-          "if": { "properties": { "type": { "const": "box" } } },
-          "then": {
-            "required": ["widgets"],
-            "properties": { "data": { "$ref": "#/definitions/data-box" } }
-          }
-        },
-        {
-          "if": { "properties": { "type": { "const": "columns" } } },
-          "then": {
-            "description": "A columns widget must have exactly one child per entry of data.columnsWidths, and each child must be a 'box' widget holding that column's widgets.",
-            "required": ["widgets"],
+          "if": {
             "properties": {
-              "data": { "$ref": "#/definitions/data-columns" },
-              "widgets": { "items": { "$ref": "#/definitions/container-slot" } }
+              "type": {
+                "const": "label"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-label"
+              }
             }
           }
         },
         {
-          "if": { "properties": { "type": { "const": "tabs" } } },
-          "then": {
-            "description": "A tabs widget must have exactly one child per entry of data.tabsNames, and each child must be a 'box' widget holding that tab's widgets.",
-            "required": ["widgets"],
+          "if": {
             "properties": {
-              "data": { "$ref": "#/definitions/data-tabs" },
-              "widgets": { "items": { "$ref": "#/definitions/container-slot" } }
+              "type": {
+                "const": "image"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-image"
+              }
             }
           }
         },
         {
-          "if": { "properties": { "type": { "enum": ["box", "columns", "tabs"] } } },
-          "else": { "not": { "required": ["widgets"] } }
+          "if": {
+            "properties": {
+              "type": {
+                "const": "iframe"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-iframe"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "table"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-table"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-text"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "number"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-number"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "path"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-path"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "select"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-select"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "onoff"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-onoff"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "date"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-date"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "grid"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-grid"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "button"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-button"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "graph"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-graph"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "progress"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-progress"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "interval"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-interval"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "box"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "elements"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-box"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "columns"
+              }
+            }
+          },
+          "then": {
+            "description": "A columns widget must have exactly one child per entry of data.columnswidths, and each child must be a 'box' widget holding that column's widgets.",
+            "required": [
+              "elements"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-columns"
+              },
+              "elements": {
+                "items": {
+                  "$ref": "#/definitions/container-slot"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "tabs"
+              }
+            }
+          },
+          "then": {
+            "description": "A tabs widget must have exactly one child per entry of data.tabsnames, and each child must be a 'box' widget holding that tab's widgets.",
+            "required": [
+              "elements"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/definitions/data-tabs"
+              },
+              "elements": {
+                "items": {
+                  "$ref": "#/definitions/container-slot"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "box",
+                  "columns",
+                  "tabs"
+                ]
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "elements"
+              ]
+            }
+          }
         }
       ]
     },
     "container-slot": {
-      "description": "One column of a 'columns' widget or one tab of a 'tabs' widget: a 'box' widget, usually with data { \"labelPosition\": \"hidden\", \"marginTop\": 0, \"boxDesign\": \"none\", \"boxHeader\": \"\" }.",
+      "description": "One column of a 'columns' widget or one tab of a 'tabs' widget: a 'box' widget, usually with data { \"labelposition\": \"hidden\", \"margintop\": 0, \"boxdesign\": \"none\", \"boxheader\": \"\" }.",
       "type": "object",
       "properties": {
-        "type": { "const": "box" }
+        "type": {
+          "const": "box"
+        }
       }
     },
-
     "prop-value": {
-      "description": "The value of the widget. If 'language' is true, this is R/Python code evaluated to get the value; otherwise it is the literal value.",
-      "type": ["string", "number", "boolean", "array", "null"],
+      "description": "The value of the widget. If 'isr' is true, this is R/Python code evaluated to get the value; otherwise it is the literal value.",
+      "type": [
+        "string",
+        "number",
+        "boolean",
+        "array",
+        "null"
+      ],
       "default": ""
     },
     "prop-language": {
@@ -134,7 +443,11 @@
     },
     "prop-marginTop": {
       "description": "Space above the widget, in pixels.",
-      "type": ["integer", "null"],
+      "type": [
+        "integer",
+        "null",
+        "string"
+      ],
       "minimum": 0,
       "default": 10
     },
@@ -145,7 +458,12 @@
     },
     "prop-labelPosition": {
       "description": "Label placement: 'left' (label in a left column), 'top' (above the widget), 'topaligned' (above the widget, aligned with left-labelled widgets), 'hidden' (no label, widget uses the full width).",
-      "enum": ["left", "top", "topaligned", "hidden"],
+      "enum": [
+        "left",
+        "top",
+        "topaligned",
+        "hidden"
+      ],
       "default": "left"
     },
     "prop-helpText": {
@@ -155,7 +473,10 @@
     },
     "prop-helpPosition": {
       "description": "Help text placement: 'bottom' (below the widget) or 'label' (as an info icon tooltip next to the label).",
-      "enum": ["bottom", "label"],
+      "enum": [
+        "bottom",
+        "label"
+      ],
       "default": "bottom"
     },
     "prop-isRequired": {
@@ -173,31 +494,59 @@
       "type": "string",
       "default": ""
     },
-
     "data-label": {
       "description": "Displays a text. 'value' is the text; HTML is allowed.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "textSize": {
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "fontsize": {
           "description": "Font size in pixels.",
-          "type": ["number", "string", "null"],
+          "type": [
+            "number",
+            "string",
+            "null"
+          ],
           "default": 14
         },
-        "textFamily": {
+        "fontfamily": {
           "description": "Font family.",
-          "enum": ["default", "arial", "courier", "georgia", "impact", "times", "trebuchet", "verdana"],
+          "enum": [
+            "default",
+            "arial",
+            "courier",
+            "georgia",
+            "impact",
+            "times",
+            "trebuchet",
+            "verdana"
+          ],
           "default": "default"
         },
-        "textColor": {
+        "fontcolor": {
           "description": "Text color, as a hex color like '#000000'.",
           "type": "string",
           "default": "#000000"
@@ -209,14 +558,30 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" }
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        }
       }
     },
     "data-iframe": {
@@ -224,29 +589,61 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" }
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        }
       }
     },
     "data-table": {
-      "description": "Displays a read-only table. 'value' is usually an R/Python expression (with language: true) returning a data frame.",
+      "description": "Displays a read-only table. 'value' is usually an R/Python expression (with isr: true) returning a data frame.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" }
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        }
       }
     },
     "data-text": {
@@ -254,22 +651,48 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "subType": {
+        "subtype": {
           "description": "'text' (single line), 'textarea' (multi-line) or 'password' (hidden characters).",
-          "enum": ["text", "textarea", "password"],
+          "enum": [
+            "text",
+            "textarea",
+            "password"
+          ],
           "default": "text"
         },
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "isRequired": { "$ref": "#/definitions/prop-isRequired" },
-        "codeOnChange": { "$ref": "#/definitions/prop-codeOnChange" },
-        "conditionOnSubmit": { "$ref": "#/definitions/prop-conditionOnSubmit" }
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "required": {
+          "$ref": "#/definitions/prop-isRequired"
+        },
+        "onchange": {
+          "$ref": "#/definitions/prop-codeOnChange"
+        },
+        "condition": {
+          "$ref": "#/definitions/prop-conditionOnSubmit"
+        }
       }
     },
     "data-number": {
@@ -277,35 +700,73 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "subType": {
-          "description": "'float' (decimal number), 'integer' or 'slider' (range slider; set numberMinValue and numberMaxValue).",
-          "enum": ["float", "integer", "slider"],
+        "subtype": {
+          "description": "'float' (decimal number), 'integer' or 'slider' (range slider; set min and max).",
+          "enum": [
+            "float",
+            "integer",
+            "slider"
+          ],
           "default": "float"
         },
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "isRequired": { "$ref": "#/definitions/prop-isRequired" },
-        "codeOnChange": { "$ref": "#/definitions/prop-codeOnChange" },
-        "conditionOnSubmit": { "$ref": "#/definitions/prop-conditionOnSubmit" },
-        "numberMinValue": {
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "required": {
+          "$ref": "#/definitions/prop-isRequired"
+        },
+        "onchange": {
+          "$ref": "#/definitions/prop-codeOnChange"
+        },
+        "condition": {
+          "$ref": "#/definitions/prop-conditionOnSubmit"
+        },
+        "min": {
           "description": "Minimum value. Empty string or null for no minimum.",
-          "type": ["number", "string", "null"],
+          "type": [
+            "number",
+            "string",
+            "null"
+          ],
           "default": ""
         },
-        "numberMaxValue": {
+        "max": {
           "description": "Maximum value. Empty string or null for no maximum.",
-          "type": ["number", "string", "null"],
+          "type": [
+            "number",
+            "string",
+            "null"
+          ],
           "default": ""
         },
-        "numberStepChange": {
+        "step": {
           "description": "Increment step. Empty string or null for any step.",
-          "type": ["number", "string", "null"],
+          "type": [
+            "number",
+            "string",
+            "null"
+          ],
           "default": ""
         }
       }
@@ -315,71 +776,135 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "subType": {
+        "subtype": {
           "description": "Only 'file' is supported.",
-          "enum": ["file"],
+          "enum": [
+            "file"
+          ],
           "default": "file"
         },
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "isRequired": { "$ref": "#/definitions/prop-isRequired" },
-        "codeOnChange": { "$ref": "#/definitions/prop-codeOnChange" },
-        "conditionOnSubmit": { "$ref": "#/definitions/prop-conditionOnSubmit" }
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "required": {
+          "$ref": "#/definitions/prop-isRequired"
+        },
+        "onchange": {
+          "$ref": "#/definitions/prop-codeOnChange"
+        },
+        "condition": {
+          "$ref": "#/definitions/prop-conditionOnSubmit"
+        }
       }
     },
     "data-select": {
-      "description": "Choice input. Options come from 'choicesEntries' (static) or from 'choicesLanguageValues' / 'choicesLanguageTexts' (R/Python variables).",
+      "description": "Choice input. Options come from 'choices' (static) or from 'choicesvalues' / 'choicestexts' (R/Python variables).",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "subType": {
+        "subtype": {
           "description": "'select' (dropdown, one choice), 'multiselect' (list, several choices), 'radio' (radio buttons, one choice), 'multicheckboxes' (checkboxes, several choices).",
-          "enum": ["select", "multiselect", "radio", "multicheckboxes"],
+          "enum": [
+            "select",
+            "multiselect",
+            "radio",
+            "multicheckboxes"
+          ],
           "default": "select"
         },
         "value": {
-          "description": "Selected option value(s): a string for 'select' and 'radio'; an array of strings (or a comma-separated string) for 'multiselect' and 'multicheckboxes'. If 'language' is true, R/Python code returning the selection.",
-          "type": ["string", "array", "null"],
-          "items": { "type": "string" },
+          "description": "Selected option value(s): a string for 'select' and 'radio'; an array of strings (or a comma-separated string) for 'multiselect' and 'multicheckboxes'. If 'isr' is true, R/Python code returning the selection.",
+          "type": [
+            "string",
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
           "default": ""
         },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "isRequired": { "$ref": "#/definitions/prop-isRequired" },
-        "codeOnChange": { "$ref": "#/definitions/prop-codeOnChange" },
-        "conditionOnSubmit": { "$ref": "#/definitions/prop-conditionOnSubmit" },
-        "choicesEntries": {
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "required": {
+          "$ref": "#/definitions/prop-isRequired"
+        },
+        "onchange": {
+          "$ref": "#/definitions/prop-codeOnChange"
+        },
+        "condition": {
+          "$ref": "#/definitions/prop-conditionOnSubmit"
+        },
+        "choices": {
           "description": "Static list of options.",
           "type": "array",
           "default": [],
           "items": {
             "type": "object",
-            "required": ["value", "text"],
+            "required": [
+              "value",
+              "text"
+            ],
             "additionalProperties": false,
             "properties": {
-              "value": { "description": "Value returned when this option is selected.", "type": "string" },
-              "text": { "description": "Text displayed to the user.", "type": "string" }
+              "value": {
+                "description": "Value returned when this option is selected.",
+                "type": "string"
+              },
+              "text": {
+                "description": "Text displayed to the user.",
+                "type": "string"
+              }
             }
           }
         },
-        "choicesLanguageValues": {
-          "description": "Name of an R/Python variable (vector/list) providing the option values. Empty string to use choicesEntries.",
+        "choicesvalues": {
+          "description": "Name of an R/Python variable (vector/list) providing the option values. Empty string to use choices.",
           "type": "string",
           "default": ""
         },
-        "choicesLanguageTexts": {
-          "description": "Name of an R/Python variable (vector/list) providing the option texts, in the same order as choicesLanguageValues.",
+        "choicestexts": {
+          "description": "Name of an R/Python variable (vector/list) providing the option texts, in the same order as choicesvalues.",
           "type": "string",
           "default": ""
         }
@@ -390,26 +915,52 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "subType": {
+        "subtype": {
           "description": "'checkbox' (standard checkbox) or 'switch' (mobile-like toggle).",
-          "enum": ["checkbox", "switch"],
+          "enum": [
+            "checkbox",
+            "switch"
+          ],
           "default": "checkbox"
         },
         "value": {
-          "description": "true (on) or false (off). If 'language' is true, R/Python code returning a boolean.",
-          "type": ["boolean", "string"],
+          "description": "true (on) or false (off). If 'isr' is true, R/Python code returning a boolean.",
+          "type": [
+            "boolean",
+            "string"
+          ],
           "default": false
         },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "isRequired": { "$ref": "#/definitions/prop-isRequired" },
-        "codeOnChange": { "$ref": "#/definitions/prop-codeOnChange" },
-        "conditionOnSubmit": { "$ref": "#/definitions/prop-conditionOnSubmit" }
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "required": {
+          "$ref": "#/definitions/prop-isRequired"
+        },
+        "onchange": {
+          "$ref": "#/definitions/prop-codeOnChange"
+        },
+        "condition": {
+          "$ref": "#/definitions/prop-conditionOnSubmit"
+        }
       }
     },
     "data-date": {
@@ -417,64 +968,123 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "isRequired": { "$ref": "#/definitions/prop-isRequired" },
-        "codeOnChange": { "$ref": "#/definitions/prop-codeOnChange" },
-        "conditionOnSubmit": { "$ref": "#/definitions/prop-conditionOnSubmit" }
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "required": {
+          "$ref": "#/definitions/prop-isRequired"
+        },
+        "onchange": {
+          "$ref": "#/definitions/prop-codeOnChange"
+        },
+        "condition": {
+          "$ref": "#/definitions/prop-conditionOnSubmit"
+        }
       }
     },
     "data-grid": {
-      "description": "Excel-like editable grid (matrix or data frame). 'value' is usually an R/Python expression (with language: true) returning a matrix or data frame.",
+      "description": "Excel-like editable grid (matrix or data frame). 'value' is usually an R/Python expression (with isr: true) returning a matrix or data frame.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "isRequired": { "$ref": "#/definitions/prop-isRequired" },
-        "codeOnChange": { "$ref": "#/definitions/prop-codeOnChange" },
-        "conditionOnSubmit": { "$ref": "#/definitions/prop-conditionOnSubmit" },
-        "gridType": {
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "required": {
+          "$ref": "#/definitions/prop-isRequired"
+        },
+        "onchange": {
+          "$ref": "#/definitions/prop-codeOnChange"
+        },
+        "condition": {
+          "$ref": "#/definitions/prop-conditionOnSubmit"
+        },
+        "gridtype": {
           "description": "Cell data type. Ignored when the value is a data frame.",
-          "enum": ["text", "integer", "float", "checkbox"],
+          "enum": [
+            "text",
+            "integer",
+            "float",
+            "checkbox"
+          ],
           "default": "text"
         },
-        "gridHeight": {
+        "gridheight": {
           "description": "Total height of the grid in pixels. 0 for automatic height.",
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null",
+            "string"
+          ],
           "minimum": 0,
           "default": 0
         },
-        "gridColumns": {
+        "gridcolumns": {
           "description": "Column labels. Empty string for default labels.",
           "type": "string",
           "default": ""
         },
-        "gridColumnsCount": {
+        "gridnbcolumns": {
           "description": "Number of columns. Empty string or 0 to use the size of the value.",
-          "type": ["integer", "string"],
+          "type": [
+            "integer",
+            "string"
+          ],
           "default": 0
         },
-        "gridRows": {
+        "gridrows": {
           "description": "Row labels. Empty string for default labels.",
           "type": "string",
           "default": ""
         },
-        "gridRowsCount": {
+        "gridnbrows": {
           "description": "Number of rows. Empty string or 0 to use the size of the value.",
-          "type": ["integer", "string"],
+          "type": [
+            "integer",
+            "string"
+          ],
           "default": 0
         },
         "gridColumnsRender": {
@@ -487,7 +1097,7 @@
           "type": "boolean",
           "default": true
         },
-        "gridStylingRules": {
+        "gridstylingrules": {
           "description": "Conditional formatting rules applied to cells. See the Apleno documentation for the rule format.",
           "type": "array",
           "default": []
@@ -499,57 +1109,116 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "buttonCode": {
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "onpress": {
           "description": "R/Python code (in the interface language) executed when the button is clicked.",
           "type": "string",
           "default": ""
         },
-        "buttonSize": {
+        "buttonsize": {
           "description": "'sm' (small), 'md' (medium), 'lg' (large), 'fw' (full width).",
-          "enum": ["sm", "md", "lg", "fw"],
+          "enum": [
+            "sm",
+            "md",
+            "lg",
+            "fw"
+          ],
           "default": "md"
         },
-        "buttonDesign": {
+        "buttondesign": {
           "description": "Button style (color). 'outline-*' variants have a transparent background.",
-          "enum": ["primary", "secondary", "success", "warning", "danger", "info", "light", "dark", "link", "outline-primary", "outline-secondary", "outline-success", "outline-warning", "outline-danger", "outline-info", "outline-light", "outline-dark"],
+          "enum": [
+            "primary",
+            "secondary",
+            "success",
+            "warning",
+            "danger",
+            "info",
+            "light",
+            "dark",
+            "link",
+            "outline-primary",
+            "outline-secondary",
+            "outline-success",
+            "outline-warning",
+            "outline-danger",
+            "outline-info",
+            "outline-light",
+            "outline-dark"
+          ],
           "default": "primary"
         }
       }
     },
     "data-graph": {
-      "description": "Interactive Plotly graph. The figure comes from the 'graphVariable' expression, or from gui.setValue(step, customId, figure) in R/Python code.",
+      "description": "Interactive Plotly graph. The figure comes from the 'graph' expression, or from gui.setValue(step, id, figure) in R/Python code.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "graphVariable": {
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "graph": {
           "description": "R/Python expression (in the interface language) returning the Plotly figure to display: a named list (R) or dict (Python) with 'data' (a trace or a list of traces) and 'layout', e.g. \"graph_sales(df)\". Re-evaluated by gui.update(step, id). The figure can also be set with gui.setValue(step, id, figure).",
           "type": "string",
           "default": ""
         },
-        "graphWidth": {
+        "graphwidth": {
           "description": "Width in percent of the available width (1-100).",
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null",
+            "string"
+          ],
           "minimum": 1,
           "maximum": 100,
           "default": 100
         },
-        "graphHeight": {
+        "graphheight": {
           "description": "Height in pixels.",
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null",
+            "string"
+          ],
           "minimum": 50,
           "default": 500
         }
@@ -560,25 +1229,44 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "subType": {
+        "subtype": {
           "description": "'progressbar' (horizontal bar) or 'progresscircle' (circle).",
-          "enum": ["progressbar", "progresscircle"],
+          "enum": [
+            "progressbar",
+            "progresscircle"
+          ],
           "default": "progressbar"
         },
-        "value": { "$ref": "#/definitions/prop-value" },
-        "language": { "$ref": "#/definitions/prop-language" },
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "progressBarColor": {
+        "value": {
+          "$ref": "#/definitions/prop-value"
+        },
+        "isr": {
+          "$ref": "#/definitions/prop-language"
+        },
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "progresscolor": {
           "description": "Progress color, as a hex color like '#27ae60'.",
           "type": "string",
           "default": "#27ae60"
         },
-        "progressBarDescription": {
+        "progressdescription": {
           "description": "Text displayed in the progress bar/circle. The special value '%' displays the percentage.",
           "type": "string",
           "default": "%"
@@ -590,14 +1278,18 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "repeaterCode": {
+        "intervalcode": {
           "description": "R/Python code (in the interface language) executed at each interval.",
           "type": "string",
           "default": ""
         },
-        "repeaterTimeMS": {
+        "intervaltime": {
           "description": "Interval between two executions, in milliseconds.",
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null",
+            "string"
+          ],
           "minimum": 10,
           "default": 1000
         }
@@ -608,18 +1300,40 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "boxDesign": {
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "boxdesign": {
           "description": "Box style (color). 'none' makes the box invisible (plain list).",
-          "enum": ["primary", "secondary", "success", "warning", "danger", "info", "light", "dark", "none"],
+          "enum": [
+            "primary",
+            "secondary",
+            "success",
+            "warning",
+            "danger",
+            "info",
+            "light",
+            "dark",
+            "none"
+          ],
           "default": "light"
         },
-        "boxHeader": {
+        "boxheader": {
           "description": "Header text of the box. Empty string for no header.",
           "type": "string",
           "default": ""
@@ -631,22 +1345,46 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "columnsWidths": {
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "columnswidths": {
           "description": "Width of each column on a 12-unit grid (the widths usually sum to 12). The number of entries is the number of columns and must match the number of child widgets.",
           "type": "array",
           "minItems": 1,
-          "items": { "type": "integer", "minimum": 0, "maximum": 12 },
-          "default": [4, 4, 4]
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 12
+          },
+          "default": [
+            4,
+            4,
+            4
+          ]
         },
-        "columnsPadding": {
+        "columnspadding": {
           "description": "Horizontal space between columns, in pixels.",
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null",
+            "string"
+          ],
           "minimum": 0,
           "default": 10
         }
@@ -657,22 +1395,41 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "css": { "$ref": "#/definitions/prop-css" },
-        "marginTop": { "$ref": "#/definitions/prop-marginTop" },
-        "labelText": { "$ref": "#/definitions/prop-labelText" },
-        "labelPosition": { "$ref": "#/definitions/prop-labelPosition" },
-        "helpText": { "$ref": "#/definitions/prop-helpText" },
-        "helpPosition": { "$ref": "#/definitions/prop-helpPosition" },
-        "tabsNames": {
+        "css": {
+          "$ref": "#/definitions/prop-css"
+        },
+        "margintop": {
+          "$ref": "#/definitions/prop-marginTop"
+        },
+        "labeltext": {
+          "$ref": "#/definitions/prop-labelText"
+        },
+        "labelposition": {
+          "$ref": "#/definitions/prop-labelPosition"
+        },
+        "helptext": {
+          "$ref": "#/definitions/prop-helpText"
+        },
+        "helpposition": {
+          "$ref": "#/definitions/prop-helpPosition"
+        },
+        "tabsnames": {
           "description": "Title of each tab. The number of entries is the number of tabs and must match the number of child widgets.",
           "type": "array",
           "minItems": 1,
-          "items": { "type": "string" },
-          "default": ["Unnamed"]
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Unnamed"
+          ]
         },
-        "tabsSelected": {
+        "tabscurrent": {
           "description": "Index (0-based) of the tab selected when the interface is displayed.",
-          "type": "integer",
+          "type": [
+            "integer",
+            "string"
+          ],
           "minimum": 0,
           "default": 0
         }

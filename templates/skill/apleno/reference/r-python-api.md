@@ -5,13 +5,13 @@ Every R and Python session run by Apleno has the functions below predefined. Nev
 ## How code runs
 
 - **Script steps** run a whole `.R`/`.py` file. All script steps share one session per language: variables and functions defined in a script are available to the next steps and to interface code.
-- **Interface code** runs inside a `gui` step, in the interface `language`: `value` with `"language": true` (evaluated when the interface is displayed), `codeOnChange`, `buttonCode`, `repeaterCode`, `conditionOnSubmit`, and the graph `graphVariable` expression.
-- **Widget values are variables.** Each widget with a non-empty `customId` is a variable named after it: interface code sees the current values while the interface is displayed, and the values stay available to the next steps after it is submitted. A widget without `customId` creates no variable. A `customId` must be a valid variable name in the interface language and must not reuse a built-in name: in R, a widget named `title`, `plot` or `summary` hides the function of the same name (and assigning `title` can even fail with "cannot change value of locked binding").
+- **Interface code** runs inside a `gui` step, in the interface `language`: `value` with `"isr": true` (evaluated when the interface is displayed), `onchange`, `onpress`, `intervalcode`, `condition`, and the `graph` expression of graph widgets.
+- **Widget values are variables.** Each widget with a non-empty `id` is a variable named after it: interface code sees the current values while the interface is displayed, and the values stay available to the next steps after it is submitted. A widget without `id` creates no variable. A widget `id` must be a valid variable name in the interface language and must not reuse a built-in name: in R, a widget named `title`, `plot` or `summary` hides the function of the same name (and assigning `title` can even fail with "cannot change value of locked binding").
 - An empty number input is `None` in Python (check before using it: `if eta is None: eta = 0.1`).
-- Usual pattern: a script step defines functions and initial values; the interface calls them from `buttonCode` / `codeOnChange` with widget variables as arguments.
+- Usual pattern: a script step defines functions and initial values; the interface calls them from `onpress` / `onchange` with widget variables as arguments.
 
 ```python
-# buttonCode of a button, Python interface with number widgets "eta" and "mu"
+# onpress code of a button, Python interface with number widgets "eta" and "mu"
 alpha = compute(eta, mu); gui.update('this', 'result_graph')
 ```
 
@@ -20,10 +20,10 @@ alpha = compute(eta, mu); gui.update('this', 'result_graph')
 
 ## Step references
 
-GUI functions take a `step` (which interface) and an `id` (the widget's `customId`).
+GUI functions take a `step` (which interface) and an `id` (the widget's `id` in the `.pgui` file).
 
-- `'this'`: the interface currently displayed. Use it in interface code (`buttonCode`, `codeOnChange`...) and in functions called from it.
-- `rpgm.step(file, stepId)`: a specific `gui` step. `file` is the sequence containing the step, with or without `.pseq` (`'main'` or `'main.pseq'`), and `stepId` is the step's `customId`. Use it in script steps to prepare an interface before it is displayed:
+- `'this'`: the interface currently displayed. Use it in interface code (`onpress`, `onchange`...) and in functions called from it.
+- `rpgm.step(file, stepId)`: a specific `gui` step. `file` is the sequence containing the step, with or without `.pseq` (`'main'` or `'main.pseq'`), and `stepId` is the step's `id` in the `.pseq` file. Use it in script steps to prepare an interface before it is displayed:
 
 ```r
 gui.hide(rpgm.step('main', 'dashboard'), 'results')
@@ -40,7 +40,7 @@ gui.hide(rpgm.step('main', 'dashboard'), 'results')
 | `gui.enable(step, id)` / `gui.disable(step, id)` | Enable / disable an input or button. |
 | `gui.showMessage(step, id, type, message)` | Message below a widget, `type` = `"error"`, `"warning"` or `"success"`. |
 | `gui.hideMessage(step, id)` | Hide that message. |
-| `gui.update(step, id)` | Re-evaluate the widget's code value (`value` with `language: true`, graph `graphVariable`, image path...) to refresh it. |
+| `gui.update(step, id)` | Re-evaluate the widget's code value (`value` with `isr: true`, `graph` expression, image path...) to refresh it. |
 | `gui.addChoice(step, id, value, text)` | Add an option to a `select` widget. |
 | `gui.addChoices(step, id, values, texts)` | Add options (vectors/lists of the same length). |
 | `gui.clearChoices(step, id)` | Remove all options. |
@@ -48,7 +48,7 @@ gui.hide(rpgm.step('main', 'dashboard'), 'results')
 | `gui.setChoiceText(step, id, value, text)` | Change an option's text. |
 | `gui.add(step, id, type, position = -1, parent = "root")` | Add a widget at runtime (`type`: see widgets.md). |
 | `gui.remove(step, id)` | Remove a widget. |
-| `gui.submit(force = FALSE)` | Submit the current interface (for interfaces with `displaySubmitButton: false`). |
+| `gui.submit(force = FALSE)` | Submit the current interface (for interfaces with `"submitbutton": false`). |
 | `gui.showModal(title, content)` | Modal dialog, `content` can be HTML. |
 | `gui.embedURL(url, height = 400)` | R only: returns the HTML of an iframe, e.g. for a label value. |
 
@@ -56,7 +56,7 @@ Deprecated, don't use: `gui.showError`, `gui.showWarning`, `gui.showSuccess`, `g
 
 ### Property names
 
-`gui.setProperty` / `gui.setProperties` accept the property names of the `.pgui` files (`helpText`, `labelText`, `progressBarColor`, see `schemas/pgui.schema.json` in this skill) plus runtime-only properties:
+`gui.setProperty` / `gui.setProperties` accept the property names of the `.pgui` files (`helptext`, `labeltext`, `progresscolor`, see `schemas/pgui.schema.json` in this skill), their current equivalents (`helpText`...) and runtime-only properties:
 
 | Property | Description |
 |----------|-------------|
@@ -64,9 +64,9 @@ Deprecated, don't use: `gui.showError`, `gui.showWarning`, `gui.showSuccess`, `g
 | `enabled` | `TRUE`/`FALSE`, like `gui.enable` / `gui.disable`. |
 | `messageType`, `messageText` | Message below the widget (`messageText = ""` hides it). |
 
-Older code and the online documentation use the Apleno 3.x lowercase names, which still work. Prefer the current names in new code:
+Both naming styles work everywhere in code. `.pgui` files must use the Apleno 3.x names (the last name of the right column):
 
-| Current name | Old names |
+| Current name | Apleno 3.x names (the last one is used in `.pgui` files) |
 |---|---|
 | `language` | `isR`, `isr` |
 | `isRequired` | `required` |

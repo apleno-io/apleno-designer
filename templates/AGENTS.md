@@ -49,27 +49,26 @@ The extension checks these files and reports errors in the VS Code Problems pane
 
 ## Interfaces (`.pgui`)
 
-- `language` (`"r"` or `"python"`) is the language of **all** code in the interface: values with `"language": true`, `codeOnChange`, `conditionOnSubmit`, `buttonCode`, `repeaterCode`.
-- Each widget has a numeric `id` unique in the whole file (nested widgets included: use highest id + 1), a `customId` used to reference it from code, a `type` and a `data` object.
-- Containers: `box` holds a vertical list of widgets. `columns` and `tabs` must have exactly one child per entry of `columnsWidths` / `tabsNames`, and each child must be a `box`, usually `{"labelPosition": "hidden", "marginTop": 0, "boxDesign": "none", "boxHeader": ""}`. Column widths use a 12-unit grid.
-- `"language": true` makes `value` an R/Python expression evaluated when the interface is displayed, e.g. `"value": "nrow(data)", "language": true`.
-- Each widget's value is available in R/Python as a variable named after its `customId`: in the interface code while it is displayed, and in the next steps after it is submitted. Give input widgets short, valid variable names as `customId` (e.g. `age`, `input_file`), never an R/Python built-in name (`title`, `plot`, `summary`, `c`, `t`, `sum`, `type`...).
-- `graph` widgets display Plotly figures: `graphVariable` is an expression returning `list(data = ..., layout = ...)` (R) or `{'data': ..., 'layout': ...}` (Python).
-- With `"displaySubmitButton": false`, the interface is a dashboard driven by buttons (`buttonCode`); `gui.submit()` moves to the next step.
+- Top level: `language`, `submitbutton` and `elements` (the widgets). `language` (`"r"` or `"python"`) is the language of **all** code in the interface: values with `"isr": true`, `onchange`, `condition`, `onpress`, `intervalcode`.
+- Each widget has an `id` (used from code, `""` if not needed), a `type`, a `data` object and, for containers, its children in `elements`.
+- `data` uses the Apleno 3.x property names, all lowercase: `labeltext`, `labelposition`, `helptext`, `margintop`, `isr`, `required`, `onchange`, `condition`, `onpress`... (see the schema).
+- Containers: `box` holds a vertical list of widgets. `columns` and `tabs` must have exactly one child per entry of `columnswidths` / `tabsnames`, and each child must be a `box`, usually with data `{"labelposition": "hidden", "margintop": 0, "boxdesign": "none", "boxheader": ""}`. Column widths use a 12-unit grid.
+- `"isr": true` makes `value` an R/Python expression evaluated when the interface is displayed, e.g. `"value": "nrow(data)", "isr": true`.
+- Each widget's value is available in R/Python as a variable named after its `id`: in the interface code while it is displayed, and in the next steps after it is submitted. Give input widgets short, valid variable names as `id` (e.g. `age`, `input_file`), unique in the file, never an R/Python built-in name (`title`, `plot`, `summary`, `c`, `t`, `sum`, `type`...).
+- `graph` widgets display Plotly figures: their `graph` property is an expression returning `list(data = ..., layout = ...)` (R) or `{'data': ..., 'layout': ...}` (Python).
+- With `"submitbutton": false`, the interface is a dashboard driven by buttons (`onpress`); `gui.submit()` moves to the next step.
 
 Minimal interface:
 
 ```json
 {
-	"version": 50000,
 	"language": "r",
-	"displaySubmitButton": true,
-	"widgets": [
+	"submitbutton": true,
+	"elements": [
 		{
-			"id": 1,
-			"customId": "username",
+			"id": "username",
 			"type": "text",
-			"data": { "subType": "text", "value": "", "labelText": "Username", "isRequired": true }
+			"data": { "subtype": "text", "value": "", "labeltext": "Username", "required": true }
 		}
 	]
 }
@@ -79,10 +78,10 @@ Minimal interface:
 
 The functions below are predefined in every R and Python session run by Apleno. Do **not** import or `library()` anything to use them. Names are identical in R and Python (in Python, `rpgm`, `gui` and `script` are modules already present in the global scope). Use `TRUE`/`FALSE` in R and `True`/`False` in Python.
 
-**Referencing an interface.** GUI functions take a step reference and the widget's `customId`:
+**Referencing an interface.** GUI functions take a step reference and the widget's `id`:
 
-- `'this'` is the interface currently displayed: use it in interface code (`buttonCode`, `codeOnChange`...) and in the functions it calls.
-- `rpgm.step(file, stepId)` is a specific `gui` step, e.g. from a script step preparing an interface: `file` is the sequence containing the step (`"main"` or `"main.pseq"`) and `stepId` is the step's `customId`.
+- `'this'` is the interface currently displayed: use it in interface code (`onpress`, `onchange`...) and in the functions it calls.
+- `rpgm.step(file, stepId)` is a specific `gui` step, e.g. from a script step preparing an interface: `file` is the sequence containing the step (`"main"` or `"main.pseq"`) and `stepId` is the step's `id`.
 
 ```r
 gui.hide(rpgm.step("main", "form"), "results")   # in a script step, before the interface
@@ -94,7 +93,7 @@ gui.setValue("this", "total", sum(values))        # in the interface code
 | Function | Description |
 |----------|-------------|
 | `gui.setValue(step, id, value)` | Set the widget value. |
-| `gui.setProperty(step, id, property, value)` | Set one widget property (e.g. `value`, `labelText`, `visible`, `enabled`). |
+| `gui.setProperty(step, id, property, value)` | Set one widget property (e.g. `value`, `labeltext`, `visible`, `enabled`). |
 | `gui.setProperties(step, id, properties)` | Set several properties: a named `list()` in R, a `dict` in Python. |
 | `gui.show(step, id)` / `gui.hide(step, id)` | Show / hide a widget. |
 | `gui.enable(step, id)` / `gui.disable(step, id)` | Enable / disable a widget input. |

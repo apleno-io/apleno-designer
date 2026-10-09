@@ -1,0 +1,10 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "apleno",
+      "request": "launch",
+      "name": "Apleno preview"
+    }
+  ]
+}

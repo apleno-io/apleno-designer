@@ -17,7 +17,7 @@ description: Build and modify Apleno apps, R/Python applications made of .ppro, 
 
 ## Key facts
 
-- Widgets with a `customId` are R/Python variables named after it; interface code (`buttonCode`, `codeOnChange`, code values) uses them directly. Never use an R/Python built-in name as `customId` (`title`, `plot`, `summary`, `c`, `t`, `sum`, `max`, `type`, `list`...).
+- Widgets with an `id` are R/Python variables named after it; interface code (`onpress`, `onchange`, code values with `isr`) uses them directly. Never use an R/Python built-in name as widget `id` (`title`, `plot`, `summary`, `c`, `t`, `sum`, `max`, `type`, `list`...).
 - `'this'` is the current interface in GUI functions: `gui.setValue('this', 'result', 42)`. From script steps, use `rpgm.step('main', 'formStepId')`.
 - Graphs are Plotly figures: `list(data = ..., layout = ...)` in R, `{'data': ..., 'layout': ...}` in Python.
 - Write generated files with `rpgm.outputFile(name)`; show them with `rpgm.addToEndScreen()`, an `image` widget or `rpgm.open()`.

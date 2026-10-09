@@ -8,7 +8,7 @@ JavaScript and CSS files listed in `customFiles` of the `.ppro` (paths relative 
 |---|---|
 | `RPGM.on(event, callback)` / `RPGM.off(event, callback)` | Events: `didEnterStep(customStepId)` (entering a step, after custom files are loaded), `didReceiveMessage(message, data, language)` (from `rpgm.sendToJavascript`), `willLeaveStep(customStepId)` (clean the DOM), `willDispose()` (app closing). |
 | `RPGM.sendMessage(language, message, data = {}, options = {})` | Send a message to `'r'` or `'python'`. `data`: boolean, string, number, array or object. `options.rArrayType`: `"vector"`, `"list"` or `"auto"` (how arrays are converted to R). |
-| `RPGM.getCurrentStepId()` | `customId` of the current step. |
+| `RPGM.getCurrentStepId()` | `id` of the current step (as in the `.pseq` file). |
 | `RPGM.getOutputURL(file)` | URL of a file of the output folder. |
 
 ## R/Python ↔ JavaScript messaging
@@ -45,7 +45,7 @@ Put an empty container in a `label` widget (`"value": "<div id=\"map\"></div>"`)
 
 ```javascript
 RPGM.on('didEnterStep', (stepId) => {
-    if(stepId !== 'mapStep' || window.myMap){   // customId of the gui step
+    if(stepId !== 'mapStep' || window.myMap){   // id of the gui step in the .pseq
         return;
     }
     setTimeout(() => { window.myMap = L.map('map'); /* ... */ }, 10);
@@ -66,7 +66,7 @@ RPGM.on('didReceiveMessage', (message) => {
 ```
 
 ```python
-gui.setProperty('this', 'nt', 'helpText', 'Time steps, \\(dt\\) = ' + str(dt))
+gui.setProperty('this', 'nt', 'helptext', 'Time steps, \\(dt\\) = ' + str(dt))
 rpgm.sendToJavascript('refreshMathjax')
 ```
 

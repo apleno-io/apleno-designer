@@ -13,7 +13,7 @@ An R app displaying insurance exposure on an interactive Leaflet map of France, 
 - **R ↔ JavaScript messaging**: JavaScript sends the map view and clicks with `RPGM.sendMessage('r', ...)`; R answers in `rpgm.on('didReceiveMessage', ...)` (`main.R`) with `rpgm.sendToJavascript(...)` to draw polygons, markers and the legend.
 - **Plotly graphs from code**: on a zone click, `plotly_graph()` in `main.R` sets three pie charts with `gui.setValue('this', var, list(data = ..., layout = ...))`.
 - **Incremental loading**: an `interval` widget calls `loadDonnees(...)` periodically, and `gui.setProperties` updates a progress bar (`value`, `progressdescription`).
-- **Select reacting to changes**: `codeOnChange` on the `empreinte` select reloads the data.
+- **Select reacting to changes**: `onchange` on the `empreinte` select reloads the data.
 - **Output files for JavaScript**: the marker icon is copied to the output folder (`file.copy(rpgm.pgmFilePath(...), rpgm.outputFile("icon.png"))`) and loaded with `RPGM.getOutputURL('icon.png')`.
 - **Dark theme**: `main.css` and `style.css` restyle the app, the tabs and the select widget.
 

@@ -1,114 +1,180 @@
 {
-	"version": 50000,
 	"language": "r",
-	"displaySubmitButton": true,
-	"widgets": [
+	"submitbutton": true,
+	"elements": [
 		{
-			"id": 1,
-			"customId": "",
+			"id": "",
 			"type": "label",
 			"data": {
 				"value": "Dataset explorer",
 				"css": "app-title",
-				"labelPosition": "hidden"
+				"labelposition": "hidden",
+				"isr": false,
+				"margintop": 10,
+				"labeltext": "",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": 14,
+				"fontfamily": "default",
+				"fontcolor": "#000000"
 			}
 		},
 		{
-			"id": 2,
-			"customId": "",
+			"id": "",
 			"type": "label",
 			"data": {
 				"value": "Choose a variable to analyze, then submit.",
 				"css": "app-subtitle",
-				"labelPosition": "hidden",
-				"marginTop": 0
+				"labelposition": "hidden",
+				"margintop": 0,
+				"isr": false,
+				"labeltext": "",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": 14,
+				"fontfamily": "default",
+				"fontcolor": "#000000"
 			}
 		},
 		{
-			"id": 3,
-			"customId": "",
+			"id": "",
 			"type": "box",
 			"data": {
-				"labelPosition": "hidden",
-				"boxDesign": "light",
-				"boxHeader": "Data"
+				"labelposition": "hidden",
+				"boxdesign": "light",
+				"boxheader": "Data",
+				"css": "",
+				"margintop": 10,
+				"labeltext": "",
+				"helptext": "",
+				"helpposition": "bottom"
 			},
-			"widgets": [
+			"elements": [
 				{
-					"id": 4,
-					"customId": "dataset",
+					"id": "dataset",
 					"type": "select",
 					"data": {
-						"subType": "select",
+						"subtype": "select",
 						"value": "mtcars",
-						"labelText": "Dataset",
-						"choicesLanguageValues": "dataset_values",
-						"choicesLanguageTexts": "dataset_texts",
-						"codeOnChange": "update_variables(dataset)"
+						"labeltext": "Dataset",
+						"choicesvalues": "dataset_values",
+						"choicestexts": "dataset_texts",
+						"onchange": "update_variables(dataset)",
+						"isr": false,
+						"css": "",
+						"margintop": 10,
+						"labelposition": "left",
+						"helptext": "",
+						"helpposition": "bottom",
+						"required": false,
+						"condition": "",
+						"choices": []
 					}
 				},
 				{
-					"id": 5,
-					"customId": "variable",
+					"id": "variable",
 					"type": "select",
 					"data": {
-						"subType": "select",
+						"subtype": "select",
 						"value": "mpg",
-						"labelText": "Variable",
-						"helpText": "Numeric columns of the dataset.",
-						"isRequired": true
+						"labeltext": "Variable",
+						"helptext": "Numeric columns of the dataset.",
+						"required": true,
+						"isr": false,
+						"css": "",
+						"margintop": 10,
+						"labelposition": "left",
+						"helpposition": "bottom",
+						"onchange": "",
+						"condition": "",
+						"choices": [],
+						"choicesvalues": "",
+						"choicestexts": ""
 					}
 				}
 			]
 		},
 		{
-			"id": 6,
-			"customId": "",
+			"id": "",
 			"type": "box",
 			"data": {
-				"labelPosition": "hidden",
-				"boxDesign": "light",
-				"boxHeader": "Chart"
+				"labelposition": "hidden",
+				"boxdesign": "light",
+				"boxheader": "Chart",
+				"css": "",
+				"margintop": 10,
+				"labeltext": "",
+				"helptext": "",
+				"helpposition": "bottom"
 			},
-			"widgets": [
+			"elements": [
 				{
-					"id": 7,
-					"customId": "chart",
+					"id": "chart",
 					"type": "select",
 					"data": {
-						"subType": "radio",
+						"subtype": "radio",
 						"value": "histogram",
-						"labelText": "Type",
-						"choicesEntries": [
-							{ "value": "histogram", "text": "Histogram" },
-							{ "value": "box", "text": "Box plot" }
-						]
+						"labeltext": "Type",
+						"choices": [
+							{
+								"value": "histogram",
+								"text": "Histogram"
+							},
+							{
+								"value": "box",
+								"text": "Box plot"
+							}
+						],
+						"isr": false,
+						"css": "",
+						"margintop": 10,
+						"labelposition": "left",
+						"helptext": "",
+						"helpposition": "bottom",
+						"required": false,
+						"onchange": "",
+						"condition": "",
+						"choicesvalues": "",
+						"choicestexts": ""
 					}
 				},
 				{
-					"id": 8,
-					"customId": "bins",
+					"id": "bins",
 					"type": "number",
 					"data": {
-						"subType": "integer",
+						"subtype": "integer",
 						"value": 10,
-						"labelText": "Bins",
-						"helpText": "Between 2 and 50, for histograms.",
-						"numberMinValue": 2,
-						"numberMaxValue": 50,
-						"isRequired": true,
-						"conditionOnSubmit": "bins >= 2 && bins <= 50"
+						"labeltext": "Bins",
+						"helptext": "Between 2 and 50, for histograms.",
+						"min": 2,
+						"max": 50,
+						"required": true,
+						"condition": "bins >= 2 && bins <= 50",
+						"isr": false,
+						"css": "",
+						"margintop": 10,
+						"labelposition": "left",
+						"helpposition": "bottom",
+						"onchange": "",
+						"step": ""
 					}
 				},
 				{
-					"id": 9,
-					"customId": "chart_title",
+					"id": "chart_title",
 					"type": "text",
 					"data": {
-						"subType": "text",
+						"subtype": "text",
 						"value": "",
-						"labelText": "Title",
-						"helpText": "Optional. The variable name is used by default."
+						"labeltext": "Title",
+						"helptext": "Optional. The variable name is used by default.",
+						"isr": false,
+						"css": "",
+						"margintop": 10,
+						"labelposition": "left",
+						"helpposition": "bottom",
+						"required": false,
+						"onchange": "",
+						"condition": ""
 					}
 				}
 			]

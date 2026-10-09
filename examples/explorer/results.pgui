@@ -1,83 +1,115 @@
 {
-	"version": 50000,
 	"language": "r",
-	"displaySubmitButton": true,
-	"widgets": [
+	"submitbutton": true,
+	"elements": [
 		{
-			"id": 1,
-			"customId": "summary_text",
+			"id": "summary_text",
 			"type": "label",
 			"data": {
 				"value": "summary_html",
-				"language": true,
-				"labelPosition": "hidden"
+				"isr": true,
+				"labelposition": "hidden",
+				"css": "",
+				"margintop": 10,
+				"labeltext": "",
+				"helptext": "",
+				"helpposition": "bottom",
+				"fontsize": 14,
+				"fontfamily": "default",
+				"fontcolor": "#000000"
 			}
 		},
 		{
-			"id": 2,
-			"customId": "",
+			"id": "",
 			"type": "columns",
 			"data": {
-				"labelPosition": "hidden",
-				"columnsWidths": [5, 7],
-				"columnsPadding": 20
+				"labelposition": "hidden",
+				"columnswidths": [
+					5,
+					7
+				],
+				"columnspadding": 20,
+				"css": "",
+				"margintop": 10,
+				"labeltext": "",
+				"helptext": "",
+				"helpposition": "bottom"
 			},
-			"widgets": [
+			"elements": [
 				{
-					"id": 3,
-					"customId": "",
+					"id": "",
 					"type": "box",
 					"data": {
-						"labelPosition": "hidden",
-						"marginTop": 0,
-						"boxDesign": "none",
-						"boxHeader": ""
+						"labelposition": "hidden",
+						"margintop": 0,
+						"boxdesign": "none",
+						"boxheader": "",
+						"css": "",
+						"labeltext": "",
+						"helptext": "",
+						"helpposition": "bottom"
 					},
-					"widgets": [
+					"elements": [
 						{
-							"id": 4,
-							"customId": "stats_view",
+							"id": "stats_view",
 							"type": "table",
 							"data": {
 								"value": "stats_table",
-								"language": true,
-								"labelText": "Statistics",
-								"labelPosition": "top"
+								"isr": true,
+								"labeltext": "Statistics",
+								"labelposition": "top",
+								"css": "",
+								"margintop": 10,
+								"helptext": "",
+								"helpposition": "bottom"
 							}
 						},
 						{
-							"id": 5,
-							"customId": "copy",
+							"id": "copy",
 							"type": "button",
 							"data": {
 								"value": "<i class=\"fa-solid fa-copy\"></i> Copy",
-								"labelPosition": "hidden",
-								"buttonCode": "rpgm.sendToClipboard(stats_table, headers = TRUE); rpgm.notification('success', 'Statistics copied to the clipboard.')",
-								"buttonSize": "sm",
-								"buttonDesign": "outline-primary"
+								"labelposition": "hidden",
+								"onpress": "rpgm.sendToClipboard(stats_table, headers = TRUE); rpgm.notification('success', 'Statistics copied to the clipboard.')",
+								"buttonsize": "sm",
+								"buttondesign": "outline-primary",
+								"isr": false,
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"helptext": "",
+								"helpposition": "bottom"
 							}
 						}
 					]
 				},
 				{
-					"id": 6,
-					"customId": "",
+					"id": "",
 					"type": "box",
 					"data": {
-						"labelPosition": "hidden",
-						"marginTop": 0,
-						"boxDesign": "none",
-						"boxHeader": ""
+						"labelposition": "hidden",
+						"margintop": 0,
+						"boxdesign": "none",
+						"boxheader": "",
+						"css": "",
+						"labeltext": "",
+						"helptext": "",
+						"helpposition": "bottom"
 					},
-					"widgets": [
+					"elements": [
 						{
-							"id": 7,
-							"customId": "chart_graph",
+							"id": "chart_graph",
 							"type": "graph",
 							"data": {
-								"labelPosition": "hidden",
-								"graphVariable": "make_plot(values, variable, bins, chart, chart_title)",
-								"graphHeight": 400
+								"labelposition": "hidden",
+								"graph": "make_plot(values, variable, bins, chart, chart_title)",
+								"graphheight": 400,
+								"css": "",
+								"margintop": 10,
+								"labeltext": "",
+								"helptext": "",
+								"helpposition": "bottom",
+								"graphwidth": 100
 							}
 						}
 					]
@@ -85,15 +117,21 @@
 			]
 		},
 		{
-			"id": 8,
-			"customId": "again",
+			"id": "again",
 			"type": "onoff",
 			"data": {
-				"subType": "switch",
+				"subtype": "switch",
 				"value": false,
-				"labelText": "Run another analysis",
-				"helpText": "Leave it off to finish and get the exported files.",
-				"marginTop": 30
+				"labeltext": "Run another analysis",
+				"helptext": "Leave it off to finish and get the exported files.",
+				"margintop": 30,
+				"isr": false,
+				"css": "",
+				"labelposition": "left",
+				"helpposition": "bottom",
+				"required": false,
+				"onchange": "",
+				"condition": ""
 			}
 		}
 	]

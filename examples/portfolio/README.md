@@ -8,10 +8,10 @@ A styled Python dashboard: parameter cards, a method choice and a compute button
 
 ## What it shows
 
-- **Plotly graphs from expressions**: `graph` widgets with `graphVariable` such as `graph_oc(alpha)`; the functions in `graph.py` return `{'data': ..., 'layout': ...}` (or `[]` while there is nothing to draw), and `gui.update('this', 'plotly_oc')` redraws them.
-- **Compute button**: `buttonCode` runs `oc_edp(...)` or `oc_mc(...)` depending on the `methode` select, with widget values as arguments. `heston-edp.py` shows the full pattern: disable the button, update the `oc_progress` progress widget in the loop, hide the "waiting" box, show a notification, enable the button again.
-- **Reacting to inputs**: `codeOnChange` on the axis select and value redraw the graph.
-- **Validation**: `conditionOnSubmit` (`eta > 0`) on a number input.
+- **Plotly graphs from expressions**: `graph` widgets with a `graph` expression such as `graph_oc(alpha)`; the functions in `graph.py` return `{'data': ..., 'layout': ...}` (or `[]` while there is nothing to draw), and `gui.update('this', 'plotly_oc')` redraws them.
+- **Compute button**: `onpress` runs `oc_edp(...)` or `oc_mc(...)` depending on the `methode` select, with widget values as arguments. `heston-edp.py` shows the full pattern: disable the button, update the `oc_progress` progress widget in the loop, hide the "waiting" box, show a notification, enable the button again.
+- **Reacting to inputs**: `onchange` on the axis select and value redraw the graph.
+- **Validation**: `condition` (`eta > 0`) on a number input.
 - **Show/hide**: results are hidden at start (`gui.hide(rpgm.step('main', 'dashboard'), 'tab')` in `graph.py`) and shown after computing.
 - **Runtime styling**: `gui.setProperty(..., 'progresscolor', '#f1c40f')`.
 - **Custom design**: CSS classes in `style.css` (cards `cbox`, titles `ch1`...`ch4`, a Google font) applied with the widgets' `css` property; formulas typeset by MathJax.
