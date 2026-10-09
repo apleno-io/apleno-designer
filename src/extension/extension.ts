@@ -14,6 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// Services
 	Storage.initialize(context);
 	Services.ProjectCreator.initialize(context);
+	Services.AIFiles.initialize(context);
 	context.subscriptions.push(vscode.commands.registerCommand('apleno.logs', () => {
 		ExecutionStatusItemManager.setText(null);
 		logger.show();

@@ -65,6 +65,10 @@
         "title": "Apleno: Create new project"
       },
       {
+        "command": "apleno.ai.setup",
+        "title": "Apleno: Set up AI assistant files"
+      },
+      {
         "command": "apleno.language.choose.r",
         "title": "Apleno: Choose R path for preview"
       },
