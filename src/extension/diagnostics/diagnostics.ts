@@ -4,7 +4,9 @@ import { logger } from '../utils/logger';
 import { type AplenoFileKind, AplenoValidator, getFileKind } from './validator';
 
 const FILES_GLOB = '**/*.{ppro,pseq,pgui}';
-const EXCLUDE_GLOB = '**/node_modules/**';
+// Dependencies, and the example apps of the AI skill (their data files are not included)
+const EXCLUDE_GLOB = '{**/node_modules/**,**/.claude/skills/**}';
+const EXCLUDE_PATH = /\/(node_modules|\.claude\/skills)\//;
 
 /**
  * Show the errors of the Apleno files of the workspace in the Problems panel,
@@ -67,7 +69,7 @@ export class FileDiagnostics {
 
   private static async validateFile(uri: vscode.Uri): Promise<void> {
     const kind = getFileKind(uri.path);
-    if (kind === null || this.validator === null || uri.path.includes('/node_modules/')) {
+    if (kind === null || this.validator === null || EXCLUDE_PATH.test(uri.path)) {
       return;
     }
 
