@@ -1,0 +1,36 @@
+{
+	"_version": 4,
+	"cameraX": 0,
+	"cameraY": 0,
+	"cameraZoom": 1,
+	"steps": [
+		{
+			"id": 0,
+			"type": "start",
+			"x": 0,
+			"y": 0,
+			"parameters": {
+				"target": 1
+			}
+		},
+		{
+			"id": 1,
+			"type": "script",
+			"x": 0,
+			"y": 150,
+			"customId": "html-report",
+			"customName": "HTML report",
+			"parameters": {
+				"file": "report.R",
+				"target": 2
+			}
+		},
+		{
+			"id": 2,
+			"type": "end",
+			"x": 0,
+			"y": 300,
+			"parameters": {}
+		}
+	]
+}

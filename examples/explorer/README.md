@@ -1,0 +1,29 @@
+# Dataset explorer (R)
+
+A classic step-by-step R app: a form, a computation, a results page, and a choice to start again. It uses R built-in datasets and base R only, so it runs without data files or packages.
+
+## Flow (`main.pseq`)
+
+```
+start → init.R → form.pgui → analysis.R → report.pseq → results.pgui → condition "isTRUE(again)"
+                     ↑                                                            │ true
+                     └────────────────────────────────────────────────────────────┘
+                                                                  false → end (exported files listed)
+```
+
+`report.pseq` is a sub-sequence (`start → report.R → end`): when it ends, the main sequence continues.
+
+## What it shows
+
+- **Preparing an interface before it is displayed**: `init.R` fills the `variable` select of the form with `gui.addChoices(rpgm.step("main", "form"), ...)`.
+- **Two ways to fill a select**: `dataset` reads its options from R variables (`choicesLanguageValues` / `choicesLanguageTexts`); `variable` is filled by code and refilled when the dataset changes (`codeOnChange: "update_variables(dataset)"` calling `gui.clearChoices` / `gui.addChoices` on `"this"`).
+- **Form validation**: `isRequired`, number limits, and `conditionOnSubmit: "bins >= 2 && bins <= 50"`.
+- **Submitted values as variables**: `analysis.R` uses `dataset`, `variable`, `bins`, `chart` and `chart_title`, the `customId`s of the form widgets.
+- **Script progress**: `script.setProgress()` in `analysis.R`.
+- **Output files**: CSV and HTML written with `rpgm.outputFile()` and listed on the end screen with `rpgm.addToEndScreen()`.
+- **A shared session**: the sub-sequence script `report.R` uses the variables of the main sequence.
+- **Results from code values**: a label and a table with `"language": true` (`summary_html`, `stats_table`), and a Plotly graph from `graphVariable: "make_plot(...)"` (histogram or box plot, arrays sent with `as.list()`).
+- **A button**: `buttonCode` copies the table to the clipboard and shows a notification.
+- **Looping back**: the `again` switch is read by the condition step (`isTRUE(again)`): true goes back to the form, false goes to the end.
+- **Naming**: `customId`s avoid R built-in names (`chart_title` and not `title`, `chart_graph` and not `plot`).
+- **Styling**: CSS classes from `style.css` (listed in `customFiles`), box designs, columns, a Font Awesome icon in a button.

@@ -1,0 +1,117 @@
+{
+	"version": 50000,
+	"language": "r",
+	"displaySubmitButton": true,
+	"widgets": [
+		{
+			"id": 1,
+			"customId": "",
+			"type": "label",
+			"data": {
+				"value": "Dataset explorer",
+				"css": "app-title",
+				"labelPosition": "hidden"
+			}
+		},
+		{
+			"id": 2,
+			"customId": "",
+			"type": "label",
+			"data": {
+				"value": "Choose a variable to analyze, then submit.",
+				"css": "app-subtitle",
+				"labelPosition": "hidden",
+				"marginTop": 0
+			}
+		},
+		{
+			"id": 3,
+			"customId": "",
+			"type": "box",
+			"data": {
+				"labelPosition": "hidden",
+				"boxDesign": "light",
+				"boxHeader": "Data"
+			},
+			"widgets": [
+				{
+					"id": 4,
+					"customId": "dataset",
+					"type": "select",
+					"data": {
+						"subType": "select",
+						"value": "mtcars",
+						"labelText": "Dataset",
+						"choicesLanguageValues": "dataset_values",
+						"choicesLanguageTexts": "dataset_texts",
+						"codeOnChange": "update_variables(dataset)"
+					}
+				},
+				{
+					"id": 5,
+					"customId": "variable",
+					"type": "select",
+					"data": {
+						"subType": "select",
+						"value": "mpg",
+						"labelText": "Variable",
+						"helpText": "Numeric columns of the dataset.",
+						"isRequired": true
+					}
+				}
+			]
+		},
+		{
+			"id": 6,
+			"customId": "",
+			"type": "box",
+			"data": {
+				"labelPosition": "hidden",
+				"boxDesign": "light",
+				"boxHeader": "Chart"
+			},
+			"widgets": [
+				{
+					"id": 7,
+					"customId": "chart",
+					"type": "select",
+					"data": {
+						"subType": "radio",
+						"value": "histogram",
+						"labelText": "Type",
+						"choicesEntries": [
+							{ "value": "histogram", "text": "Histogram" },
+							{ "value": "box", "text": "Box plot" }
+						]
+					}
+				},
+				{
+					"id": 8,
+					"customId": "bins",
+					"type": "number",
+					"data": {
+						"subType": "integer",
+						"value": 10,
+						"labelText": "Bins",
+						"helpText": "Between 2 and 50, for histograms.",
+						"numberMinValue": 2,
+						"numberMaxValue": 50,
+						"isRequired": true,
+						"conditionOnSubmit": "bins >= 2 && bins <= 50"
+					}
+				},
+				{
+					"id": 9,
+					"customId": "chart_title",
+					"type": "text",
+					"data": {
+						"subType": "text",
+						"value": "",
+						"labelText": "Title",
+						"helpText": "Optional. The variable name is used by default."
+					}
+				}
+			]
+		}
+	]
+}

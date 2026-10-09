@@ -1,0 +1,100 @@
+{
+	"version": 50000,
+	"language": "r",
+	"displaySubmitButton": true,
+	"widgets": [
+		{
+			"id": 1,
+			"customId": "summary_text",
+			"type": "label",
+			"data": {
+				"value": "summary_html",
+				"language": true,
+				"labelPosition": "hidden"
+			}
+		},
+		{
+			"id": 2,
+			"customId": "",
+			"type": "columns",
+			"data": {
+				"labelPosition": "hidden",
+				"columnsWidths": [5, 7],
+				"columnsPadding": 20
+			},
+			"widgets": [
+				{
+					"id": 3,
+					"customId": "",
+					"type": "box",
+					"data": {
+						"labelPosition": "hidden",
+						"marginTop": 0,
+						"boxDesign": "none",
+						"boxHeader": ""
+					},
+					"widgets": [
+						{
+							"id": 4,
+							"customId": "stats_view",
+							"type": "table",
+							"data": {
+								"value": "stats_table",
+								"language": true,
+								"labelText": "Statistics",
+								"labelPosition": "top"
+							}
+						},
+						{
+							"id": 5,
+							"customId": "copy",
+							"type": "button",
+							"data": {
+								"value": "<i class=\"fa-solid fa-copy\"></i> Copy",
+								"labelPosition": "hidden",
+								"buttonCode": "rpgm.sendToClipboard(stats_table, headers = TRUE); rpgm.notification('success', 'Statistics copied to the clipboard.')",
+								"buttonSize": "sm",
+								"buttonDesign": "outline-primary"
+							}
+						}
+					]
+				},
+				{
+					"id": 6,
+					"customId": "",
+					"type": "box",
+					"data": {
+						"labelPosition": "hidden",
+						"marginTop": 0,
+						"boxDesign": "none",
+						"boxHeader": ""
+					},
+					"widgets": [
+						{
+							"id": 7,
+							"customId": "chart_graph",
+							"type": "graph",
+							"data": {
+								"labelPosition": "hidden",
+								"graphVariable": "make_plot(values, variable, bins, chart, chart_title)",
+								"graphHeight": 400
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": 8,
+			"customId": "again",
+			"type": "onoff",
+			"data": {
+				"subType": "switch",
+				"value": false,
+				"labelText": "Run another analysis",
+				"helpText": "Leave it off to finish and get the exported files.",
+				"marginTop": 30
+			}
+		}
+	]
+}

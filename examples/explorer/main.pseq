@@ -1,0 +1,98 @@
+{
+	"_version": 4,
+	"cameraX": 79,
+	"cameraY": 270,
+	"cameraZoom": 5,
+	"steps": [
+		{
+			"id": 0,
+			"type": "start",
+			"x": -90,
+			"y": -27,
+			"parameters": {
+				"target": 1
+			}
+		},
+		{
+			"id": 1,
+			"type": "script",
+			"x": -46,
+			"y": 141,
+			"customId": "init",
+			"customName": "Initialization",
+			"parameters": {
+				"file": "init.R",
+				"target": 2
+			}
+		},
+		{
+			"id": 2,
+			"type": "gui",
+			"x": 105,
+			"y": 267,
+			"customId": "form",
+			"customName": "Choose a variable",
+			"parameters": {
+				"file": "form.pgui",
+				"target": 3
+			}
+		},
+		{
+			"id": 3,
+			"type": "script",
+			"x": 400,
+			"y": 403,
+			"customId": "analysis",
+			"customName": "Analysis",
+			"parameters": {
+				"file": "analysis.R",
+				"target": 4
+			}
+		},
+		{
+			"id": 4,
+			"type": "sequence",
+			"x": 174,
+			"y": 535,
+			"customId": "report",
+			"customName": "Report",
+			"parameters": {
+				"file": "report.pseq",
+				"target": 5
+			}
+		},
+		{
+			"id": 5,
+			"type": "gui",
+			"x": -76,
+			"y": 639,
+			"customId": "results",
+			"customName": "Results",
+			"parameters": {
+				"file": "results.pgui",
+				"target": 6
+			}
+		},
+		{
+			"id": 6,
+			"type": "condition",
+			"x": -360,
+			"y": 789,
+			"customId": "again",
+			"customName": "Another analysis?",
+			"parameters": {
+				"language": "r",
+				"code": "isTRUE(again)",
+				"target": 2,
+				"targetOnFalse": 7
+			}
+		},
+		{
+			"id": 7,
+			"type": "end",
+			"x": -56,
+			"y": 915,
+			"parameters": {}
+		}
+	]
+}
