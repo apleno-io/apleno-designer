@@ -34,7 +34,7 @@ async function debugPreChecks(folder: string): Promise<boolean> {
     // no runtime, offer to download in modal
     logger.info('No runtime installed.');
     const wantInstall = await vscode.window.showInformationMessage('To execute an Apleno app, you need the Apleno Runtime installed on your computer. Do you want to install it now?', { modal: true }, ...['Download']);
-    if (wantInstall === 'Cancel') {
+    if (wantInstall !== 'Download') {
       return false;
     }
 
