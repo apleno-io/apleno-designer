@@ -13,7 +13,8 @@ description: Build and modify Apleno apps, R/Python applications made of .ppro, 
 2. **Write the files** following the JSON Schemas in [schemas/](schemas/) (`ppro.schema.json`, `pseq.schema.json`, `pgui.schema.json`: read the schema of a file type before writing one). Write JSON with tab indentation.
 3. **Write the scripts**: initialization scripts before the interfaces, functions called from the interfaces.
 4. **Check the Problems panel**: the Apleno extension validates `.ppro`/`.pseq`/`.pgui` files on save (source "Apleno"): unknown properties, wrong values, duplicate ids, broken step targets, missing files. Fix every error.
-5. **Ask the user to run the app** (F5 in VS Code). You cannot run it yourself; R/Python errors appear in the app and in the "Apleno" output channel.
+5. **Ask the user to run the app** (F5 in VS Code). You cannot run it yourself.
+6. **Read `.apleno/last-run.log`** in the project after the user ran the app: it contains the output of the last run (rewritten at each run), where runtime and R/Python errors appear. Fix them and ask for another run.
 
 ## Key facts
 

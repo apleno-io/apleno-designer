@@ -44,7 +44,7 @@ export class Exporter {
     }
 
     // Get .aplenoignore
-    const ignore: string[] = ['!.git/**/*', '!.aplenoignore'];
+    const ignore: string[] = ['!.git/**/*', '!.aplenoignore', '!.apleno/**/*', '!.apleno/**/.*'];
     try {
       const ignoreContent = await fs.promises.readFile(path.join(folder.uri.fsPath, '.aplenoignore'), 'utf8');
       ignore.push(...ignoreContent.replace(/\r\n/g, '\n').split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('#')).map(l => `!${l.startsWith('./') ? l.substring(2) : l}`));

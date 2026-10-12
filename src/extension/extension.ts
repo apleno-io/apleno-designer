@@ -3,6 +3,7 @@ import { PGMProjectFileEditorProvider } from './project/project-editor';
 import { PGMSequenceFileEditorProvider } from './sequence/sequence-editor';
 import { PGMInterfaceFileEditorProvider } from './gui/gui-editor';
 import { PGMRunner } from './execution/run';
+import { RunLog } from './execution/run-log';
 import { Storage } from './utils/storage';
 import { Exporter } from './export/export';
 import { ExecutionStatusItemManager } from './execution/ui-status-item';
@@ -31,6 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(Exporter.registerCommand(context));
 	ExecutionStatusItemManager.initialize(context);
 	PGMRunner.initialize(context);
+	RunLog.initialize(context);
 }
 
 export function deactivate() { }

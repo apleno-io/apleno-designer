@@ -25,6 +25,8 @@ The **`apleno` skill**, installed by the Apleno extension in `~/.claude/skills/a
 
 The extension checks these files and reports errors in the VS Code Problems panel (source "Apleno"): fix them after editing.
 
+You cannot run the app: ask the user to run it (F5 in VS Code), then read `.apleno/last-run.log`, the output of the last run, for errors.
+
 ## Sequences (`.pseq`)
 
 - Exactly one `start` step. Execution follows `target` from step to step until an `end` step.
