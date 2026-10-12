@@ -78,12 +78,17 @@ export const RuntimeManager = new class {
     }
 
     return vscode.window.withProgress({
-      title: "Installing Apleno Runtime...",
+      title: "Installing Apleno Runtime",
       location: vscode.ProgressLocation.Notification,
-    }, async (_progress) => {
+      cancellable: true
+    }, async (progress, token) => {
+      const file = path.join(this.getRuntimeFolder(), 'latest.zip');
+      const abort = new AbortController();
+      token.onCancellationRequested(() => abort.abort());
+
       // Download & unzip
       try {
-        const file = path.join(this.getRuntimeFolder(), 'latest.zip');
+        progress.report({ message: 'Checking the latest version...' });
         logger.info(`Downloading latest runtime in ${this.getRuntimeFolder()}...`);
         let platform = 'linux';
         if (process.platform === 'win32') {
@@ -94,7 +99,7 @@ export const RuntimeManager = new class {
         }
 
         // Get version
-        const resVersion = await fetch('https://files.pgm-solutions.com/runtime/latest.json');
+        const resVersion = await fetch('https://files.pgm-solutions.com/runtime/latest.json', { signal: abort.signal });
         if (!resVersion.ok) {
           throw new Error(`Could not download latest version`);
         }
@@ -105,14 +110,15 @@ export const RuntimeManager = new class {
 
         // Actually download
         const runtimeURL = `https://files.pgm-solutions.com/runtime/client-${platform}-${dataVersion.version}.zip`;
-        const res = await fetch(runtimeURL);
-        if (!res.ok) {
+        const res = await fetch(runtimeURL, { signal: abort.signal });
+        if (!res.ok || res.body === null) {
           throw new Error(`Could not download or install runtime ${runtimeURL}. Status: ${res.status}`);
         }
+        await this.downloadToFile(res, file, progress);
 
-        // Extract
+        // Extract (no progress available: the download bar stays at its end)
         logger.info('Extracting runtime...');
-        await fs.promises.writeFile(file, Buffer.from(await res.arrayBuffer()));
+        progress.report({ message: 'Extracting... (this can take a minute)' });
         await new Promise<void>((resolve, reject) => {
           if (process.platform === 'win32') {
             execFile('powershell.exe', ['-NoProfile', '-Command', `Expand-Archive -Force -LiteralPath '${file}' -DestinationPath '${this.getRuntimeFolder()}'`], (err) => err ? reject(err) : resolve());
@@ -129,9 +135,55 @@ export const RuntimeManager = new class {
         return true;
       }
       catch (err) {
+        await fs.promises.rm(file, { force: true }).catch(() => { });
+        if (token.isCancellationRequested) {
+          logger.info('Runtime installation cancelled.', true);
+          return false;
+        }
         logger.error(`Apleno: Could not download or install runtime: ${err}`, true);
         return false;
       }
     });
+  }
+
+  /**
+   * Stream a download to a file, reporting the progress. The download takes
+   * 90% of the progress bar, the extraction the rest.
+   */
+  private async downloadToFile(res: Response, file: string, progress: vscode.Progress<{ message?: string, increment?: number }>): Promise<void> {
+    const total = Number(res.headers.get('content-length')) || 0;
+    const toMB = (bytes: number) => (bytes / 1024 / 1024).toFixed(0);
+    let received = 0;
+    let reported = 0;
+
+    const output = fs.createWriteStream(file);
+    try {
+      const reader = res.body!.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        received += value.length;
+        if (!output.write(value)) {
+          await new Promise<void>(resolve => output.once('drain', () => resolve()));
+        }
+
+        if (total > 0) {
+          const percent = Math.min(90, Math.floor(received / total * 90));
+          progress.report({
+            increment: percent - reported,
+            message: `Downloading ${toMB(received)} / ${toMB(total)} MB (${Math.floor(received / total * 100)}%)`
+          });
+          reported = percent;
+        }
+        else {
+          progress.report({ message: `Downloading ${toMB(received)} MB...` });
+        }
+      }
+    }
+    finally {
+      await new Promise<void>((resolve, reject) => output.end((err?: Error | null) => err ? reject(err) : resolve()));
+    }
   }
 };
