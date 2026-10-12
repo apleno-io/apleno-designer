@@ -1,5 +1,5 @@
 # Runs after the form is submitted: the widgets of form.pgui are now R variables
-# named after their customId (dataset, variable, bins, chart, chart_title).
+# named after their id (dataset, variable, bins, chart, chart_title).
 
 script.setProgress(TRUE, 0, "Reading the data...")
 values <- datasets_list[[dataset]][[variable]]
