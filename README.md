@@ -42,6 +42,12 @@ At least one of the following runtimes must be installed to run/preview apps:
 | `Apleno: Choose Conda path for preview`  | Set the Conda executable used for previewing     |
 | `Apleno: Show logs`                      | Open the Apleno output log panel                 |
 
+## Deploy your apps
+
+Apps built with Apleno Designer run on **Apleno Server**, the on-premise server for Apleno, Shiny, Dash, Streamlit and Gradio apps: single sign-on with OAuth 2.0 / OpenID Connect, per-app permissions and an action log. It installs on Linux, Windows Server or Docker.
+
+[Start a free 30-day trial](https://apleno.io/trial?utm_source=marketplace&utm_medium=readme&utm_campaign=designer)
+
 ## AI Assistants
 
 AI coding assistants like Claude Code and GitHub Copilot can create and modify Apleno apps: interfaces, sequences, project files and the R/Python code using the Apleno API.
