@@ -9,6 +9,8 @@ A Visual Studio Code extension for building data science apps with user-friendly
 - **Interface Editor**: design interactive GUI layouts visually (`.pgui` files)
 - **App Preview**: run and preview your app directly inside VSCode using R, Python, or Conda
 - **Export**: package your project into a distributable app
+- **Validation**: errors in `.ppro`, `.pseq` and `.pgui` files are shown in the Problems panel
+- **AI assistants**: Claude Code and GitHub Copilot know how to build Apleno apps (see below)
 
 ## Requirements
 
@@ -30,6 +32,7 @@ At least one of the following runtimes must be installed to run/preview apps:
 | Command                                  | Description                                      |
 | ---------------------------------------- | ------------------------------------------------ |
 | `Apleno: Create new project`             | Initialize a new Apleno project in the workspace |
+| `Apleno: Set up AI assistant files`      | Add `AGENTS.md` and `CLAUDE.md` to an existing project |
 | `Apleno: Create new Project file`        | Create a new `.ppro` file                        |
 | `Apleno: Create new Sequence file`       | Create a new `.pseq` file                        |
 | `Apleno: Create new Interface file`      | Create a new `.pgui` file                        |
@@ -39,24 +42,17 @@ At least one of the following runtimes must be installed to run/preview apps:
 | `Apleno: Choose Conda path for preview`  | Set the Conda executable used for previewing     |
 | `Apleno: Show logs`                      | Open the Apleno output log panel                 |
 
-## Development
+## AI Assistants
 
-```bash
-# Install dependencies
-npm install
+AI coding assistants like Claude Code and GitHub Copilot can create and modify Apleno apps: interfaces, sequences, project files and the R/Python code using the Apleno API.
 
-# Compile
-npm run compile
+- New projects include an `AGENTS.md` file (and a `CLAUDE.md` importing it) explaining Apleno to AI assistants. For an existing project, run **Apleno: Set up AI assistant files**. You can edit these files: the extension never modifies them once created.
+- The extension installs an **Apleno skill** in `~/.claude/skills/apleno/`, used by both Claude Code and Copilot, with the JSON Schemas of the Apleno files, detailed references and example apps. It is updated with the extension and removed when the extension is uninstalled.
+- AI assistants read the Problems panel to fix invalid files, and `.apleno/last-run.log` (the output of the last preview) to fix runtime errors.
 
-# Watch mode
-npm run watch
+## Contributing
 
-# Run tests
-npm test
-npm run test:unit
-```
-
-To launch the extension in a development host, press `F5` in VSCode.
+See [CONTRIBUTING.md](CONTRIBUTING.md) to build and develop the extension.
 
 ## License
 
