@@ -2,6 +2,8 @@
 
 A Visual Studio Code extension for building data science apps with user-friendly graphical interfaces, powered by R and Python.
 
+![Designing a sequence and an interface, then running the app](images/preview.gif)
+
 ## Features
 
 - **Project Editor**: manage your Apleno project settings and structure (`.ppro` files)
@@ -11,6 +13,18 @@ A Visual Studio Code extension for building data science apps with user-friendly
 - **Export**: package your project into a distributable app
 - **Validation**: errors in `.ppro`, `.pseq` and `.pgui` files are shown in the Problems panel
 - **AI assistants**: Claude Code and GitHub Copilot know how to build Apleno apps (see below)
+
+### Sequence Editor
+
+Build the flow of your app: scripts, interfaces and conditions, linked step by step.
+
+![The Sequence Editor](images/sequence.png)
+
+### Interface Editor
+
+Place widgets with drag and drop and set their properties, with a live preview.
+
+![The Interface Editor](images/editor.png)
 
 ## Requirements
 
