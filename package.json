@@ -9,24 +9,51 @@
   "description": "Build R and Python data apps visually in VS Code: drag-and-drop UI editor, visual workflows, live preview. Free and open source.",
   "icon": "icons/app.png",
   "homepage": "https://apleno.io/designer",
-  "bugs": { "url": "https://github.com/apleno-io/apleno-designer/issues" },
+  "bugs": {
+    "url": "https://github.com/apleno-io/apleno-designer/issues"
+  },
   "qna": "https://github.com/apleno-io/apleno-designer/discussions",
-  "galleryBanner": { "color": "#0b4a52", "theme": "dark" },
+  "galleryBanner": {
+    "color": "#0b4a52",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apleno-io/apleno-designer.git"
+    "url": "https://github.com/apleno-io/apleno-designer.git"
   },
   "license": "Apache-2.0",
   "engines": {
     "vscode": "^1.97.0"
   },
-  "categories": ["Data Science", "Visualization"],
+  "categories": [
+    "Data Science",
+    "Visualization"
+  ],
   "keywords": [
-    "r", "python", "rstats", "shiny", "dash", "streamlit", "gradio",
-    "gui", "gui builder", "app builder", "data app", "dashboard",
-    "low-code", "wysiwyg", "drag and drop", "ui designer", "interface",
-    "plotly", "data science", "actuarial", "conda", "workflow",
-    "apleno", "rpgm"
+    "r",
+    "python",
+    "rstats",
+    "shiny",
+    "dash",
+    "streamlit",
+    "gradio",
+    "gui",
+    "gui builder",
+    "app builder",
+    "data app",
+    "dashboard",
+    "low-code",
+    "wysiwyg",
+    "drag and drop",
+    "ui designer",
+    "interface",
+    "plotly",
+    "data science",
+    "actuarial",
+    "conda",
+    "workflow",
+    "apleno",
+    "rpgm"
   ],
   "activationEvents": [
     "onDebugResolve:apleno",
